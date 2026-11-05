@@ -1,0 +1,42 @@
+# Dependencias
+node_modules/
+
+# Variables de entorno y secretos
+.env
+.env.*
+!.env.example
+
+# Compilacion
+dist/
+build/
+web-build/
+
+# Expo y React Native
+.expo/
+expo-env.d.ts
+apps/movil/android/
+apps/movil/ios/
+
+# Credenciales de firma
+*.jks
+*.keystore
+*.p8
+*.p12
+*.pem
+*.mobileprovision
+
+# Pruebas
+coverage/
+
+# Registros
+*.log
+logs/
+
+# Sistema y editores
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Configuracion local de Claude Code
+.claude/settings.local.json
