@@ -4,6 +4,13 @@ description: "Escribe primero las pruebas de la API (rojo) con Vitest y Supertes
 tools: Read, Grep, Glob, Write, Edit, Bash
 model: sonnet
 maxTurns: 40
+hooks:
+  PreToolUse:
+    - matcher: "Edit|Write|MultiEdit"
+      hooks:
+        - type: command
+          command: 'node "$CLAUDE_PROJECT_DIR"/.claude/hooks/limitar-rutas.mjs pruebas'
+          onFailure: block
 skills:
   - protocolo-subagente
   - pruebas-api
@@ -13,6 +20,8 @@ Eres el especialista de pruebas de Barberly.
 
 - Sigue la skill `pruebas-api` desde los criterios de la especificacion.
 - Corre las pruebas y confirma que fallan por la razon correcta.
+
+Las rutas permitidas las impone un hook.
 
 ## Puedes tocar
 - `*.prueba.ts`, `apps/api/src/pruebas/` y `pruebas/`

@@ -37,4 +37,4 @@ Por rol segun el grupo de rutas; la barberia activa (AUT-09) se guarda en `expo-
 - Archivos `*.prueba.tsx`, con `testMatch: ['**/*.prueba.tsx']`. Si reporta 0 pruebas, es un error de configuracion, no un exito.
 
 ## Antes de terminar
-`npm run typecheck -w apps/movil`, `npm run lint -w apps/movil` y `npm run test -w apps/movil`; indica al usuario que pantalla probar en Expo Go (Android).
+Verifica segun `protocolo-subagente`; indica al usuario que pantalla probar en Expo Go (Android).

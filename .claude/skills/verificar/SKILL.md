@@ -1,13 +1,13 @@
 ---
 name: verificar
 description: "Corre lint, typecheck y test en los workspaces y resume el resultado"
+argument-hint: "[api|movil|todos]"
 disable-model-invocation: true
+allowed-tools: "Bash(bash .claude/skills/verificar/scripts/verificar.sh:*)"
 ---
 
-Corre con Bash, en la raiz del repositorio:
+Corre solo este comando en la raiz del repositorio y muestra su salida tal cual:
 
-1. `npm run lint --workspaces --if-present`
-2. `npm run typecheck --workspaces --if-present`
-3. `npm run test --workspaces --if-present`
+`bash .claude/skills/verificar/scripts/verificar.sh $ARGUMENTS`
 
-Resume en 5 lineas o menos: resultado por workspace y, si algo falla, el primer error. Si no existe `package.json` en la raiz, dilo y remite a `docs/especificaciones/preparacion.md`. No delegues ni corrijas nada.
+No delegues ni corrijas nada.

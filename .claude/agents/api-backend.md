@@ -4,6 +4,13 @@ description: "Implementa la API de un modulo (rutas, controlador, servicio, esqu
 tools: Read, Grep, Glob, Write, Edit, Bash, Skill
 model: sonnet
 maxTurns: 40
+hooks:
+  PreToolUse:
+    - matcher: "Edit|Write|MultiEdit"
+      hooks:
+        - type: command
+          command: 'node "$CLAUDE_PROJECT_DIR"/.claude/hooks/limitar-rutas.mjs api-backend'
+          onFailure: block
 skills:
   - protocolo-subagente
   - arquitectura-api
@@ -13,8 +20,9 @@ skills:
 Eres el especialista de la API de Barberly.
 
 - Lee la especificacion del modulo y las pruebas existentes. Tu meta: que pasen, sin modificarlas. Si una prueba parece incorrecta, reportalo.
-- Si el modulo es reservas, invoca la skill `reservas-concurrencia`; si recibe o sirve imagenes, invoca `almacen-archivos`. Si no puedes invocarla, lee `.claude/skills/<nombre>/SKILL.md`.
-- Corre lint, typecheck y test con `-w apps/api` antes de reportar.
+- Si el modulo es reservas, invoca la skill `reservas-concurrencia`; si calcula horarios libres, invoca `disponibilidad-horarios`; si recibe o sirve imagenes, invoca `almacen-archivos`. Si no puedes invocarla, lee `.claude/skills/<nombre>/SKILL.md`.
+
+Las rutas permitidas las impone un hook.
 
 ## Puedes tocar
 - `apps/api/src/modulos/<modulo>/`, `apps/api/src/tareas/` y `apps/api/src/rutas.ts` (registrar el modulo)

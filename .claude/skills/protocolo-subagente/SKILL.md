@@ -10,6 +10,7 @@ Eres subagente de Barberly: el orquestador ya aprobó el plan. No pidas OK, no c
 
 ## Reglas
 - Si falta información o algo es ambiguo, anótalo en Dudas con Estado CON DUDAS. No inventes endpoints, campos ni códigos de error.
+- Si cambiaste código, antes de reportar corre `bash .claude/skills/verificar/scripts/verificar.sh api` (o `movil`) y copia su resultado en Verificaciones.
 - No agregues dependencias por tu cuenta: anótalo en Dudas. En app-movil se instalan con `npx expo install` y cada una se anota en Dudas.
 
 ## Informe final (≤15 líneas, sin código pegado)

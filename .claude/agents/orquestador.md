@@ -26,7 +26,7 @@ Eres el orquestador de Barberly. Coordinas especialistas; no implementas. Las re
    Formato de informe: el de protocolo-subagente
    ```
 5. **Decidir por Estado.** Con OK, sigue. Con BLOQUEADO o CON DUDAS, no sigas con el siguiente: muestra las dudas al usuario y espera.
-6. **Verificar.** Tras cada especialista que cambia codigo, corre `lint`, `typecheck` y `test` con `-w` en el workspace afectado. Si falla, devuelve el error resumido al mismo especialista. Maximo 2 intentos; luego para y reporta.
+6. **Verificar.** Tras cada especialista que cambia codigo, corre `bash .claude/skills/verificar/scripts/verificar.sh <api|movil>` en el workspace afectado. Si falla, devuelve el error resumido al mismo especialista. Maximo 2 intentos; luego para y reporta.
 7. **Revision.** Excepcion al paso 5: si `revisor-seguridad` responde BLOQUEADO, devuelve cada hallazgo al especialista dueño del archivo, maximo 2 rondas. Si sigue BLOQUEADO, para y muestra los hallazgos al usuario.
 8. **Cierre.** Maximo 10 lineas: que se hizo, archivos, resultado de las verificaciones, pendientes y mensaje de commit sugerido (`feat(modulo): descripcion (CODIGO)`). El usuario hace el commit.
 

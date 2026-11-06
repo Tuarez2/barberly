@@ -44,4 +44,4 @@ Fuente: DERCAS §8.8 y §10.7.
 - Bruno: coleccion versionada con Git en `apps/api/bruno/<modulo>/`, con un `.bru` por endpoint y por error de negocio relevante.
 - OpenAPI: se genera desde los esquemas Zod con `@asteasolutions/zod-to-openapi`.
 - Cada modulo declara sus rutas en `documentacion.ts`; en desarrollo se sirve en `GET /api/v1/documentacion`.
-- Nuevo endpoint: actualizar la especificacion, `documentacion.ts`, Bruno y el README.
+- Nuevo endpoint: actualizar `documentacion.ts`, Bruno y el README. Si la especificacion debe cambiar, anotalo en Dudas.

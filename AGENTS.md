@@ -43,6 +43,7 @@ Fuente de verdad: `docs/DERCAS.md`. Si difiere de este archivo, gana el DERCAS: 
 
 - Reglas de negocio: el backend las aplica siempre; ver `docs/reglas.md`.
 - Reservas: transacción con bloqueo; ver skill `reservas-concurrencia`.
+- Disponibilidad: cálculo en el backend; ver skill `disponibilidad-horarios`.
 - Seguridad: aislamiento por barbería, recurso ajeno → 404; ver skill `multi-tenencia-seguridad`.
 - API: lógica solo en `servicio.ts`; ver skill `arquitectura-api`.
 - Datos: UUID, `Decimal`, UTC y borrado lógico; ver skill `prisma-mysql`.

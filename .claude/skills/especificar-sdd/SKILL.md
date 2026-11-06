@@ -9,7 +9,7 @@ user-invocable: false
 Objetivo: que los demas agentes lean 60–90 lineas en vez del DERCAS completo (~30k tokens).
 
 ## Proceso
-1. Lee solo las secciones del DERCAS indicadas, por numero (RF, RN, CU, HU, §9 modelo, §10 API, Anexo B errores).
+1. Lee solo las secciones del DERCAS indicadas, por numero (RF, RN, CU, HU, §9 modelo, §10 API, Anexo B errores), con `bash .claude/skills/especificar-sdd/scripts/seccion-dercas.sh <seccion>...` (ej. `8.5 3.3 "Anexo B"`). Nunca con Read del archivo completo.
 2. Copia literal nombres, rutas y codigos; no los reinventes ni los traduzcas.
 3. Si algo es ambiguo, se contradice o falta, va a la seccion "Dudas" al final del archivo; no lo resuelvas tu.
 4. Si una regla RN afecta a varios modulos, ponla en `docs/reglas.md` (una linea por regla: codigo, enunciado, codigo de error) y referenciala por codigo.

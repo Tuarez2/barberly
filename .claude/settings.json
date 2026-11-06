@@ -23,7 +23,39 @@
       "Bash(git status:*)",
       "Bash(git diff:*)",
       "Bash(git log:*)",
-      "Bash(git ls-files:*)"
+      "Bash(git ls-files:*)",
+      "Bash(bash .claude/skills/verificar/scripts/verificar.sh:*)",
+      "Bash(bash .claude/skills/especificar-sdd/scripts/seccion-dercas.sh:*)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit|Read|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/proteger.mjs",
+            "onFailure": "block"
+          },
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/limitar-rutas.mjs",
+            "onFailure": "block"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/formatear.mjs"
+          }
+        ]
+      }
     ]
   }
 }
