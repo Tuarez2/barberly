@@ -26,6 +26,13 @@ Fuente de verdad: `docs/DERCAS.md` + `docs/decisiones.md`; si se contradicen, ga
 6. Corre `lint`, `typecheck` y `test`.
 7. Cita los códigos RN/AUT en commits y pruebas.
 
+## Tareas y Git
+
+- Si la tarea no está en `docs/hoja-de-ruta.md`, primero se agrega.
+- El usuario crea las ramas y hace commit, merge y PR. Claude hace push de la rama actual cuando el usuario lo indica.
+- Nunca push a `main` ni con `--force`: `main` solo recibe código por PR con CI verde.
+- Los especialistas no crean ramas ni hacen commit o push.
+
 ## Comandos (ajustar al crear los package.json)
 
 - `npm install` una sola vez en la raíz (workspaces `apps/*`, `paquetes/*`).
@@ -36,6 +43,7 @@ Fuente de verdad: `docs/DERCAS.md` + `docs/decisiones.md`; si se contradicen, ga
 ## Referencias
 
 - `docs/reglas.md` (RN) · `docs/errores.md` · `docs/decisiones.md` · `docs/especificaciones/` · `docs/especificaciones/preparacion.md` (Fase 0).
+- `docs/flujo-de-trabajo.md` (roles, ramas, commits y PR) · `docs/hoja-de-ruta.md` (tareas, ramas y estado: solo la fila de la tarea, nunca completa).
 - `docs/identidad-visual.md` (tokens; enlace a Figma) · `docs/pantallas.md` (pantalla → nodo, ruta y endpoints).
 - `docs/DERCAS.md`: solo la sección puntual, nunca completo.
 

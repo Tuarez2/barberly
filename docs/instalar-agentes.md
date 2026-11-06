@@ -21,7 +21,7 @@ Las 12 skills con `user-invocable: false` no salen en el menu `/`: las usan los 
 ## Comandos
 | Comando | Que hace |
 | --- | --- |
-| `/tarea <modulo> <codigos>` | Flujo completo con el orquestador, en la sesion principal |
+| `/tarea <ID>` | Tarea de `docs/hoja-de-ruta.md` (ej. `/tarea T1.5`) con el orquestador, en la sesion principal |
 | `/especificar <modulo> <secciones DERCAS>` | Solo `analista-spec`; muestra las Dudas al final |
 | `/decidir <modulo>` | Resuelve contigo las Dudas del modulo, una por una, y las registra en `docs/decisiones.md` |
 | `/revisar` | Solo `revisor-seguridad` sobre los cambios actuales |
@@ -30,7 +30,9 @@ Las 12 skills con `user-invocable: false` no salen en el menu `/`: las usan los 
 Tambien puedes usar `claude --agent orquestador` y escribir la tarea.
 
 ## Flujo
-Esta en [orquestador.md](../.claude/agents/orquestador.md).
+- Ramas, revision y PR: [flujo-de-trabajo.md](flujo-de-trabajo.md).
+- Dentro de una tarea: [orquestador.md](../.claude/agents/orquestador.md).
+- Tareas y estado: [hoja-de-ruta.md](hoja-de-ruta.md).
 
 ## Agregar agentes
 Crea `.claude/agents/<nombre>.md` con `protocolo-subagente` primero en `skills:` agregalo a la lista `Agent(...)` del orquestador y a `limitar-rutas.mjs`. Candidatos: `asesor-ia` (Fase 5), `pagos` (Fase 4), `estadisticas`.

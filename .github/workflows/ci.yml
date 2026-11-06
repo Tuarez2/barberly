@@ -1,0 +1,63 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # El nombre del job es el status check que exige la proteccion de main.
+  verificar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      mysql:
+        image: mysql:8.0
+        # Base efimera del runner: estas claves no protegen nada real.
+        env:
+          MYSQL_ROOT_PASSWORD: clave_ci
+          MYSQL_DATABASE: barberly_prueba
+          MYSQL_USER: barberly
+          MYSQL_PASSWORD: clave_ci
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -pclave_ci"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Preparar entorno de pruebas
+        working-directory: apps/api
+        run: |
+          sed -e 's#USUARIO:CLAVE@localhost#barberly:clave_ci@127.0.0.1#' \
+            -e "s#^JWT_SECRETO=.*#JWT_SECRETO=$(openssl rand -hex 32)#" \
+            .env.prueba.example > .env.prueba
+
+      - name: Formato
+        run: npx prettier --check .
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Pruebas
+        run: npm run test
