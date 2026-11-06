@@ -72,12 +72,12 @@ Prioridad de cada funcionalidad: **Debe** (MVP), **Debería** (MVP si hay tiempo
 
 | Va en español | Se queda en inglés |
 | --- | --- |
-| Modelos y tablas (Cita, citas), campos (iniciaEn), estados (CONFIRMADA), rutas (/api/v1/citas), campos JSON, códigos de error (HORARIO\_OCUPADO), módulos, carpetas, funciones y variables propias | Palabras reservadas de TypeScript, SQL y Prisma; nombres de librerías y sus funciones (Express, Prisma, Expo); métodos y cabeceras HTTP; el campo id; términos técnicos sin traducción usual (token, hash, webhook, JWT); archivos estándar (package.json, README.md, AGENTS.md, .env) |
+| Modelos y tablas (Cita, citas), campos (iniciaEn), estados (CONFIRMADA), rutas (/api/v1/citas), campos JSON, códigos de error (HORARIO_OCUPADO), módulos, carpetas, funciones y variables propias | Palabras reservadas de TypeScript, SQL y Prisma; nombres de librerías y sus funciones (Express, Prisma, Expo); métodos y cabeceras HTTP; el campo id; términos técnicos sin traducción usual (token, hash, webhook, JWT); archivos estándar (package.json, README.md, AGENTS.md, .env) |
 
 ### 1.6 Referencias
 
-- Informe base: *Barberly: aplicación móvil para la gestión de citas en barberías* (20 de octubre de 2026).
-- *Barberly — Especificación detallada del proyecto* (28 de octubre de 2026).
+- Informe base: _Barberly: aplicación móvil para la gestión de citas en barberías_ (20 de octubre de 2026).
+- _Barberly — Especificación detallada del proyecto_ (28 de octubre de 2026).
 - ISO/IEC/IEEE 29148:2018, ingeniería de requisitos, como guía de estructura y calidad de los requisitos.
 - Ley Orgánica de Protección de Datos Personales del Ecuador.
 - Políticas para desarrolladores de Google Play, incluida la prueba cerrada para cuentas personales.
@@ -88,8 +88,8 @@ Prioridad de cada funcionalidad: **Debe** (MVP), **Debería** (MVP si hay tiempo
 | --- | --- |
 | Proyecto | Barberly |
 | Autor | Cristhian Tuarez |
-| Versión | 1.0 (borrador para revisión del docente) |
-| Fecha | 2 de noviembre de 2026 |
+| Versión | 1.3 (borrador para revisión del docente) |
+| Fecha | 5 de noviembre de 2026 |
 | Documentos que alimenta | AGENTS.md, plan de pruebas, prototipos en Figma |
 
 ## 2. Descripción general
@@ -136,12 +136,13 @@ Un mismo usuario puede tener roles distintos en barberías distintas, por eso el
 | Registrarse e iniciar sesión | Sí | Sí | Sí |
 | Ver listado, servicios, precios y barberos | Sí | Sí | Sí |
 | Consultar disponibilidad | Sí | Sí | Sí |
-| Crear una cita | Propio | No | Su barbería (también para clientes sin cuenta) |
+| Crear una cita | Propio | Su agenda (clientes sin cuenta, RES-16) | Su barbería (también para clientes sin cuenta) |
 | Cancelar una cita | Propio | Su agenda | Su barbería |
 | Ver historial de citas | Propio | Su agenda | Su barbería |
 | Cambiar estado de una cita | No | Su agenda | Su barbería |
 | Ver agenda diaria y semanal | No | Propio | Su barbería |
-| Gestionar disponibilidad y bloqueos | No | Propio, si está permitido | Su barbería |
+| Bloquear rangos puntuales de horario | No | Propio | Su barbería |
+| Gestionar disponibilidad y días libres | No | Propio, si está permitido | Su barbería |
 | Crear, editar y desactivar servicios | No | No | Su barbería |
 | Configurar horarios de atención | No | No | Su barbería |
 | Agregar y quitar personal | No | No | Su barbería |
@@ -190,7 +191,7 @@ Un mismo usuario puede tener roles distintos en barberías distintas, por eso el
 | --- | --- | --- |
 | Supuesto | Al menos una barbería real acepta participar en el piloto | Se simula con datos de prueba y compañeros como testers |
 | Supuesto | Los usuarios tienen un teléfono Android con conexión a internet | Sin conexión: solo lectura de datos guardados |
-| Dependencia | Proveedor de IA disponible y con costo por uso controlado | La API responde IA\_NO\_DISPONIBLE; el resto de la app sigue funcionando |
+| Dependencia | Proveedor de IA disponible y con costo por uso controlado | La API responde IA_NO_DISPONIBLE; el resto de la app sigue funcionando |
 | Dependencia | Pasarela de pagos con entorno de pruebas (Kushki o Payphone) | El anticipo es extendido y puede omitirse sin afectar el MVP |
 | Dependencia | Plataforma de alojamiento con HTTPS | Cambio de proveedor; la API es portable con variables de entorno |
 | Dependencia | Aprobación de la revisión de Google Play | Se acepta la prueba cerrada aprobada como cierre del MVP |
@@ -215,11 +216,11 @@ El sistema ofrece 104 funcionalidades repartidas en nueve módulos, de las cuale
 
 | Código | El sistema debe… | Prioridad | Trazas |
 | --- | --- | --- | --- |
-| AUT-01 | Registrar a un usuario con nombre, correo, teléfono y contraseña, con rol cliente por defecto | Debe | HU-AUT-01 |
+| AUT-01 | Registrar a un usuario con nombre, correo, teléfono y contraseña, con rol cliente por defecto, y abrir su sesión | Debe | HU-AUT-01 |
 | AUT-02 | Iniciar sesión con correo y contraseña y devolver token de acceso y token de renovación | Debe | HU-AUT-02 |
 | AUT-03 | Cerrar sesión invalidando el token de renovación del dispositivo y borrando la sesión local | Debe | HU-AUT-02 |
 | AUT-04 | Renovar el token de acceso con el token de renovación sin pedir la contraseña | Debe | HU-AUT-02 |
-| AUT-05 | Permitir ver y editar nombre, teléfono y foto; el correo no se cambia en el MVP | Debería |  |
+| AUT-05 | Permitir ver y editar nombre y teléfono; el correo no se cambia en el MVP | Debería |  |
 | AUT-06 | Cambiar la contraseña exigiendo la contraseña actual | Debería |  |
 | AUT-07 | Recuperar la contraseña con un enlace o código temporal enviado por correo | Podría |  |
 | AUT-08 | Consultar las membresías tras iniciar sesión y mostrar la interfaz del rol correspondiente | Debe | SEG-03 |
@@ -274,7 +275,7 @@ El sistema ofrece 104 funcionalidades repartidas en nueve módulos, de las cuale
 | AGE-06 | Destacar la próxima cita del día | Debería |  |
 | AGE-07 | Abrir el marcador telefónico con el número del cliente | Debería |  |
 | AGE-08 | Permitir bloquear un rango horario sin traslaparse con citas activas | Debería | HU-AGE-03 |
-| AGE-09 | Permitir marcar uno o varios días completos como no laborables | Debería | RN-26 |
+| AGE-09 | Permitir marcar uno o varios días completos como no laborables, si el barbero tiene permiso | Debería | RN-26 |
 | AGE-10 | Permitir al barbero ajustar su horario laboral si el propietario lo permite | Podría |  |
 | AGE-11 | Avisar de las citas pasadas que siguen confirmadas sin marcar | Debería | RN-20 |
 | AGE-12 | Mostrar la ficha de estilo: foto de referencia, notas y resumen del último servicio del cliente | Debe | HU-IA-03 |
@@ -362,7 +363,7 @@ El sistema ofrece 104 funcionalidades repartidas en nueve módulos, de las cuale
 
 ## 4. Reglas de negocio
 
-Las 38 reglas son la fuente de verdad del sistema: el backend las aplica siempre, aunque la app móvil ya las valide. Los valores marcados como *propuesta* son configurables por barbería o por el servidor.
+Las 38 reglas son la fuente de verdad del sistema: el backend las aplica siempre, aunque la app móvil ya las valide. Los valores marcados como _propuesta_ son configurables por barbería o por el servidor.
 
 ### 4.1 Reglas de reserva
 
@@ -371,14 +372,14 @@ Las 38 reglas son la fuente de verdad del sistema: el backend las aplica siempre
 | RN-01 | Una cita tiene exactamente un cliente, una barbería, un barbero, un servicio, una fecha y una hora de inicio |
 | RN-02 | La hora de fin es inicio + duración del servicio al reservar, y se guarda en la cita |
 | RN-03 | El precio del servicio se copia a la cita al reservar (precio congelado) |
-| RN-04 | Un barbero no puede tener dos citas activas cuyos intervalos se solapen: A y B se solapan si inicio\_A < fin\_B y inicio\_B < fin\_A. Una cita que termina a las 10:00 y otra que empieza a las 10:00 no se solapan |
+| RN-04 | Un barbero no puede tener dos citas activas cuyos intervalos se solapen: A y B se solapan si inicio_A < fin_B y inicio_B < fin_A. Una cita que termina a las 10:00 y otra que empieza a las 10:00 no se solapan |
 | RN-05 | La cita debe caer completamente dentro del horario de atención de la barbería y del horario laboral del barbero ese día |
 | RN-06 | No se reserva en el pasado; se exige un margen mínimo de anticipación (propuesta: 30 minutos), configurable por barbería |
 | RN-07 | La anticipación máxima de reserva está limitada (propuesta: 30 días) |
 | RN-08 | Un cliente no puede tener dos citas activas que se solapen, aunque sean en barberías distintas |
 | RN-09 | Un cliente tiene como máximo 3 citas futuras activas por barbería (propuesta) |
 | RN-10 | Los horarios se ofrecen en bloques de 15 minutos y la duración de un servicio es múltiplo de 15 |
-| RN-11 | Si dos clientes reservan el mismo horario a la vez, solo uno tiene éxito y el otro recibe HORARIO\_OCUPADO |
+| RN-11 | Si dos clientes reservan el mismo horario a la vez, solo uno tiene éxito y el otro recibe HORARIO_OCUPADO |
 
 ### 4.2 Reglas de confirmación y cancelación
 
@@ -418,7 +419,7 @@ Las 38 reglas son la fuente de verdad del sistema: el backend las aplica siempre
 | RN-28 | Antes de la primera consulta hay consentimiento explícito; se guarda su fecha y puede retirarse |
 | RN-29 | Cada cliente tiene un límite de consultas diarias (propuesta: 5), configurable en el servidor |
 | RN-30 | El asesor solo recomienda servicios activos de la barbería elegida (máximo 3); si ninguno encaja, lo indica y sugiere consultar al barbero |
-| RN-31 | Una cita admite como máximo una foto de referencia, que se elimina al llegar a un estado final |
+| RN-31 | Una cita admite como máximo una foto de referencia; una segunda reemplaza a la anterior, que se elimina, y la foto se elimina al llegar a un estado final |
 
 ### 4.6 Reglas de pagos y estadísticas
 
@@ -434,19 +435,21 @@ Las 38 reglas son la fuente de verdad del sistema: el backend las aplica siempre
 
 ### 4.7 Precisiones de este documento
 
-Tres casos admiten más de una lectura en los documentos fuente. Este DERCAS fija el criterio para que el código y las pruebas no los interpreten cada uno a su manera.
+Estos casos admiten más de una lectura en los documentos fuente. Este DERCAS fija el criterio para que el código y las pruebas no los interpreten cada uno a su manera.
 
 | Caso | Criterio adoptado |
 | --- | --- |
-| Cancelación exactamente en el límite de 2 horas (RN-13) | Se permite si inicio − ahora ≥ tiempo mínimo de cancelación; con menos tiempo se responde CANCELACION\_TARDIA |
+| Cancelación exactamente en el límite de 2 horas (RN-13) | Se permite si inicio − ahora ≥ tiempo mínimo de cancelación; con menos tiempo se responde CANCELACION_TARDIA |
 | Cita que termina justo cuando empieza otra (RN-04) | No hay solapamiento; el intervalo es semiabierto \[inicio, fin) |
 | Cita pendiente que vence (RN-34) | La libera un proceso programado; la consulta de disponibilidad también ignora citas pendientes con anticipoVenceEn vencido, sin esperar al proceso |
+| Completar una cita (RN-32) | El cambio a COMPLETADA y el pago final se guardan en una sola transacción: no queda una cita completada sin su pago |
+| Acceso sin cuenta | No hay acceso de invitado en el MVP: consultar barberías, servicios, barberos y disponibilidad exige sesión iniciada (rol Pub) |
 
 ### 4.8 Ciclo de vida de la cita
 
 Una cita tiene cinco estados: PENDIENTE, CONFIRMADA, COMPLETADA, CANCELADA y AUSENTE. Los tres últimos son finales (RN-16).
 
-&#91;embedded content: estados de una cita · 5 estados, 3 finales\]
+_Diagrama no incluido en esta versión: estados de una cita · 5 estados, 3 finales._
 
 Sin anticipo la cita nace confirmada; con anticipo nace pendiente y solo el pago aprobado la confirma. Desde ahí, el personal o el cliente (con límite de tiempo) la llevan a un estado final.
 
@@ -460,13 +463,13 @@ Sin anticipo la cita nace confirmada; con anticipo nace pendiente y solo el pago
 | PENDIENTE o CONFIRMADA | CANCELADA | Barbero o propietario | Antes del inicio, con motivo | RN-14, RN-17 |
 | CONFIRMADA | COMPLETADA | Barbero asignado o propietario | Desde la hora de inicio | RN-18, RN-19 |
 | CONFIRMADA | AUSENTE | Barbero asignado o propietario | Desde la hora de inicio | RN-18, RN-19 |
-| COMPLETADA, CANCELADA o AUSENTE | cualquiera | Nadie | Estado final: se responde TRANSICION\_INVALIDA | RN-16 |
+| COMPLETADA, CANCELADA o AUSENTE | cualquiera | Nadie | Estado final: se responde TRANSICION_INVALIDA | RN-16 |
 
 ## 5. Casos de uso
 
 Barberly tiene 25 casos de uso para cinco actores; siete de ellos concentran el riesgo del sistema (reserva, cancelación, cierre de cita con pago, bloqueo de horario, asesor de estilo, personal y anticipo) y se especifican paso a paso.
 
-&#91;embedded content: mapa de casos de uso · 3 actores, 2 sistemas externos, 6 grupos\]
+_Diagrama no incluido en esta versión: mapa de casos de uso · 3 actores, 2 sistemas externos, 6 grupos._
 
 El barbero y el propietario comparten el grupo de agenda y atención; solo el propietario accede a administración y estadísticas, y solo el cliente al anticipo en línea.
 
@@ -527,7 +530,7 @@ Flujo principal:
 2. Elige un servicio y luego un barbero o "Cualquiera disponible".
 3. Elige una fecha; el calendario solo muestra días con al menos un horario libre.
 4. Elige una hora entre los horarios que la API calculó para esa fecha, barbero y servicio.
-5. Revisa el resumen y, si quiere, agrega notas o una foto de referencia.
+5. Revisa el resumen y, si quiere, agrega notas o elige una foto de referencia, que la app guarda en memoria.
 6. Confirma; la app envía POST /api/v1/citas con una clave de idempotencia.
 7. La API ejecuta las validaciones de la sección 8.5 dentro de una transacción que bloquea la agenda del barbero.
 8. La API guarda la cita como CONFIRMADA y devuelve 201.
@@ -535,11 +538,12 @@ Flujo principal:
 
 Flujos alternativos y excepciones:
 
-- **A1, horario ya tomado:** la API responde HORARIO\_OCUPADO (409); la app vuelve a mostrar los horarios actualizados.
+- **A1, horario ya tomado:** la API responde HORARIO_OCUPADO (409); la app vuelve a mostrar los horarios actualizados.
 - **A2, anticipo activo:** la cita nace PENDIENTE con anticipoVenceEn a 15 minutos y se continúa en CU-24.
 - **A3, "Cualquiera disponible":** al confirmar, la API asigna al barbero con menos citas ese día; en empate, el de menor identificador.
 - **A4, pérdida de conexión al confirmar:** la app consulta Mis citas antes de reintentar; la clave de idempotencia impide el duplicado.
-- **A5, regla violada:** HORARIO\_PASADO, ANTICIPACION\_INSUFICIENTE, FECHA\_DEMASIADO\_LEJANA, FUERA\_DE\_HORARIO, BARBERO\_NO\_DISPONIBLE, CRUCE\_DEL\_CLIENTE o LIMITE\_DE\_CITAS, con mensaje en español.
+- **A5, regla violada:** HORARIO_PASADO, ANTICIPACION_INSUFICIENTE, FECHA_DEMASIADO_LEJANA, FUERA_DE_HORARIO, BARBERO_NO_DISPONIBLE, CRUCE_DEL_CLIENTE o LIMITE_DE_CITAS, con mensaje en español.
+- **A6, foto de referencia:** tras recibir 201 de POST /citas, la app sube la foto con PUT /citas/:id/foto-referencia. Si la subida falla, la cita sigue válida: la pantalla de éxito muestra "No pudimos subir tu foto" con Reintentar, y también se puede adjuntar desde el detalle de la cita mientras esté activa y antes de su inicio.
 
 #### CU-09 Cancelar una cita (cliente)
 
@@ -559,9 +563,9 @@ Flujo principal:
 
 Flujos alternativos y excepciones:
 
-- **A1, fuera de plazo:** CANCELACION\_TARDIA (409); la app muestra el teléfono de la barbería.
-- **A2, cita en estado final:** TRANSICION\_INVALIDA (409).
-- **A3, cita ajena:** NO\_ENCONTRADO (404), sin revelar que existe.
+- **A1, fuera de plazo:** CANCELACION_TARDIA (409); la app muestra el teléfono de la barbería.
+- **A2, cita en estado final:** TRANSICION_INVALIDA (409).
+- **A3, cita ajena:** NO_ENCONTRADO (404), sin revelar que existe.
 
 #### CU-11 Completar una cita y registrar el pago
 
@@ -574,23 +578,23 @@ Flujos alternativos y excepciones:
 
 Flujo principal:
 
-1. El barbero abre la cita desde la vista diaria y toca Completar (dos toques desde la vista diaria).
+1. El barbero abre la cita desde la vista diaria y toca Completar (dos toques desde la vista diaria, que llevan a Registrar pago).
 2. La app muestra el monto sugerido (precio congelado menos anticipo) y los métodos: efectivo, transferencia o DeUna.
 3. El barbero confirma o ajusta el monto indicando un motivo.
-4. La API valida, cambia el estado a COMPLETADA y crea el pago.
+4. La API valida y, en una sola transacción, cambia el estado a COMPLETADA y crea el pago; si algo falla, no se aplica ninguno de los dos.
 
 Flujos alternativos y excepciones:
 
 - **A1, cita futura:** el sistema impide completarla (RN-19).
-- **A2, pago ya registrado:** PAGO\_YA\_REGISTRADO (409).
-- **A3, cita no completada:** CITA\_NO\_COMPLETADA (409) al intentar registrar un pago.
-- **A4, monto distinto al sugerido sin motivo:** DATOS\_INVALIDOS (422).
+- **A2, cita ya completada:** volver a completarla responde TRANSICION_INVALIDA (409) y sigue existiendo un solo Pago FINAL (RN-16, RN-32).
+- **A3, pago duplicado por solicitudes simultáneas:** el error P2002 del índice único (citaId, tipo) se traduce a PAGO_YA_REGISTRADO (409), solo como respaldo.
+- **A4, monto distinto al sugerido sin motivo:** DATOS_INVALIDOS (422).
 
 #### CU-14 Bloquear un horario o día libre
 
 | Elemento | Descripción |
 | --- | --- |
-| Actor | Barbero (con permiso) o propietario |
+| Actor | Barbero o propietario |
 | Precondiciones | Sesión iniciada con membresía activa en la barbería |
 | Postcondiciones | Se crea un Bloqueo y el rango desaparece de la disponibilidad pública; las citas existentes no se alteran |
 | Reglas | RN-04 (mismo criterio de intervalo), RN-26 |
@@ -605,7 +609,7 @@ Flujo principal:
 Flujos alternativos y excepciones:
 
 - **A1, hay citas activas:** la API devuelve la lista; el barbero cancela esas citas con motivo o elige otro rango. No se bloquea encima de citas sin resolverlas.
-- **A2, barbero sin permiso para su horario base:** solo puede bloquear rangos puntuales.
+- **A2, barbero sin permiso (puedeEditarHorario falso):** puede bloquear rangos puntuales de su agenda; un día completo o un cambio de su horario base responde ACCESO_DENEGADO (403).
 
 #### CU-16 Obtener una recomendación de estilo
 
@@ -629,10 +633,10 @@ Flujo principal:
 
 Flujos alternativos y excepciones:
 
-- **A1, sin consentimiento:** CONSENTIMIENTO\_IA\_REQUERIDO (403).
-- **A2, límite diario alcanzado:** LIMITE\_IA\_ALCANZADO (429), con la hora en que se renueva.
-- **A3, foto inutilizable (varias personas, oscura, borrosa):** IMAGEN\_NO\_VALIDA (422) con consejo para otra foto; no se descuenta la consulta.
-- **A4, el proveedor falla o tarda más de 15 segundos:** IA\_NO\_DISPONIBLE (503); no se descuenta la consulta.
+- **A1, sin consentimiento:** CONSENTIMIENTO_IA_REQUERIDO (403).
+- **A2, límite diario alcanzado:** LIMITE_IA_ALCANZADO (429), con la hora en que se renueva.
+- **A3, foto inutilizable (varias personas, oscura, borrosa):** IMAGEN_NO_VALIDA (422) con consejo para otra foto; no se descuenta la consulta.
+- **A4, el proveedor falla o tarda más de 15 segundos:** IA_NO_DISPONIBLE (503); no se descuenta la consulta.
 - **A5, ningún servicio encaja:** se informa y se sugiere consultar al barbero.
 
 #### CU-20 Gestionar el personal
@@ -646,15 +650,15 @@ Flujos alternativos y excepciones:
 
 Flujo principal (invitar):
 
-1. El propietario ingresa el correo de un usuario registrado.
-2. La API crea una membresía en estado INVITADO y la invitación aparece en la app del usuario.
+1. El propietario ingresa un correo.
+2. Si el correo es de un usuario registrado, la API crea una membresía en estado INVITADO y la invitación aparece en la app del usuario.
 3. El usuario acepta; la membresía pasa a ACTIVO y se crea su PerfilBarbero.
 4. El propietario asigna los servicios que ese barbero ofrece.
 
 Flujos alternativos y excepciones:
 
-- **A1, el correo no está registrado:** debe registrarse primero.
-- **A2, desactivar con citas futuras:** BARBERO\_CON\_CITAS (409); el propietario reasigna o cancela antes.
+- **A1, el correo no está registrado:** la API responde igual que con un correo registrado, sin crear membresía, para no revelar qué correos tienen cuenta. La app muestra un mensaje neutro: "Si tiene cuenta, recibirá la invitación".
+- **A2, desactivar con citas futuras:** BARBERO_CON_CITAS (409); el propietario reasigna o cancela antes.
 - **A3, último propietario activo:** no puede desactivarse ni quitarse a sí mismo.
 - **A4, barbería sin barberos activos:** se despublica automáticamente y se muestra la causa.
 
@@ -676,10 +680,10 @@ Flujo principal:
 
 Flujos alternativos y excepciones:
 
-- **A1, pago fallido o vencido en 15 minutos:** la cita se cancela sola y se libera el horario (ANTICIPO\_VENCIDO).
+- **A1, pago fallido o vencido en 15 minutos:** la cita se cancela sola y se libera el horario (ANTICIPO_VENCIDO).
 - **A2, webhook duplicado:** se procesa una sola vez por la referencia única del cobro.
 - **A3, webhook posterior al vencimiento:** la cita cancelada no se reactiva y el anticipo se devuelve.
-- **A4, firma inválida:** FIRMA\_INVALIDA (401); no se procesa.
+- **A4, firma inválida:** FIRMA_INVALIDA (401); no se procesa.
 - **A5, el cliente no llega con anticipo pagado:** la cita pasa a AUSENTE y el anticipo cuenta como ingreso (RN-35, RN-37).
 
 ## 6. Historias de usuario y criterios de aceptación
@@ -697,22 +701,22 @@ Las 29 historias de usuario traducen cada módulo a criterios verificables en fo
 | HU-RES-01 | Como cliente, quiero reservar un horario libre para asegurar mi atención | Horario libre: la cita queda confirmada y aparece en mis próximas. Horario tomado mientras elegía: aviso y opciones actualizadas. Horario pasado: se rechaza | CU-07 |
 | HU-RES-02 | Como cliente, quiero cancelar una cita para liberar el horario | Cita confirmada con 2 horas o más de anticipación: pasa a cancelada y el horario queda libre. Con menos tiempo: mensaje con el teléfono de la barbería | CU-09 |
 | HU-RES-03 | Como cliente, quiero ver mis citas próximas y mi historial | Mis citas muestra primero las próximas ordenadas por fecha. El historial filtrado por estado muestra solo ese estado | CU-08 |
-| HU-RES-04 | Como cliente, quiero que dos personas no tengan el mismo horario con el mismo barbero | Dos solicitudes simultáneas para el mismo barbero y hora: una se confirma y la otra recibe HORARIO\_OCUPADO | CU-07 |
+| HU-RES-04 | Como cliente, quiero que dos personas no tengan el mismo horario con el mismo barbero | Dos solicitudes simultáneas para el mismo barbero y hora: una se confirma y la otra recibe HORARIO_OCUPADO | CU-07 |
 | HU-AGE-01 | Como barbero, quiero ver mis citas del día para organizar mi jornada | Con citas hoy: orden cronológico con su estado. Día sin citas: mensaje y opción de bloquear. Cita cancelada: deja de aparecer como activa | CU-10 |
-| HU-AGE-02 | Como barbero, quiero marcar el resultado de cada cita | Cita iniciada: Completar la pasa a completada. Cita futura: el sistema lo impide. Cita en estado final: el sistema lo impide | CU-11, CU-12 |
+| HU-AGE-02 | Como barbero, quiero marcar el resultado de cada cita | Cita iniciada: Completar la pasa a completada junto con su pago. Cita futura: el sistema lo impide. Cita en estado final: el sistema lo impide | CU-11, CU-12 |
 | HU-AGE-03 | Como barbero, quiero bloquear un horario para que no me reserven mientras no estoy | Rango sin citas: desaparece de la disponibilidad pública. Rango con citas activas: veo el conflicto y no se crea el bloqueo hasta resolverlo | CU-14 |
 | HU-ADM-01 | Como propietario, quiero definir servicios y precios para que los clientes los vean | Servicio válido: aparece en el catálogo público. Con citas futuras solo se desactiva. Cambio de precio: las citas existentes conservan el anterior | CU-18 |
 | HU-ADM-02 | Como propietario, quiero configurar mis horarios para que solo se reserve cuando atiendo | La disponibilidad pública solo ofrece horas dentro del horario. Un horario que deja citas fuera muestra la lista de afectadas | CU-19 |
-| HU-ADM-03 | Como propietario, quiero gestionar a mi personal para controlar quién atiende | Correo registrado: recibe invitación pendiente. Barbero con citas futuras: el sistema pide resolverlas antes de desactivarlo | CU-20 |
+| HU-ADM-03 | Como propietario, quiero gestionar a mi personal para controlar quién atiende | Correo registrado: recibe invitación pendiente. Correo no registrado: veo la misma respuesta y no se crea nada. Barbero con citas futuras: el sistema pide resolverlas antes de desactivarlo | CU-20 |
 | HU-ADM-04 | Como propietario, quiero ver las estadísticas de mi barbería | Con un rango de fechas veo indicadores calculados solo con datos de mi barbería | CU-22 |
 | HU-SEG-01 | Como propietario, quiero que los datos de mi barbería sean privados | Usuario de otra barbería que consulta una cita mía recibe 404. Usuario sin sesión en ruta protegida recibe 401 | Transversal |
 | HU-SEG-02 | Como usuario, quiero que mi contraseña esté protegida | Al inspeccionar la tabla de usuarios, ninguna contraseña es legible | Transversal |
 | HU-SEG-03 | Como cliente, quiero que nadie sin permiso cancele mis citas | Una cita de otro cliente que intento cancelar da 404 y no cambia | Transversal |
-| HU-IA-01 | Como cliente, quiero subir una foto y recibir cortes recomendados | Con consentimiento y foto válida veo hasta 3 cortes del catálogo en menos de 10 segundos. Sin servicios que encajen: mensaje que sugiere consultar al barbero. Límite diario alcanzado: LIMITE\_IA\_ALCANZADO y cuándo se renueva | CU-16 |
+| HU-IA-01 | Como cliente, quiero subir una foto y recibir cortes recomendados | Con consentimiento y foto válida veo hasta 3 cortes del catálogo en menos de 10 segundos. Sin servicios que encajen: mensaje que sugiere consultar al barbero. Límite diario alcanzado: LIMITE_IA_ALCANZADO y cuándo se renueva | CU-16 |
 | HU-IA-02 | Como cliente, quiero reservar directamente el corte recomendado | Al tocar Reservar, el flujo empieza con barbería y servicio ya elegidos | CU-17 |
 | HU-IA-03 | Como barbero, quiero ver la foto de referencia antes de la cita | El detalle de una cita con foto de referencia muestra la foto y las notas. Al llegar a un estado final, la foto se elimina | CU-15 |
 | HU-IA-04 | Como cliente, quiero que mi foto no se guarde | Tras una consulta terminada no existe copia de la foto del rostro en el almacenamiento del servidor | CU-16 |
-| HU-PAG-01 | Como barbero, quiero registrar el pago al terminar una cita | Cita completada: un pago en efectivo por el monto sugerido queda guardado y aparece en los ingresos del día. Segundo pago: PAGO\_YA\_REGISTRADO. Cita no completada: el sistema lo impide | CU-11 |
+| HU-PAG-01 | Como barbero, quiero registrar el pago al terminar una cita | Completar la cita con un pago en efectivo por el monto sugerido: la cita queda completada, el pago guardado y aparece en los ingresos del día. Volver a completar: TRANSICION_INVALIDA. PAGO_YA_REGISTRADO queda solo como respaldo del índice (citaId, tipo) | CU-11 |
 | HU-PAG-02 | Como propietario, quiero exigir un anticipo para reducir ausencias | Con anticipo activo la cita queda pendiente hasta pagar. Sin pago en 15 minutos se cancela y el horario se libera. Cancelación con 2 horas o más de anticipación: se inicia la devolución | CU-21, CU-24 |
 | HU-EST-01 | Como propietario, quiero ver mis ingresos del mes por barbero | Con el filtro Mes veo el total y el desglose por barbero, y ambos suman lo mismo | CU-22 |
 | HU-EST-02 | Como propietario, quiero saber qué horas tienen más demanda | El mapa de calor resalta las franjas con más citas | CU-22 |
@@ -755,7 +759,7 @@ Un script de semillas (seed) crea dos barberías, tres barberos, varios servicio
 
 Barberly usa una arquitectura cliente-servidor de tres capas (presentación, lógica de negocio y datos) con un monolito modular en el servidor: la app solo habla con la API, y solo la API toca la base de datos y los servicios externos.
 
-&#91;embedded content: arquitectura en tres capas · app, API y datos\]
+_Diagrama no incluido en esta versión: arquitectura en tres capas · app, API y datos._
 
 La API aplica las reglas del negocio y es la única que accede a MySQL y a los servicios externos; las claves de la IA y de la pasarela viven solo en el servidor.
 
@@ -805,24 +809,25 @@ El punto más delicado del backend es impedir que dos clientes reserven el mismo
 
 Decisiones de diseño que este DERCAS añade para que las dos protecciones funcionen:
 
-- **Lecturas actuales dentro de la transacción:** las comprobaciones de cruce usan `SELECT … FOR UPDATE` o aislamiento READ COMMITTED, para ver las citas confirmadas por transacciones concurrentes.
+- **Lecturas actuales dentro de la transacción:** la transacción usa aislamiento READ COMMITTED y `SELECT … FOR UPDATE` es su primera instrucción; las comprobaciones de cruce van después, para ver las citas confirmadas por transacciones concurrentes.
 - **Restricción única solo sobre citas activas:** MySQL no admite índices únicos parciales, y una restricción simple sobre (perfilBarberoId, iniciaEn) impediría reservar un horario cancelado. Se resuelve con una columna generada `inicioActivo`, que vale iniciaEn solo si el estado es PENDIENTE o CONFIRMADA (y NULL en otro caso), y un índice único sobre (perfilBarberoId, inicioActivo). Prisma no declara columnas generadas en su esquema, así que se añade con una migración SQL manual.
-- **Reglas del cliente (RN-08, RN-09):** también se bloquea la fila del cliente. Para evitar interbloqueos, los bloqueos se toman siempre en el mismo orden: barbero y luego cliente.
+- **Citas pendientes vencidas:** `inicioActivo` conserva su valor hasta que cambia el estado, así que una cita PENDIENTE vencida seguiría ocupando el índice único. Por eso, justo después de bloquear al barbero, la transacción cancela sus citas PENDIENTE con anticipoVenceEn pasado (motivo "Anticipo vencido", canceladaPorId nulo = Sistema, auditado como anticipo vencido), y el horario que la disponibilidad muestra libre (§4.7) se puede reservar.
+- **Reglas del cliente (RN-08, RN-09):** también se bloquea la fila del cliente. Para evitar interbloqueos, los bloqueos se toman siempre en el mismo orden: barbero y luego cliente. Con "cualquiera disponible" (CU-07 A3) se bloquean todos los barberos candidatos por id ascendente y después el cliente.
 - **Reintentos:** la restricción única (clienteId, claveIdempotencia) hace que repetir la solicitud devuelva la cita ya creada en lugar de un duplicado.
 
 La API ejecuta estas validaciones en orden y se detiene en la primera que falle:
 
 | Orden | Validación | Código de error |
 | --- | --- | --- |
-| 1 | Usuario autenticado y con rol cliente (o personal con permiso) | AUTENTICACION\_REQUERIDA, ACCESO\_DENEGADO |
-| 2 | Datos con el formato correcto | DATOS\_INVALIDOS |
-| 3 | Barbería, servicio y barbero existen y están activos | NO\_ENCONTRADO, RECURSO\_INACTIVO |
-| 4 | El barbero ofrece ese servicio | SERVICIO\_NO\_OFRECIDO |
-| 5 | La fecha no es pasada y respeta la anticipación | HORARIO\_PASADO, ANTICIPACION\_INSUFICIENTE, FECHA\_DEMASIADO\_LEJANA |
-| 6 | La cita cabe en el horario de la barbería y del barbero | FUERA\_DE\_HORARIO |
-| 7 | Sin bloqueos ni días libres en el intervalo | BARBERO\_NO\_DISPONIBLE |
-| 8 | Sin cruce con otras citas del barbero | HORARIO\_OCUPADO |
-| 9 | El cliente no tiene otra cita que se solape ni supera su límite | CRUCE\_DEL\_CLIENTE, LIMITE\_DE\_CITAS |
+| 1 | Usuario autenticado y con rol cliente (o personal con permiso) | AUTENTICACION_REQUERIDA, ACCESO_DENEGADO |
+| 2 | Datos con el formato correcto | DATOS_INVALIDOS |
+| 3 | Barbería, servicio y barbero existen y están activos | NO_ENCONTRADO, RECURSO_INACTIVO |
+| 4 | El barbero ofrece ese servicio | SERVICIO_NO_OFRECIDO |
+| 5 | La fecha no es pasada y respeta la anticipación | HORARIO_PASADO, ANTICIPACION_INSUFICIENTE, FECHA_DEMASIADO_LEJANA |
+| 6 | La cita cabe en el horario de la barbería y del barbero | FUERA_DE_HORARIO |
+| 7 | Sin bloqueos ni días libres en el intervalo | BARBERO_NO_DISPONIBLE |
+| 8 | Sin cruce con otras citas del barbero | HORARIO_OCUPADO |
+| 9 | El cliente no tiene otra cita que se solape ni supera su límite | CRUCE_DEL_CLIENTE, LIMITE_DE_CITAS |
 
 ### 8.6 Cálculo de disponibilidad
 
@@ -836,6 +841,8 @@ La disponibilidad de un barbero para una fecha y un servicio se calcula en el ba
 
 Con "Cualquiera disponible" se calcula la disponibilidad de todos los barberos que ofrecen el servicio y se unen los horarios libres. El rendimiento exigido (RNF-01) se apoya en el índice (perfilBarberoId, iniciaEn, estado).
 
+Los días disponibles del calendario (GET /barberias/:id/disponibilidad/dias) se calculan con el mismo algoritmo; las citas y los bloqueos del rango se leen en una sola consulta cada uno y se procesan en memoria (RNF-01).
+
 ### 8.7 Integración con servicios externos
 
 La app móvil nunca se conecta directo a un servicio externo: todo pasa por la API, que guarda las credenciales como variables de entorno.
@@ -845,19 +852,55 @@ La app móvil nunca se conecta directo a un servicio externo: todo pasa por la A
 ```ts
 interface ProveedorAsesorEstilo {
   analizar(entrada: {
-    imagen: Buffer;                          // solo en memoria
-    tipoMime: 'image/jpeg' | 'image/png';
-    catalogo: { id: string; nombre: string; descripcion?: string; etiquetasEstilo?: string }[];
+    imagen: Buffer; // solo en memoria
+    tipoMime: "image/jpeg" | "image/png";
+    catalogo: {
+      id: string;
+      nombre: string;
+      descripcion?: string;
+      etiquetasEstilo?: string;
+    }[];
   }): Promise<{
-    rasgos: { formaRostro: string; tipoCabello: string; largoCabello: string; notas?: string };
-    recomendaciones: { servicioId: string; motivo: string }[];   // máximo 3, motivo ≤ 200 caracteres
+    rasgos: {
+      formaRostro: string;
+      tipoCabello: string;
+      largoCabello: string;
+      notas?: string;
+    };
+    recomendaciones: { servicioId: string; motivo: string }[]; // máximo 3, motivo ≤ 200 caracteres
   }>;
 }
 ```
 
-La API valida la respuesta del modelo con un esquema Zod, descarta servicios inexistentes o inactivos (RN-30), aplica un tiempo máximo de 15 segundos y responde IA\_NO\_DISPONIBLE si el proveedor falla. Las pruebas automáticas usan una implementación simulada de la interfaz.
+La API valida la respuesta del modelo con un esquema Zod, descarta servicios inexistentes o inactivos (RN-30), aplica un tiempo máximo de 15 segundos y responde IA_NO_DISPONIBLE si el proveedor falla. Las pruebas automáticas usan una implementación simulada de la interfaz.
 
 **Anticipo en línea (extendido).** La API crea el cobro en la pasarela (Kushki o Payphone, en modo de prueba) y la app abre el formulario seguro de la pasarela. La pasarela notifica el resultado por webhook; la API verifica la firma, registra el anticipo una sola vez (por la referencia única del cobro) y recién entonces confirma la cita.
+
+**Almacenamiento de archivos.** Las imágenes pasan por una interfaz propia, igual que el proveedor de IA. La implementación se elige con la variable ALMACEN_TIPO.
+
+```ts
+interface AlmacenArchivos {
+  guardar(clave: string, buffer: Buffer, tipoMime: string): Promise<void>;
+  urlPublica(clave: string): string;
+  urlTemporal(clave: string, segundos: number): Promise<string>;
+  eliminar(clave: string): Promise<void>;
+  listar(prefijo: string): Promise<string[]>;
+}
+```
+
+- **Implementaciones:** AlmacenLocal (desarrollo, carpeta apps/api/almacen/, ignorada en git), AlmacenMemoria (pruebas) y AlmacenS3 (producción, con @aws-sdk/client-s3 y @aws-sdk/s3-request-presigner, compatible con Cloudflare R2 o Supabase Storage).
+- **Desarrollo:** AlmacenLocal sirve sus archivos con GET /api/v1/almacen/*, una ruta que solo existe con ALMACEN_TIPO=local y nunca en producción; urlTemporal agrega un vencimiento y una firma que la ruta verifica.
+- **Visibilidad:** las fotos de referencia son privadas y solo se entregan con urlTemporal de 10 minutos. La portada y la foto del barbero son públicas (urlPublica).
+- **Subida:** multer en memoria, máximo 5 MB, solo JPEG o PNG verificados por contenido (no por extensión). El servidor recomprime con sharp a 1024 px en el lado mayor, JPEG calidad 80, sin metadatos (elimina el GPS).
+- **Errores:** un archivo mayor de 5 MB o que no sea JPEG o PNG responde DATOS_INVALIDOS (422). Adjuntar una foto a una cita que no esté activa o que ya inició responde TRANSICION_INVALIDA (409). IMAGEN_NO_VALIDA queda solo para el rostro del asesor.
+- **Claves:** citas/<citaId>/referencia-<uuid>.jpg, barberias/<barberiaId>/portada-<uuid>.jpg y barberos/<perfilBarberoId>/foto-<uuid>.jpg.
+- **Foto del rostro:** la del asesor nunca pasa por AlmacenArchivos (RN-27).
+- **Estado final:** al llegar una cita a estado final, incluida la cancelación por anticipo vencido, archivoFotoReferencia se pone en nulo dentro de la misma transacción y el archivo se elimina después del commit. Si falla la eliminación, se registra en el log y la tarea limpiarArchivos lo reintenta.
+
+**Tareas programadas.** Viven en apps/api/src/tareas/, sin dependencias nuevas: un setInterval cada 60 segundos iniciado solo en servidor.ts, nunca durante las pruebas. Son funciones puras exportadas, para probarlas sin esperar al intervalo. El MVP corre una sola instancia del servidor.
+
+- **vencerAnticipos (cada 60 segundos):** pasa a CANCELADA las citas PENDIENTE con anticipoVenceEn < ahora, pone archivoFotoReferencia en nulo, libera el horario y audita (RN-34).
+- **limpiarArchivos (una vez por hora, en el mismo intervalo):** reintenta eliminar las fotos de referencia de citas en estado final. Como la clave ya está en nulo, recorre citas/ con listar y elimina los archivos de citas finales o que no coinciden con su archivoFotoReferencia.
 
 ### 8.8 Tecnologías y herramientas
 
@@ -865,12 +908,15 @@ La API valida la respuesta del modelo con un esquema Zod, descarta servicios ine
 | --- | --- | --- |
 | Backend | Node.js LTS, Express, TypeScript | API REST |
 | Backend | Zod | Validación de entradas con esquemas compartidos |
-| Backend | bcrypt o argon2 | Hash de contraseñas |
+| Backend | bcrypt (paquete bcryptjs, costo 12) | Hash de contraseñas |
+| Backend | multer | Subida de imágenes en memoria |
+| Backend | sharp | Recompresión de imágenes y eliminación de metadatos |
+| Backend | @aws-sdk/client-s3, @aws-sdk/s3-request-presigner | Almacenamiento compatible con S3 y URL temporales |
 | Backend | jsonwebtoken | Tokens de acceso sin sesiones en el servidor |
 | Datos | MySQL 8, Prisma ORM | Almacenamiento, consultas y migraciones |
 | IA | Gemini, Claude u OpenAI | Análisis de la foto y recomendación |
 | Pagos | Kushki o Payphone en modo de prueba | Anticipo sin dinero real |
-| Calidad | Vitest o Jest, Supertest | Pruebas de lógica y de API |
+| Calidad | Vitest, Supertest | Pruebas de lógica y de API |
 | Calidad | ESLint, Prettier | Código consistente, clave al trabajar con agentes de IA |
 | Calidad | Bruno | Colección de pruebas de la API versionada con Git |
 | Despliegue | Railway, Render o VPS; EAS Build y Submit; Google Play Console | Servidor con HTTPS y publicación de la app |
@@ -880,7 +926,7 @@ Se fijan las versiones principales (Node.js LTS, SDK de Expo, Prisma y MySQL 8) 
 
 ### 8.9 Organización del repositorio
 
-Un único repositorio Git (monorepo) con la app, la API y la documentación. Si Expo y los workspaces de npm dan problemas, las dos aplicaciones pueden quedar independientes dentro del mismo repositorio y compartir tipos de forma sencilla.
+Un único repositorio Git (monorepo) con la app, la API y la documentación, organizado con npm workspaces (`apps/*`, `paquetes/*`): un solo `npm install` en la raíz, y los scripts se corren con `npm run <script> -w apps/api` o `-w apps/movil`. Si Expo y los workspaces de npm dan problemas, las dos aplicaciones pueden quedar independientes dentro del mismo repositorio y compartir tipos de forma sencilla.
 
 ```text
 barberly/
@@ -893,6 +939,7 @@ barberly/
 │           └── reservas/       # Un módulo: rutas, controlador, servicio y pruebas
 ├── paquetes/
 │   └── compartido/             # Tipos y esquemas Zod comunes
+├── assets/marca/               # Logos e ícono
 ├── docs/                       # DERCAS y documentación
 ├── pruebas/                    # Pruebas de extremo a extremo
 ├── AGENTS.md
@@ -928,16 +975,16 @@ El modelo relacional se define con Prisma sobre MySQL 8 y tiene 13 entidades; la
 | Usuario | usuarios | La cuenta de cualquier persona: cliente, barbero o propietario |
 | Barberia | barberias | Datos del negocio y sus reglas de cancelación, anticipación y anticipo |
 | Membresia | membresias | El rol de un usuario dentro de una barbería |
-| PerfilBarbero | perfiles\_barbero | Los datos visibles del barbero dentro de una barbería |
+| PerfilBarbero | perfiles_barbero | Los datos visibles del barbero dentro de una barbería |
 | Servicio | servicios | El catálogo: precio, duración y etiquetas de estilo |
-| ServicioBarbero | servicios\_barbero | Qué servicios ofrece cada barbero |
-| HorarioAtencion | horarios\_atencion | El horario semanal de la barbería o de un barbero |
+| ServicioBarbero | servicios_barbero | Qué servicios ofrece cada barbero |
+| HorarioAtencion | horarios_atencion | El horario semanal de la barbería o de un barbero |
 | Bloqueo | bloqueos | Descansos, días libres, vacaciones y cierres |
 | Cita | citas | La reserva, con su precio y duración congelados |
-| ConsultaEstilo | consultas\_estilo | El resultado del asesor de IA, sin la foto |
+| ConsultaEstilo | consultas_estilo | El resultado del asesor de IA, sin la foto |
 | Pago | pagos | El pago final o el anticipo de una cita |
-| TokenRenovacion | tokens\_renovacion | Las sesiones abiertas por dispositivo |
-| RegistroAuditoria | registros\_auditoria | La bitácora de acciones críticas |
+| TokenRenovacion | tokens_renovacion | Las sesiones abiertas por dispositivo |
+| RegistroAuditoria | registros_auditoria | La bitácora de acciones críticas |
 
 #### Usuario
 
@@ -960,12 +1007,13 @@ El modelo relacional se define con Prisma sobre MySQL 8 y tiene 13 entidades; la
 | descripcion | texto (500) | Opcional |
 | direccion | texto (200) | Obligatorio |
 | telefono | texto (20) | Obligatorio |
-| urlPortada | texto | Opcional |
+| archivoPortada | texto | Opcional; clave del archivo, no una URL. La API responde urlPortada, generada al leer |
 | zonaHoraria | texto | Por defecto America/Guayaquil |
 | minutosMinCancelacion | entero | Por defecto 120 (RN-13) |
 | minutosMinAnticipacion | entero | Por defecto 30 (RN-06) |
 | diasMaxAnticipacion | entero | Por defecto 30 (RN-07) |
 | publicada | booleano | Calculado según los requisitos de publicación |
+| activo | booleano | Por defecto verdadero (borrado lógico). El listado público muestra solo barberías con activo y publicada verdaderos; reservar en una barbería inactiva responde RECURSO_INACTIVO |
 | anticipoActivo | booleano | Por defecto falso |
 | montoAnticipo | decimal (10,2) | Obligatorio y mayor que 0 si anticipoActivo es verdadero |
 
@@ -979,8 +1027,9 @@ El modelo relacional se define con Prisma sobre MySQL 8 y tiene 13 entidades; la
 | Membresia | estado | enumeración | INVITADO, ACTIVO o INACTIVO |
 | PerfilBarbero | id | UUID | Clave primaria |
 | PerfilBarbero | membresiaId | UUID | Único; vincula al barbero con la barbería |
+| PerfilBarbero | barberiaId | UUID | Clave foránea; igual a la de su membresía |
 | PerfilBarbero | nombreVisible | texto (80) | Nombre que ven los clientes |
-| PerfilBarbero | urlFoto | texto | Opcional |
+| PerfilBarbero | archivoFoto | texto | Opcional; clave del archivo, no una URL. La API responde urlFoto, generada al leer |
 | PerfilBarbero | puedeEditarHorario | booleano | Por defecto falso |
 
 #### Servicio y ServicioBarbero
@@ -996,6 +1045,7 @@ El modelo relacional se define con Prisma sobre MySQL 8 y tiene 13 entidades; la
 | Servicio | duracionMinutos | entero | Múltiplo de 15 entre 15 y 240 |
 | Servicio | activo | booleano | Por defecto verdadero |
 | ServicioBarbero | perfilBarberoId, servicioId | UUID | Clave compuesta: qué servicios ofrece cada barbero |
+| ServicioBarbero | barberiaId | UUID | Clave foránea; el servicio y el perfil son de esta misma barbería (lo valida el servicio de la API) |
 
 #### HorarioAtencion y Bloqueo
 
@@ -1025,7 +1075,7 @@ El modelo relacional se define con Prisma sobre MySQL 8 y tiene 13 entidades; la
 | notas | texto (200) | Opcional |
 | canceladaPorId, canceladaEn, motivoCancelacion | UUID, fecha, texto | Se llenan solo al cancelar (RN-17) |
 | claveIdempotencia | texto | Opcional, única por cliente |
-| urlFotoReferencia | texto | Opcional; se elimina al llegar a un estado final (RN-31) |
+| archivoFotoReferencia | texto | Opcional; clave del archivo, no una URL. La API responde urlFotoReferencia, generada al leer. Se pone en nulo al llegar a un estado final (RN-31) |
 | anticipoVenceEn | fecha y hora | Solo en citas pendientes por anticipo (RN-34) |
 
 #### ConsultaEstilo y Pago
@@ -1063,7 +1113,7 @@ El modelo relacional se define con Prisma sobre MySQL 8 y tiene 13 entidades; la
 - Un Usuario tiene muchas ConsultaEstilo; una consulta pertenece a una barbería y puede vincularse a una cita.
 - Una Cita tiene como máximo un Pago FINAL y un Pago ANTICIPO.
 
-&#91;embedded content: modelo de datos · 12 de 13 entidades\]
+_Diagrama no incluido en esta versión: modelo de datos · 12 de 13 entidades._
 
 El diagrama muestra las claves foráneas principales; Cita es el centro del modelo y los pagos y las consultas de estilo cuelgan de ella.
 
@@ -1079,7 +1129,9 @@ El diagrama muestra las claves foráneas principales; Cita es el centro del mode
 | Evitar reintentos duplicados | Restricción única en Cita (clienteId, claveIdempotencia) |
 | Evitar membresía duplicada | Restricción única en Membresia (usuarioId, barberiaId) |
 | Idempotencia de webhooks | Restricción única en Pago.referenciaPasarela |
+| Evitar pagos duplicados | Restricción única en Pago (citaId, tipo): como máximo un FINAL y un ANTICIPO por cita |
 | Estadísticas de pagos | Índice en Pago (barberiaId, creadoEn) |
+| Listar barberos de una barbería | Índice en PerfilBarbero (barberiaId) |
 | Límite diario del asesor | Índice en ConsultaEstilo (usuarioId, creadoEn) |
 | Integridad referencial | Claves foráneas con restricción de borrado, sin borrado en cascada para citas |
 
@@ -1179,7 +1231,7 @@ Roles: C = cliente, B = barbero, P = propietario, Pub = cualquier usuario autent
 
 | Método | Ruta | Función | Rol | Éxito |
 | --- | --- | --- | --- | --- |
-| POST | /autenticacion/registro | Registrar usuario | Pública | 201 |
+| POST | /autenticacion/registro | Registrar usuario y abrir sesión (devuelve los mismos tokens que iniciar sesión) | Pública | 201 |
 | POST | /autenticacion/iniciar-sesion | Iniciar sesión | Pública | 200 |
 | POST | /autenticacion/renovar | Renovar token de acceso | Pública | 200 |
 | POST | /autenticacion/cerrar-sesion | Cerrar sesión | Pub | 204 |
@@ -1189,7 +1241,7 @@ Roles: C = cliente, B = barbero, P = propietario, Pub = cualquier usuario autent
 | GET | /invitaciones/mias | Ver mis invitaciones | Pub | 200 |
 | PATCH | /invitaciones/:id | Aceptar o rechazar invitación | Pub | 200 |
 
-#### Barberías y consulta pública
+#### Barberías y consulta
 
 | Método | Ruta | Función | Rol | Éxito |
 | --- | --- | --- | --- | --- |
@@ -1198,6 +1250,8 @@ Roles: C = cliente, B = barbero, P = propietario, Pub = cualquier usuario autent
 | GET | /barberias/:id/servicios | Servicios activos | Pub | 200 |
 | GET | /barberias/:id/barberos | Barberos activos | Pub | 200 |
 | GET | /barberias/:id/disponibilidad | Horarios libres (servicioId, barberoId opcional, fecha) | Pub | 200 |
+| GET | /barberias/:id/disponibilidad/dias | Días con horario libre para el calendario (servicioId, barberoId opcional, desde y hasta en fechas locales AAAA-MM-DD, máximo 31 días). Respuesta: { datos: [{ fecha, disponible }] } | Pub | 200 |
+| GET | /almacen/* | Archivos de AlmacenLocal; solo en desarrollo (sección 8.7) | Pública | 200 |
 
 #### Reservas
 
@@ -1214,8 +1268,8 @@ Roles: C = cliente, B = barbero, P = propietario, Pub = cualquier usuario autent
 | Método | Ruta | Función | Rol | Éxito |
 | --- | --- | --- | --- | --- |
 | GET | /barberias/:id/agenda | Agenda (fecha, o desde y hasta) | B, P | 200 |
-| PATCH | /citas/:id/estado | Marcar completada o ausente | B, P | 200 |
-| POST | /barberias/:id/bloqueos | Crear bloqueo o día libre | B (con permiso), P | 201 |
+| PATCH | /citas/:id/estado | Marcar ausente, o completada con su pago en una sola transacción (cuerpo: metodo, monto y motivoAjuste si difiere del sugerido) | B, P | 200 |
+| POST | /barberias/:id/bloqueos | Crear bloqueo; un día libre exige permiso al barbero | B, P | 201 |
 | GET | /barberias/:id/bloqueos | Listar bloqueos | B, P | 200 |
 | DELETE | /barberias/:id/bloqueos/:bloqueoId | Quitar un bloqueo | B (propio), P | 204 |
 
@@ -1225,11 +1279,15 @@ Roles: C = cliente, B = barbero, P = propietario, Pub = cualquier usuario autent
 | --- | --- | --- | --- | --- |
 | POST | /barberias | Crear barbería | Pub | 201 |
 | PATCH | /barberias/:id | Editar datos y reglas | P | 200 |
+| PUT | /barberias/:id/portada | Subir la portada (imagen en multipart) | P | 200 |
+| DELETE | /barberias/:id/portada | Quitar la portada | P | 204 |
+| PUT | /barberias/:id/barberos/:barberoId/foto | Subir la foto del barbero (imagen en multipart) | B (propia), P | 200 |
+| DELETE | /barberias/:id/barberos/:barberoId/foto | Quitar la foto del barbero | B (propia), P | 204 |
 | POST | /barberias/:id/servicios | Crear servicio | P | 201 |
 | PATCH | /barberias/:id/servicios/:servicioId | Editar, desactivar o reactivar servicio | P | 200 |
 | PUT | /barberias/:id/horarios | Reemplazar el horario de atención | P | 200 |
 | GET | /barberias/:id/personal | Listar personal e invitaciones | P | 200 |
-| POST | /barberias/:id/personal/invitaciones | Invitar barbero | P | 201 |
+| POST | /barberias/:id/personal/invitaciones | Invitar barbero; misma respuesta si el correo no está registrado (CU-20 A1) | P | 201 |
 | PATCH | /barberias/:id/personal/:membresiaId | Activar, desactivar o asignar servicios | P | 200 |
 | GET | /barberias/:id/citas | Todas las citas de la barbería | P | 200 |
 | PATCH | /citas/:id/reasignar | Reasignar cita a otro barbero | P | 200 |
@@ -1246,7 +1304,6 @@ Roles: C = cliente, B = barbero, P = propietario, Pub = cualquier usuario autent
 | PUT | /citas/:id/foto-referencia | Adjuntar la foto de referencia | C | 200 |
 | DELETE | /citas/:id/foto-referencia | Quitar la foto de referencia | C | 204 |
 | GET | /citas/:id/ficha-estilo | Ficha de estilo de la cita | B, P | 200 |
-| POST | /citas/:id/pagos | Registrar el pago de una cita | B, P | 201 |
 | PATCH | /pagos/:id | Corregir un pago con motivo | P | 200 |
 | GET | /barberias/:id/pagos | Pagos (desde, hasta, barberoId, metodo) | P | 200 |
 | POST | /citas/:id/anticipo | Crear el cobro del anticipo | C | 201 |
@@ -1290,12 +1347,11 @@ Respuesta 201:
 | 200 | Consulta o actualización correcta |
 | 201 | Recurso creado |
 | 204 | Operación correcta sin cuerpo |
-| 400 | Solicitud mal formada |
 | 401 | Falta autenticación o el token venció |
 | 403 | Autenticado pero sin permiso para la acción |
 | 404 | El recurso no existe o pertenece a otra barbería |
 | 409 | Conflicto de negocio (horario ocupado, cita en estado final) |
-| 422 | Datos con formato correcto que violan una regla de validación |
+| 422 | JSON mal formado, campos extra o datos que no cumplen una validación |
 | 429 | Demasiadas solicitudes |
 | 500 | Error interno (mensaje genérico; el detalle solo en logs) |
 | 503 | Un servicio externo (IA o pasarela) no respondió a tiempo |
@@ -1310,8 +1366,8 @@ La app muestra una navegación distinta según el rol activo. Los prototipos se 
 | --- | --- | --- |
 | Todos |  | Bienvenida, Inicio de sesión, Registro, Perfil (editar, cambiar contraseña, cerrar sesión, cambiar de barbería o rol), Invitaciones |
 | Cliente | Explorar, Mis citas, Perfil | Explorar, Detalle de barbería, Reserva (servicio, barbero, fecha y hora, resumen), Reserva exitosa, Mis citas (Próximas e Historial), Detalle de cita, Descubre tu estilo, Recomendaciones, Pago del anticipo |
-| Barbero | Hoy, Semana, Perfil | Hoy (próxima cita, línea de tiempo, bloqueos), Semana, Detalle de cita con ficha de estilo, Bloquear horario, Mi disponibilidad, Registrar pago |
-| Propietario | Resumen, Agenda, Gestión, Perfil | Resumen (ingresos y ocupación de hoy, avisos), Agenda de la barbería, Gestión (datos, servicios, personal, horarios, reglas, pagos, anticipo), Estadísticas |
+| Barbero | Hoy, Semana, Perfil | Hoy (próxima cita, línea de tiempo, bloqueos), Semana, Detalle de cita con ficha de estilo, Bloquear horario, Mi disponibilidad, Registrar pago, Registrar cita |
+| Propietario | Resumen, Agenda, Gestión, Perfil | Resumen (ingresos y ocupación de hoy, avisos), Agenda de la barbería, Gestión (datos, servicios, personal, horarios, reglas, pagos, anticipo), Estadísticas (se abre desde Resumen y Gestión) |
 
 Estados y mensajes comunes:
 
@@ -1331,11 +1387,11 @@ Estados y mensajes comunes:
 - Flujo de reserva de máximo cinco pasos, con barra de progreso.
 - Botones principales al alcance del pulgar, con tamaño táctil mínimo de 44 por 44 puntos.
 - Contraste suficiente y texto legible sin zoom.
-- El barbero marca una cita como completada en dos toques desde la vista diaria.
+- Desde la vista diaria, dos toques llevan al barbero a Registrar pago (abrir la cita y tocar Completar); al confirmar, la cita queda completada con su pago.
 
 ### 10.7 Documentación y pruebas de la API
 
-La API se documenta con una especificación OpenAPI y se mantiene una colección de Bruno (o Postman) con un caso por endpoint y por cada error de negocio relevante.
+La API se documenta con una especificación OpenAPI generada desde los esquemas Zod con @asteasolutions/zod-to-openapi: cada módulo declara sus rutas en documentacion.ts y en desarrollo se sirve en GET /api/v1/documentacion. Además se mantiene una colección de Bruno (o Postman) con un caso por endpoint y por cada error de negocio relevante.
 
 ## 11. Seguridad y privacidad
 
@@ -1345,10 +1401,10 @@ El riesgo de seguridad más grave de Barberly es que el propietario de una barbe
 
 | Amenaza | Control | Requisitos |
 | --- | --- | --- |
-| Fuga de datos entre barberías | Filtro por barbería obtenido de la membresía, nunca del cliente; respuesta 404 en lugar de 403 | SEG-04, RNF-05, HU-SEG-01 |
+| Fuga de datos entre barberías | Personal: barbería verificada contra su membresía. Cliente: sus citas y consultas filtradas por su usuario. Un barberiaId recibido nunca da acceso a datos internos; respuesta 404 en lugar de 403 | SEG-04, RNF-05, HU-SEG-01 |
 | Doble reserva por solicitudes simultáneas | Transacción con bloqueo y restricción única de respaldo | SEG-07, RNF-07 |
 | Escalada de privilegios | Autorización por rol en cada solicitud, consultando la membresía vigente | SEG-03, SEG-05 |
-| Filtración de la base de datos | Contraseñas con hash bcrypt o argon2; tokens de renovación guardados como hash | SEG-06, RNF-04 |
+| Filtración de la base de datos | Contraseñas con hash bcrypt (bcryptjs, costo 12); tokens de renovación guardados como hash | SEG-06, RNF-04 |
 | Robo de token en el teléfono | Almacenamiento seguro (expo-secure-store); token de acceso de 15 minutos; renovación revocable por dispositivo | AUT-03, AUT-04 |
 | Fuerza bruta en el inicio de sesión | Límite por IP y por cuenta; espera temporal tras 5 intentos fallidos | SEG-09 |
 | Inyección SQL | Consultas parametrizadas con Prisma y validación de entrada con esquemas | SEG-01 |
@@ -1370,7 +1426,7 @@ Toda solicitud protegida pasa por estas capas en orden; si una falla, se corta y
 | 2 | Autenticación: valida el token de acceso | 401 |
 | 3 | Contexto de barbería: identifica la barbería activa y la membresía del usuario | 404 o 403 |
 | 4 | Autorización: comprueba que el rol permita la acción | 403 |
-| 5 | Validación de datos: revisa cuerpo, parámetros y consulta contra el esquema | 400 o 422 |
+| 5 | Validación de datos: revisa cuerpo, parámetros y consulta contra el esquema | 422 |
 | 6 | Regla de propiedad: el recurso pertenece a la barbería o al usuario | 404 |
 | 7 | Lógica de negocio: aplica las reglas del módulo | 409 o 422 |
 | 8 | Auditoría: registra la acción crítica | Sin efecto para el usuario |
@@ -1378,7 +1434,7 @@ Toda solicitud protegida pasa por estas capas en orden; si una falla, se corta y
 ### 11.3 Aislamiento entre barberías
 
 - Todo modelo que pertenezca a una barbería guarda su identificador de barbería.
-- Las consultas del backend se construyen siempre con el filtro de barbería de la membresía; un middleware central lo aplica para que ningún endpoint dependa de recordarlo.
+- Las consultas del personal se construyen siempre con el filtro de barbería de su membresía; un middleware central lo aplica para que ningún endpoint dependa de recordarlo. El cliente no tiene membresía: el barberiaId que envía solo identifica una barbería pública, y sus citas y consultas se filtran por su usuario.
 - Si un recurso existe pero es de otra barbería, la API responde 404 para no revelar su existencia.
 - Pruebas automáticas dedicadas: cada endpoint se prueba con un usuario de otra barbería y debe fallar.
 - Los permisos por barbería no viajan en el token: el backend los consulta en cada solicitud, para que un cambio de rol surta efecto de inmediato.
@@ -1450,8 +1506,8 @@ El MVP se da por cerrado cuando los 14 casos de prueba obligatorios pasan, las f
 
 | Nivel | Qué se prueba | Herramienta | Prioridad |
 | --- | --- | --- | --- |
-| Unitarias | Reglas de negocio: disponibilidad, solapamiento, transiciones de estado, validación de cancelación | Vitest o Jest | Alta |
-| Integración de API | Endpoints completos contra una base de prueba: permisos, aislamiento entre barberías, errores de negocio | Supertest con Vitest o Jest | Alta |
+| Unitarias | Reglas de negocio: disponibilidad, solapamiento, transiciones de estado, validación de cancelación | Vitest | Alta |
+| Integración de API | Endpoints completos contra una base de prueba: permisos, aislamiento entre barberías, errores de negocio | Supertest con Vitest | Alta |
 | Concurrencia | Varias reservas simultáneas al mismo horario | Script con solicitudes en paralelo | Alta |
 | Servicios externos | Asesor con proveedor simulado; webhooks con firmas de prueba | Dobles de prueba y sandbox de la pasarela | Alta |
 | Manual en dispositivo | Recorridos completos por rol en Android con Expo Go | Lista de verificación | Alta |
@@ -1464,18 +1520,18 @@ El MVP se da por cerrado cuando los 14 casos de prueba obligatorios pasan, las f
 | Código | Caso | Resultado esperado | Trazas |
 | --- | --- | --- | --- |
 | PO-01 | Reservar en un horario libre | Éxito: cita CONFIRMADA | RN-12, HU-RES-01 |
-| PO-02 | Reservar en un horario ocupado | HORARIO\_OCUPADO | RN-04, RN-11 |
+| PO-02 | Reservar en un horario ocupado | HORARIO_OCUPADO | RN-04, RN-11 |
 | PO-03 | Reservar con un servicio que termina justo cuando empieza otra cita | Éxito, sin solapamiento | RN-04 |
-| PO-04 | Reservar en el pasado, fuera de horario y en día libre | HORARIO\_PASADO, FUERA\_DE\_HORARIO y BARBERO\_NO\_DISPONIBLE respectivamente | RN-05, RN-06, RN-26 |
+| PO-04 | Reservar en el pasado, fuera de horario y en día libre | HORARIO_PASADO, FUERA_DE_HORARIO y BARBERO_NO_DISPONIBLE respectivamente | RN-05, RN-06, RN-26 |
 | PO-05 | Veinte solicitudes simultáneas al mismo horario | Se crea una sola cita | RNF-07, HU-RES-04 |
 | PO-06 | Usuario de otra barbería consulta, edita o cancela recursos ajenos | 404 en todos los casos | RNF-05, HU-SEG-01 |
 | PO-07 | Un cliente intenta acciones de barbero o propietario | 403 | Matriz 2.4 |
-| PO-08 | Cancelación dentro y fuera del tiempo mínimo | Éxito dentro; CANCELACION\_TARDIA fuera | RN-13, HU-RES-02 |
-| PO-09 | Cambiar una cita en estado final | TRANSICION\_INVALIDA | RN-16 |
-| PO-10 | Desactivar un barbero con citas futuras | BARBERO\_CON\_CITAS | RN-25 |
+| PO-08 | Cancelación dentro y fuera del tiempo mínimo | Éxito dentro; CANCELACION_TARDIA fuera | RN-13, HU-RES-02 |
+| PO-09 | Cambiar una cita en estado final | TRANSICION_INVALIDA | RN-16 |
+| PO-10 | Desactivar un barbero con citas futuras | BARBERO_CON_CITAS | RN-25 |
 | PO-11 | Consulta al asesor con el proveedor simulado | Hasta 3 recomendaciones, todas del catálogo de la barbería | RN-30, HU-IA-01 |
-| PO-12 | Consulta al asesor por encima del límite diario | LIMITE\_IA\_ALCANZADO | RN-29 |
-| PO-13 | Registrar el pago de una cita no completada o por segunda vez | CITA\_NO\_COMPLETADA o PAGO\_YA\_REGISTRADO | RN-32, HU-PAG-01 |
+| PO-12 | Consulta al asesor por encima del límite diario | LIMITE_IA_ALCANZADO | RN-29 |
+| PO-13 | Completar una cita ya completada | TRANSICION_INVALIDA y sigue existiendo un solo Pago FINAL | RN-16, RN-32, HU-PAG-01 |
 | PO-14 | Revisar el servidor tras una consulta al asesor | No queda copia de la foto | RN-27, HU-IA-04, RNF-20 |
 
 Casos adicionales recomendados por este DERCAS: reintento con la misma clave de idempotencia (una sola cita), reserva de un horario cancelado previamente (debe poder tomarse), anticipo vencido que libera el horario, y webhook duplicado o con firma inválida.
@@ -1555,7 +1611,7 @@ La duración real depende del tiempo del equipo y del calendario del curso; se f
 | --- | --- | --- |
 | 0. Preparación | Repositorio y monorepo, Node, Expo, TypeScript, MySQL, Prisma, AGENTS.md, linter, formato, primera migración vacía | Proyecto que compila y corre en el teléfono |
 | 1. Base y autenticación | Modelo de datos completo, semillas, registro, inicio de sesión, renovación, roles y membresías | Usuarios que entran según su rol |
-| 2. Catálogo y administración | Registro de barbería, servicios con etiquetas de estilo, horarios, personal, publicación y consulta pública | Barbería configurable y visible para clientes |
+| 2. Catálogo y administración | Registro de barbería, servicios con etiquetas de estilo, horarios, personal, publicación y consulta | Barbería configurable y visible para clientes |
 | 3. Reservas | Disponibilidad, creación y cancelación, validaciones, concurrencia, citas próximas e historial | Flujo de reserva completo y seguro |
 | 4. Agenda del barbero y pagos | Vistas diaria y semanal, cambio de estados, bloqueos, días libres, registro del pago | Barberos que operan su jornada y cobran desde la app |
 | 5. Asesor de estilo con IA | Consentimiento, captura y compresión, integración con el modelo, recomendaciones reservables, ficha de estilo, límite diario | El diferencial funcionando de punta a punta |
@@ -1564,6 +1620,8 @@ La duración real depende del tiempo del equipo y del calendario del curso; se f
 | 8. Piloto y prueba cerrada | Pruebas con barberías reales y prueba cerrada de Google Play con 12 testers durante 14 días | Informe de resultados |
 | 9. Publicación | Ficha de la tienda, política de privacidad, acceso a producción | Barberly en Google Play |
 | Extendida. Anticipo en línea | Pasarela en modo de prueba, webhooks, vencimiento y devoluciones | Reservas con anticipo demostrables sin dinero real |
+
+La Fase 0 no se orquesta: sigue docs/especificaciones/preparacion.md en la sesión principal. Si no existe apps/api/src/app.ts, avisa al usuario y no delegues.
 
 ## 14. Riesgos, decisiones abiertas y trabajo futuro
 
@@ -1608,6 +1666,14 @@ Los riesgos que más pueden afectar el proyecto son el alcance excesivo para el 
 | 13 | ¿Qué proveedor de IA usa el asesor? | Comparar Gemini, Claude y OpenAI con las mismas 10 fotos y elegir por calidad y costo | Equipo |
 | 14 | ¿Qué pasarela se usa para el anticipo? | Kushki o Payphone, según su entorno de pruebas | Equipo |
 | 15 | ¿Monto del anticipo y si la barbería lo quiere? | Opcional por barbería; propuesta de 2 USD | Barbería piloto |
+| 16 | ¿Se retira POST /citas/:id/pagos? | Resuelta: se retira; completar y pagar es una sola operación (PATCH /citas/:id/estado) | Equipo |
+| 17 | ¿Cómo evitar que la lista de personal revele qué correos tienen cuenta? | Sin definir: GET /barberias/:id/personal muestra las invitaciones, y una fila nueva delata la cuenta aunque el mensaje de CU-20 A1 sea neutro | Equipo y docente |
+| 18 | ¿Dónde se guardan las imágenes? | Resuelta: interfaz AlmacenArchivos con implementaciones local, en memoria y S3 (sección 8.7) | Equipo |
+| 19 | ¿Una segunda foto de referencia reemplaza a la anterior? | Resuelta: la reemplaza y se elimina la vieja (RN-31) | Equipo |
+| 20 | ¿Cómo sabe el calendario qué días tienen horarios? | Resuelta: GET /barberias/:id/disponibilidad/dias (secciones 8.6 y 10.2) | Equipo |
+| 21 | ¿Cómo se mantiene la especificación OpenAPI? | Resuelta: se genera desde los esquemas Zod (sección 10.7) | Equipo |
+| 22 | ¿Cómo se ejecutan las tareas programadas? | Resuelta: setInterval en servidor.ts, sin dependencias nuevas y con una sola instancia (sección 8.7) | Equipo |
+| 23 | ¿Qué proveedor S3 se usa en producción? | Cloudflare R2 o Supabase Storage; se decide al desplegar | Equipo |
 
 ### 14.3 Inconsistencias entre los documentos fuente
 
@@ -1623,6 +1689,18 @@ Al consolidar el informe base y la especificación detallada aparecieron diferen
 | Restricción única de respaldo | Una restricción simple sobre (barbero, inicio) impediría reutilizar un horario cancelado | Columna generada que solo cuenta citas activas (sección 8.5) |
 | Número de entidades | El informe base cuenta 11; el modelo detallado añade TokenRenovacion y RegistroAuditoria | 13 entidades (sección 9) |
 | Idioma de los nombres | Los documentos fuente nombran entidades, campos, rutas y errores en inglés | Todo en español salvo lo que impone la tecnología (sección 1.5) |
+| Foto de usuario | AUT-05 pedía editar la foto, pero Usuario no tiene ese campo | Se quita del MVP y pasa a funcionalidades futuras (sección 14.4) |
+| Permiso para bloquear | CU-14 dejaba bloquear rangos sin permiso; la matriz y la API exigían permiso para todo bloqueo | Rangos puntuales para todo barbero; días libres y horario base con permiso (sección 2.4) |
+| Consulta pública | El título de la sección 10.2 decía "consulta pública", pero sus rutas exigen sesión | Exigen sesión; se corrige el título (sección 4.7) |
+| Sesión tras el registro | HU-AUT-01 entra a la app, pero la ruta no decía si devolvía tokens | El registro abre sesión y devuelve los tokens |
+| Cita manual del barbero | La matriz de permisos negaba crear citas al barbero; RES-16 y CU-25 se lo permiten | El barbero registra citas de clientes sin cuenta en su propia agenda (secciones 2.4 y 10.5) |
+| barberiaId en el personal | La sección 11.3 exige guardar la barbería en todo modelo que le pertenece; PerfilBarbero y ServicioBarbero no la tenían | Se agrega barberiaId a ambos (secciones 9.2 y 9.4) |
+| Barbería activa | BUS-01 y RECURSO_INACTIVO hablan de barberías activas, pero Barberia no tenía ese campo | Se agrega activo; el listado público exige activo y publicada (sección 9.2) |
+| Registro del pago | Completar ya exigía el pago y POST /citas/:id/pagos lo duplicaba | Se retiran la ruta y CITA_NO_COMPLETADA; el pago se registra con PATCH /citas/:id/estado, con único (citaId, tipo) de respaldo |
+| HTTP 400 | La sección 10.4 definía 400 sin código en el anexo B | Todo error de validación es 422 DATOS_INVALIDOS (secciones 10.4 y 11.2) |
+| Herramienta de pruebas | Las secciones 8.8 y 12.1 dejaban elegir entre Vitest y Jest | Vitest + Supertest |
+| Hash de contraseñas | Las secciones 8.8 y 11.1 dejaban elegir entre bcrypt y argon2 | bcrypt con el paquete bcryptjs, costo 12 |
+| Organización del monorepo | Los workspaces de npm eran solo una posibilidad | npm workspaces (`apps/*`, `paquetes/*`); se conserva la alternativa de aplicaciones independientes (sección 8.9) |
 
 ### 14.4 Funcionalidades futuras
 
@@ -1635,6 +1713,7 @@ Al consolidar el informe base y la especificación detallada aparecieron diferen
 - Aviso de "ya toca tu corte" según la frecuencia de visitas.
 - Resumen semanal del negocio redactado por IA.
 - Reseñas y calificaciones; galería de trabajos de cada barbero.
+- Foto de perfil del usuario.
 - Citas recurrentes y citas con varios servicios combinados.
 - Promociones y programas de fidelidad automatizados.
 - Panel web para propietarios y múltiples sucursales por propietario.
@@ -1676,33 +1755,32 @@ Los términos del proyecto están definidos en la sección 1.4.
 
 | Código | HTTP | Significado |
 | --- | --- | --- |
-| DATOS\_INVALIDOS | 422 | Algún campo no cumple su validación |
-| AUTENTICACION\_REQUERIDA | 401 | Falta el token o es inválido |
-| TOKEN\_VENCIDO | 401 | El token de acceso venció |
-| ACCESO\_DENEGADO | 403 | El rol no permite la acción |
-| NO\_ENCONTRADO | 404 | Recurso inexistente o de otra barbería |
-| CORREO\_REGISTRADO | 409 | Ya existe una cuenta con ese correo |
-| CREDENCIALES\_INVALIDAS | 401 | Correo o contraseña incorrectos |
-| HORARIO\_OCUPADO | 409 | El horario ya fue reservado |
-| HORARIO\_PASADO | 422 | El horario ya pasó |
-| ANTICIPACION\_INSUFICIENTE | 422 | No cumple la anticipación mínima |
-| FECHA\_DEMASIADO\_LEJANA | 422 | Supera la anticipación máxima |
-| FUERA\_DE\_HORARIO | 422 | Fuera del horario de atención |
-| BARBERO\_NO\_DISPONIBLE | 409 | El barbero tiene un bloqueo o día libre |
-| SERVICIO\_NO\_OFRECIDO | 422 | El barbero no ofrece ese servicio |
-| RECURSO\_INACTIVO | 409 | Servicio, barbero o barbería desactivados |
-| CRUCE\_DEL\_CLIENTE | 409 | El cliente ya tiene una cita que se solapa |
-| LIMITE\_DE\_CITAS | 409 | El cliente superó el máximo de citas activas |
-| CANCELACION\_TARDIA | 409 | Pasó el tiempo límite para cancelar |
-| TRANSICION\_INVALIDA | 409 | La cita no puede cambiar a ese estado |
-| BARBERO\_CON\_CITAS | 409 | El barbero tiene citas futuras sin resolver |
-| DEMASIADAS\_SOLICITUDES | 429 | Demasiados intentos |
-| CONSENTIMIENTO\_IA\_REQUERIDO | 403 | Falta el consentimiento para usar el asesor |
-| LIMITE\_IA\_ALCANZADO | 429 | Se alcanzó el límite diario de consultas al asesor |
-| IA\_NO\_DISPONIBLE | 503 | El servicio de IA falló o no respondió a tiempo |
-| IMAGEN\_NO\_VALIDA | 422 | La foto no muestra un solo rostro reconocible |
-| CITA\_NO\_COMPLETADA | 409 | Solo se registra el pago de citas completadas |
-| PAGO\_YA\_REGISTRADO | 409 | La cita ya tiene un pago registrado |
-| ANTICIPO\_VENCIDO | 409 | Venció el plazo para pagar el anticipo |
-| FIRMA\_INVALIDA | 401 | La notificación de la pasarela no tiene una firma válida |
+| DATOS_INVALIDOS | 422 | Algún campo no cumple su validación |
+| AUTENTICACION_REQUERIDA | 401 | Falta el token o es inválido |
+| TOKEN_VENCIDO | 401 | El token de acceso venció |
+| ACCESO_DENEGADO | 403 | El rol no permite la acción |
+| NO_ENCONTRADO | 404 | Recurso inexistente o de otra barbería |
+| CORREO_REGISTRADO | 409 | Ya existe una cuenta con ese correo |
+| CREDENCIALES_INVALIDAS | 401 | Correo o contraseña incorrectos |
+| HORARIO_OCUPADO | 409 | El horario ya fue reservado |
+| HORARIO_PASADO | 422 | El horario ya pasó |
+| ANTICIPACION_INSUFICIENTE | 422 | No cumple la anticipación mínima |
+| FECHA_DEMASIADO_LEJANA | 422 | Supera la anticipación máxima |
+| FUERA_DE_HORARIO | 422 | Fuera del horario de atención |
+| BARBERO_NO_DISPONIBLE | 409 | El barbero tiene un bloqueo o día libre |
+| SERVICIO_NO_OFRECIDO | 422 | El barbero no ofrece ese servicio |
+| RECURSO_INACTIVO | 409 | Servicio, barbero o barbería desactivados |
+| CRUCE_DEL_CLIENTE | 409 | El cliente ya tiene una cita que se solapa |
+| LIMITE_DE_CITAS | 409 | El cliente superó el máximo de citas activas |
+| CANCELACION_TARDIA | 409 | Pasó el tiempo límite para cancelar |
+| TRANSICION_INVALIDA | 409 | La cita no puede cambiar a ese estado |
+| BARBERO_CON_CITAS | 409 | El barbero tiene citas futuras sin resolver |
+| DEMASIADAS_SOLICITUDES | 429 | Demasiados intentos |
+| CONSENTIMIENTO_IA_REQUERIDO | 403 | Falta el consentimiento para usar el asesor |
+| LIMITE_IA_ALCANZADO | 429 | Se alcanzó el límite diario de consultas al asesor |
+| IA_NO_DISPONIBLE | 503 | El servicio de IA falló o no respondió a tiempo |
+| IMAGEN_NO_VALIDA | 422 | La foto no muestra un solo rostro reconocible |
+| PAGO_YA_REGISTRADO | 409 | La cita ya tiene un pago registrado |
+| ANTICIPO_VENCIDO | 409 | Venció el plazo para pagar el anticipo |
+| FIRMA_INVALIDA | 401 | La notificación de la pasarela no tiene una firma válida |
 | INTERNO | 500 | Error interno (mensaje genérico; el detalle solo en logs) |

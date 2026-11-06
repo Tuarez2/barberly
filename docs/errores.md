@@ -29,7 +29,6 @@ Fuente: DERCAS Anexo B. Formato de respuesta: §10.1.
 | LIMITE_IA_ALCANZADO | 429 | Se alcanzó el límite diario de consultas al asesor |
 | IA_NO_DISPONIBLE | 503 | El servicio de IA falló o no respondió a tiempo |
 | IMAGEN_NO_VALIDA | 422 | La foto no muestra un solo rostro reconocible |
-| CITA_NO_COMPLETADA | 409 | Solo se registra el pago de citas completadas |
 | PAGO_YA_REGISTRADO | 409 | La cita ya tiene un pago registrado |
 | ANTICIPO_VENCIDO | 409 | Venció el plazo para pagar el anticipo |
 | FIRMA_INVALIDA | 401 | La notificación de la pasarela no tiene una firma válida |
@@ -37,6 +36,5 @@ Fuente: DERCAS Anexo B. Formato de respuesta: §10.1.
 
 ## Dudas
 
-1. §10.4 define HTTP 400, pero el Anexo B no tiene código para él.
-2. §10.4 usa 503 también para la pasarela; el Anexo B solo tiene IA_NO_DISPONIBLE.
-3. Sin código en el Anexo B: último propietario activo (CU-20 A3) e invitar un correo no registrado (CU-20 A1).
+1. §10.4 usa 503 también para la pasarela; el Anexo B solo tiene IA_NO_DISPONIBLE.
+2. Sin código en el Anexo B: último propietario activo (CU-20 A3).

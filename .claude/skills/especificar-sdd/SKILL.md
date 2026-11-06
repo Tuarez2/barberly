@@ -1,6 +1,7 @@
 ---
 name: especificar-sdd
-description: Plantilla y proceso para convertir secciones del DERCAS en una especificacion corta por modulo (docs/especificaciones/<modulo>.md), mas docs/reglas.md y docs/errores.md. Usar al iniciar un modulo o cambiar un requisito.
+description: "Plantilla y proceso para convertir secciones del DERCAS en docs/especificaciones/<modulo>.md, docs/reglas.md y docs/errores.md. Usar al iniciar un modulo o cambiar un requisito. No usar para implementar."
+user-invocable: false
 ---
 
 # Especificar con SDD ligero
@@ -8,9 +9,9 @@ description: Plantilla y proceso para convertir secciones del DERCAS en una espe
 Objetivo: que los demas agentes lean 60–90 lineas en vez del DERCAS completo (~30k tokens).
 
 ## Proceso
-1. Lee solo las secciones del DERCAS indicadas (RF, RN, CU, HU, §9 modelo, §10 API, Anexo B errores).
+1. Lee solo las secciones del DERCAS indicadas, por numero (RF, RN, CU, HU, §9 modelo, §10 API, Anexo B errores), con `bash .claude/skills/especificar-sdd/scripts/seccion-dercas.sh <seccion>...` (ej. `8.5 3.3 "Anexo B"`). Nunca con Read del archivo completo.
 2. Copia literal nombres, rutas y codigos; no los reinventes ni los traduzcas.
-3. Si algo es ambiguo o falta, va a la seccion "Dudas" al final del archivo; no lo resuelvas tu.
+3. Si algo es ambiguo, se contradice o falta, va a la seccion "Dudas" al final del archivo; no lo resuelvas tu.
 4. Si una regla RN afecta a varios modulos, ponla en `docs/reglas.md` (una linea por regla: codigo, enunciado, codigo de error) y referenciala por codigo.
 5. Si aparece un codigo de error nuevo, agregalo a `docs/errores.md` (codigo, HTTP, cuando ocurre).
 
@@ -19,6 +20,7 @@ Copia `docs/especificaciones/_plantilla.md` y respeta sus secciones y su orden. 
 Ejemplo completo: `docs/especificaciones/autenticacion.md`.
 
 ## Calidad
-- Cada criterio debe poder convertirse en una prueba automatica.
+- Cada criterio de aceptacion debe poder escribirse como una prueba: Dado/Cuando/Entonces con valores concretos.
+- Seccion "Pantallas": pantalla, nodo de Figma y ruta, tomados de `docs/pantallas.md`.
 - Maximo 90 lineas; si crece, dividir el modulo.
 - Rutas bajo `/api/v1`, respuestas `{ datos, meta }` / `{ error: { codigo, mensaje, detalles } }`.

@@ -1,0 +1,45 @@
+{
+  "expo": {
+    "name": "Barberly",
+    "slug": "barberly",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/marca/icono.png",
+    "scheme": "barberly",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "supportsTablet": false
+    },
+    "android": {
+      "package": "com.cristhiantuarez.barberly",
+      "adaptiveIcon": {
+        "backgroundColor": "#9E2A2B",
+        "foregroundImage": "./assets/marca/icono-adaptativo.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "output": "server",
+      "favicon": "./assets/marca/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#F4EFE6",
+          "image": "./assets/marca/splash-claro.png",
+          "imageWidth": 200,
+          "dark": {
+            "backgroundColor": "#161512",
+            "image": "./assets/marca/splash-oscuro.png"
+          }
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    }
+  }
+}

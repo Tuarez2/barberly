@@ -1,22 +1,28 @@
 ---
 name: revision-codigo
-description: Checklist de revision de cambios de Barberly (seguridad, reglas de negocio, concurrencia, nombres en español, pruebas) con niveles Bloqueante, Importante y Sugerencia. Usar al revisar un diff antes de cerrar una tarea.
+description: "Checklist de revision con niveles Bloqueante, Importante y Sugerencia. Usar al revisar cambios antes de cerrar una tarea. No usar para escribir o corregir codigo."
+user-invocable: false
 ---
 
 # Revision de codigo
 
-Revisa `git diff main...HEAD` (o `git diff` si no hay rama). Solo lo cambiado.
+Revisa con `git status --porcelain` + `git diff HEAD` (cambios en archivos con seguimiento, preparados o no) y lee completos los archivos que aparezcan como `??`. Solo lo cambiado.
 
 ## Checklist
 **Bloqueante**
-- [ ] Consulta sin filtro de barberia/membresia, o confianza en un `barberiaId` del cliente.
+- [ ] Personal: barberia sin verificar contra su membresia `ACTIVO`, o sin membresia no responde 404.
+- [ ] Cliente: barberia sin verificar como publicada, servicio o barbero ajenos a ella sin 404, o citas y consultas sin filtro por `clienteId`/`usuarioId` del usuario autenticado.
+- [ ] `barberiaId` recibido usado para leer o modificar datos internos sin verificar la membresia.
 - [ ] Recurso ajeno responde 403 en vez de 404.
 - [ ] Endpoint sin autenticacion, rol o validacion Zod `.strict()`.
 - [ ] Regla RN omitida o con otro codigo de error que el DERCAS.
 - [ ] Creacion de citas sin transaccion + `FOR UPDATE`, o sin manejo de `P2002`.
 - [ ] Secretos, `.env`, contraseñas, tokens o fotos en codigo, logs o git.
 - [ ] SQL concatenado; `float` para dinero; fechas locales en BD.
-- [ ] Foto del rostro escrita en disco o enviada a un servicio distinto del proveedor de IA.
+- [ ] Foto del rostro (RN-27) fuera de memoria: escrita en disco o logs, guardada en el dispositivo mas alla de la seleccion, o enviada a un servicio distinto del proveedor de IA.
+- [ ] `new Date()` en reglas de negocio en vez de `reloj.ahora()`.
+- [ ] Respuestas con `select`: ver `multi-tenencia-seguridad`.
+- [ ] Foto de referencia sin `urlTemporal`, o foto del rostro en `AlmacenArchivos`.
 
 **Importante**
 - [ ] Logica de negocio fuera de `servicio.ts`.
@@ -25,13 +31,12 @@ Revisa `git diff main...HEAD` (o `git diff` si no hay rama). Solo lo cambiado.
 - [ ] Falta auditoria en `RegistroAuditoria` donde corresponde.
 - [ ] Dependencia nueva sin justificar; cambios fuera del alcance de la tarea.
 - [ ] Mensaje de error crudo mostrado al usuario en la app.
+- [ ] Consultas N+1 en listados; paginacion sin maximo.
+- [ ] Colores o tamaños escritos directamente en pantallas en vez del tema.
 
 **Sugerencia**
 - [ ] Duplicacion, nombres poco claros, funciones largas.
 
-## Formato del informe (≤15 lineas)
-```
-Bloqueantes: <n> · Importantes: <n> · Sugerencias: <n>
-[Bloqueante] archivo.ts:42 — <problema>. Corregir: <accion>.
-```
-Si no hay Bloqueantes, empieza diciendo "Sin bloqueantes".
+## Hallazgos
+Formato: variante de `revisor-seguridad` en `protocolo-subagente`.
+Bloqueante es seguridad, fuga entre barberias, regla RN rota o concurrencia.

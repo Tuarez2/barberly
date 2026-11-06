@@ -1,0 +1,9 @@
+// El modelo completo llega en la Fase 1 (DERCAS §9). La URL vive en prisma.config.ts.
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generado/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+}

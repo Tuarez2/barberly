@@ -1,6 +1,7 @@
 ---
 name: prisma-mysql
-description: Convenciones de Prisma con MySQL 8 para Barberly (nombres en español, UUID, Decimal, migraciones revisadas, columna generada inicioActivo, seed). Usar al tocar schema.prisma o crear migraciones.
+description: "Modelo Prisma con MySQL 8, migraciones, columna generada inicioActivo y seed. Usar al tocar schema.prisma, migraciones o seed. No usar para consultas de servicios (arquitectura-api)."
+user-invocable: false
 ---
 
 # Prisma + MySQL 8
@@ -10,7 +11,7 @@ description: Convenciones de Prisma con MySQL 8 para Barberly (nombres en españ
 - Campos `camelCase`; FK terminan en `Id`; fechas con hora terminan en `En`.
 - `id String @id @default(uuid()) @db.Char(36)`. Dinero segun DERCAS §9.2: `@db.Decimal(8,2)` en `Servicio.precio` y `Cita.precioReserva`; `@db.Decimal(10,2)` en `Barberia.montoAnticipo` y `Pago.monto`. Fechas `DateTime @db.DateTime(3)` en UTC.
 - Enums en `MAYUSCULAS`. Borrado logico (`activo`/`estado`) en entidades con historial.
-- `@@index` en cada FK y en columnas de filtro frecuente (`barberiaId`, `iniciaEn`).
+- `@@index` en cada FK y en columnas de filtro frecuente (`barberiaId`, `iniciaEn`). Cada modelo de una barberia lleva `barberiaId` con `@@index`.
 - Nombres del modelo: solo los del DERCAS §9.
 
 ## Migraciones
@@ -32,4 +33,4 @@ ALTER TABLE citas
 - Unico adicional: `@@unique([clienteId, claveIdempotencia])`.
 
 ## Seed
-`npm run seed` crea: 1 propietario, 1 barberia con horarios, 2 barberos, servicios con etiquetas, 1 cliente y, para pruebas de aislamiento, una segunda barberia con su propietario. Claves de ejemplo solo para desarrollo.
+`npm run seed -w apps/api` crea: 1 propietario, 1 barberia con horarios, 2 barberos, servicios con etiquetas, 1 cliente y, para pruebas de aislamiento, una segunda barberia con su propietario. Usa UUID fijos, claves de ejemplo solo de desarrollo y las mismas fabricas que las pruebas cuando sea posible.

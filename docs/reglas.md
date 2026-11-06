@@ -23,7 +23,7 @@ Fuente: DERCAS §4. El backend las aplica siempre. "propuesta" = valor configura
 | Código | Regla | Error |
 | --- | --- | --- |
 | RN-12 | Reserva válida se confirma automáticamente; si la barbería exige anticipo, nace pendiente y se confirma al aprobarse el pago (RN-34). | — |
-| RN-13 | El cliente cancela hasta un límite antes del inicio (propuesta: 2 horas), configurable; pasado el límite debe contactar a la barbería. | CANCELACION_TARDIA |
+| RN-13 | El cliente cancela hasta un límite antes del inicio (propuesta: 2 horas, `minutosMinCancelacion` = 120), configurable; pasado el límite debe contactar a la barbería. | CANCELACION_TARDIA |
 | RN-14 | El barbero y el propietario cancelan en cualquier momento antes del inicio, indicando un motivo. | — |
 | RN-15 | Una cita cancelada libera el horario de inmediato. | — |
 | RN-16 | Una cita cancelada, completada o ausente no cambia más de estado. | TRANSICION_INVALIDA |
@@ -53,18 +53,18 @@ Fuente: DERCAS §4. El backend las aplica siempre. "propuesta" = valor configura
 | Código | Regla | Error |
 | --- | --- | --- |
 | RN-27 | La foto del rostro se procesa en memoria y se descarta; solo se guarda la recomendación. | — |
-| RN-28 | Antes de la primera consulta hay consentimiento explícito; se guarda su fecha y puede retirarse. | CONSENTIMIENTO_IA_REQUERIDO |
+| RN-28 | Antes de la primera consulta hay consentimiento explícito; se guarda su fecha (`consentimientoIaEn`) y puede retirarse. | CONSENTIMIENTO_IA_REQUERIDO |
 | RN-29 | Cada cliente tiene un límite de consultas diarias (propuesta: 5), configurable en el servidor. | LIMITE_IA_ALCANZADO |
 | RN-30 | Solo recomienda servicios activos de la barbería elegida (máximo 3); si ninguno encaja, lo indica y sugiere consultar al barbero. | — |
-| RN-31 | Una cita admite como máximo una foto de referencia, que se elimina al llegar a un estado final. | — |
+| RN-31 | Una cita admite como máximo una foto de referencia; una segunda reemplaza a la anterior, que se elimina, y la foto se elimina al llegar a un estado final. | — |
 
 ## Pagos y estadísticas (§4.6)
 
 | Código | Regla | Error |
 | --- | --- | --- |
-| RN-32 | Solo una cita completada tiene pago registrado, a lo sumo uno; monto sugerido = precio congelado − anticipo; si se cambia, exige motivo. | CITA_NO_COMPLETADA, PAGO_YA_REGISTRADO, DATOS_INVALIDOS |
+| RN-32 | Solo una cita completada tiene pago registrado, a lo sumo uno (`FINAL`); monto sugerido = precio congelado − anticipo; si se cambia, exige motivo (`motivoAjuste`). | TRANSICION_INVALIDA, PAGO_YA_REGISTRADO, DATOS_INVALIDOS |
 | RN-33 | Métodos registrables: efectivo, transferencia y DeUna; el anticipo en línea se cobra con tarjeta en la pasarela. | DATOS_INVALIDOS |
-| RN-34 | Con anticipo nace pendiente y ocupa el horario; solo el pago aprobado confirma; sin pago en 15 minutos se cancela sola y libera el horario. | ANTICIPO_VENCIDO |
+| RN-34 | Con anticipo nace pendiente y ocupa el horario; solo el pago aprobado confirma; sin pago en 15 minutos (`anticipoVenceEn`) se cancela sola y libera el horario. | ANTICIPO_VENCIDO |
 | RN-35 | Anticipo: se devuelve si el cliente cancela en plazo (RN-13) o cancela la barbería; si cancela tarde o no llega, lo conserva la barbería. | — |
 | RN-36 | El anticipo pagado se descuenta del pago final. | — |
 | RN-37 | Los ingresos de las estadísticas se calculan con pagos registrados y anticipos conservados, no con el precio de las citas. | — |
@@ -100,5 +100,4 @@ Estados: PENDIENTE, CONFIRMADA, COMPLETADA, CANCELADA, AUSENTE. Los tres último
 2. RN-14: sin código para el personal que cancela desde la hora de inicio.
 3. RN-18: barbero no asignado de la misma barbería: no se define si es 403 o 404.
 4. RN-19: sin código para marcar antes de la hora de inicio.
-5. RN-31: no se define si una segunda foto reemplaza a la anterior o se rechaza.
-6. RN-09: es "propuesta" (configurable según §4), pero §9.2 no tiene campo para ese valor.
+5. RN-09: es "propuesta" (configurable según §4), pero §9.2 no tiene campo para ese valor.

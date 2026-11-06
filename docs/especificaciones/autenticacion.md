@@ -6,11 +6,11 @@ Registrar usuarios, gestionar sesiones, perfil e invitaciones, y permitir regist
 ## Funcionalidades
 | Código | Qué debe hacer | Prioridad |
 | --- | --- | --- |
-| AUT-01 | Registrar usuario con nombre, correo, teléfono y contraseña; rol cliente por defecto | Debe |
+| AUT-01 | Registrar usuario con nombre, correo, teléfono y contraseña; rol cliente por defecto; abrir su sesión | Debe |
 | AUT-02 | Iniciar sesión con correo y contraseña; devolver token de acceso y de renovación | Debe |
 | AUT-03 | Cerrar sesión invalidando el token de renovación del dispositivo y borrando la sesión local | Debe |
 | AUT-04 | Renovar el token de acceso con el de renovación, sin pedir la contraseña | Debe |
-| AUT-05 | Ver y editar nombre, teléfono y foto; el correo no se cambia en el MVP | Debería |
+| AUT-05 | Ver y editar nombre y teléfono; el correo no se cambia en el MVP | Debería |
 | AUT-06 | Cambiar la contraseña exigiendo la actual | Debería |
 | AUT-07 | Recuperar la contraseña con enlace o código temporal enviado por correo | Podría |
 | AUT-08 | Consultar las membresías tras iniciar sesión y mostrar la interfaz del rol | Debe |
@@ -27,6 +27,7 @@ Referencia: DERCAS §9.2. Todas las tablas incluyen `creadoEn` y `actualizadoEn`
 - Membresia: usuarioId y barberiaId (par único), rol (PROPIETARIO, BARBERO), estado (INVITADO, ACTIVO, INACTIVO). El cliente no necesita membresía (§2.3). Al aceptar la invitación se crea PerfilBarbero (CU-20).
 
 Sesiones (§11.4):
+- El registro devuelve los mismos tokens que el inicio de sesión.
 - Token de acceso: JWT de corta duración (propuesta: 15 minutos) con el identificador del usuario.
 - Token de renovación: larga duración (propuesta: 7 a 30 días), guardado como hash y revocable por dispositivo.
 - En el teléfono: expo-secure-store. Transporte: solo HTTPS fuera del entorno local de desarrollo.
@@ -59,7 +60,7 @@ Prefijo /api/v1. Pública = sin sesión; Pub = cualquier usuario autenticado.
 DATOS_INVALIDOS, AUTENTICACION_REQUERIDA, TOKEN_VENCIDO, CORREO_REGISTRADO, CREDENCIALES_INVALIDAS, DEMASIADAS_SOLICITUDES, NO_ENCONTRADO. Ver docs/errores.md.
 
 ## Criterios de aceptación
-- HU-AUT-01: Dado un correo nuevo y datos válidos, cuando se registra, entonces la cuenta se crea y entra a la app.
+- HU-AUT-01: Dado un correo nuevo y datos válidos, cuando se registra, entonces la cuenta se crea, recibe los tokens y entra a la app.
 - HU-AUT-01: Dado un correo ya registrado, cuando se registra, entonces ve un error claro y no se crea otra cuenta.
 - HU-AUT-01: Dada una contraseña de menos de 8 caracteres, cuando se registra, entonces ve qué requisito falta.
 - HU-AUT-02: Dadas credenciales correctas, cuando inicia sesión, entonces entra a la pantalla de su rol.
@@ -79,12 +80,10 @@ DATOS_INVALIDOS, AUTENTICACION_REQUERIDA, TOKEN_VENCIDO, CORREO_REGISTRADO, CRED
 DERCAS §2.3, §2.5, §3.1, §5.2, §5.3 (CU-20), §6, §9.1, §9.2, §10.1, §10.2, §11.1, §11.4, §14.2, §15.1, Anexo B.
 
 ## Dudas
-1. AUT-05 pide editar la foto, pero Usuario no tiene ese campo (§9.2).
-2. AUT-07 no tiene ruta ni entidad para el código temporal; §14.2 (n.º 10) sigue abierta.
-3. Token de renovación vencido o revocado: sin código definido; TOKEN_VENCIDO solo cubre el de acceso.
-4. Sin valor fijo: duración del token de renovación (7 a 30 días), espera tras 5 intentos y límite de registro (SEG-09).
-5. HU-AUT-01 entra a la app tras registrarse; §10.2 no dice si el registro devuelve tokens.
-6. No se define cómo se identifica `dispositivo` al iniciar o cerrar sesión.
-7. AUT-06 con contraseña actual incorrecta e inicio con `activo` falso: sin código definido.
-8. Rechazar una invitación: no se define el estado final (§9.2 solo tiene INVITADO, ACTIVO, INACTIVO).
-9. ADM-13 cita una "regla de publicación" sin definirla; HU-AUT-03 pide servicios y horarios, CU-07 añade un barbero.
+1. AUT-07 no tiene ruta ni entidad para el código temporal; §14.2 (n.º 10) sigue abierta.
+2. Token de renovación vencido o revocado: sin código definido; TOKEN_VENCIDO solo cubre el de acceso.
+3. Sin valor fijo: duración del token de renovación (7 a 30 días), espera tras 5 intentos y límite de registro (SEG-09).
+4. No se define cómo se identifica `dispositivo` al iniciar o cerrar sesión.
+5. AUT-06 con contraseña actual incorrecta e inicio con `activo` falso: sin código definido.
+6. Rechazar una invitación: no se define el estado final (§9.2 solo tiene INVITADO, ACTIVO, INACTIVO).
+7. ADM-13 cita una "regla de publicación" sin definirla; HU-AUT-03 pide servicios y horarios, CU-07 añade un barbero.

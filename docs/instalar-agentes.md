@@ -1,47 +1,36 @@
-# Agentes y skills de Barberly — instalacion
+# Agentes y skills de Barberly
 
-## Que contiene
+## Que hay
 ```
-CLAUDE.md                      # Claude Code lee este archivo; importa AGENTS.md
+CLAUDE.md          # Claude Code lee este archivo; importa AGENTS.md
 .claude/
-  agents/                      # 1 orquestador + 6 especialistas
-  skills/                      # 8 skills propias, repartidas entre los agentes
-  commands/tarea.md            # atajo /tarea
+  agents/          # 1 orquestador + 6 especialistas
+  hooks/           # guardias y formato automatico
+  skills/          # 17 skills: 11 tecnicas, protocolo-subagente y 5 comandos
+  settings.json    # permisos del proyecto
 ```
 
-## Instalar
-1. Copia el contenido del zip en la **raiz del repo** (`barberly/`), junto a `AGENTS.md`.
-   - Si ya tienes un `CLAUDE.md`, no lo sobrescribas: agrega la linea `@AGENTS.md`.
-2. Abre Claude Code en la raiz del repo y verifica:
-   - `/agents` → deben aparecer los 7 agentes.
-   - `/skills` → deben aparecer las 8 skills.
-3. Si `/agents` marca error en la herramienta del orquestador, abre `.claude/agents/orquestador.md` y cambia `Agent(` por `Task(` en la linea `tools` (versiones antiguas de Claude Code).
+## Verificar
+Abre Claude Code en la raiz del repo:
+- `/agents` → 7 agentes sin errores.
+- `/skills` → 17 skills del proyecto, ademas de las de plugins.
+- `/hooks` → `proteger`, `limitar-rutas` y `formatear`.
 
-## Usar
-- Con atajo: `/tarea autenticacion AUT-01 RN-xx`
-- Como agente principal de la sesion: `claude --agent orquestador`, y luego escribe la tarea.
+Las 12 skills con `user-invocable: false` no salen en el menu `/`: las usan los agentes.
 
-El orquestador muestra un plan de 8 lineas, espera tu OK, delega en orden y cierra con un mensaje de commit sugerido. Tu haces el commit.
+## Comandos
+| Comando | Que hace |
+| --- | --- |
+| `/tarea <modulo> <codigos>` | Flujo completo con el orquestador, en la sesion principal |
+| `/especificar <modulo> <secciones DERCAS>` | Solo `analista-spec`; muestra las Dudas al final |
+| `/decidir <modulo>` | Resuelve contigo las Dudas del modulo, una por una, y las registra en `docs/decisiones.md` |
+| `/revisar` | Solo `revisor-seguridad` sobre los cambios actuales |
+| `/verificar` | Corre lint, typecheck y test en los workspaces y resume en 5 lineas o menos |
+
+Tambien puedes usar `claude --agent orquestador` y escribir la tarea.
 
 ## Flujo
-`analista-spec` → `base-datos` → `pruebas` (rojo) → `api-backend` (verde) → `revisor-seguridad` → `app-movil`
+Esta en [orquestador.md](../.claude/agents/orquestador.md).
 
-| Agente | Skills |
-| --- | --- |
-| orquestador | (ninguna; solo coordina) |
-| analista-spec | especificar-sdd |
-| base-datos | prisma-mysql |
-| pruebas | pruebas-api |
-| api-backend | arquitectura-api, multi-tenencia-seguridad, reservas-concurrencia |
-| app-movil | expo-pantallas |
-| revisor-seguridad | revision-codigo, multi-tenencia-seguridad |
-
-## Requisitos previos
-- `docs/DERCAS.md` exportado y `AGENTS.md` en la raiz.
-- Idealmente `docs/reglas.md`, `docs/errores.md` y `docs/especificaciones/` (Prompt 1 de SDD). Si no existen, el orquestador pedira a `analista-spec` crearlos.
-
-## Agregar agentes despues
-Crea `.claude/agents/<nombre>.md` con `name`, `description`, `tools`, `skills`, y agregalo a la lista `Agent(...)` del orquestador. Candidatos para fases posteriores: `asesor-ia` (Fase 5), `pagos` (Fase 4), `estadisticas`.
-
-## Consumo de tokens
-Cada agente lee `AGENTS.md` + la especificacion de su modulo, no el DERCAS completo. Los informes son de ≤15 lineas. Si una tarea toca mas de ~5 archivos, dividela.
+## Agregar agentes
+Crea `.claude/agents/<nombre>.md` con `protocolo-subagente` primero en `skills:` agregalo a la lista `Agent(...)` del orquestador y a `limitar-rutas.mjs`. Candidatos: `asesor-ia` (Fase 5), `pagos` (Fase 4), `estadisticas`.
