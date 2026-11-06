@@ -23,7 +23,15 @@ Referencia: DERCAS §9.2.
 ## Errores
 <CODIGO_ERROR, CODIGO_ERROR>. Ver docs/errores.md.
 
+## Pantallas
+Tomadas de docs/pantallas.md.
+
+| Pantalla | Nodo de Figma | Ruta |
+| --- | --- | --- |
+| <Pantalla> | <0:0> | <(grupo)/ruta> |
+
 ## Criterios de aceptación
+Cada criterio debe poder escribirse como una prueba, con valores concretos.
 - <HU-XXX-01>: Dado <contexto>, cuando <acción>, entonces <resultado>.
 
 ## Pruebas

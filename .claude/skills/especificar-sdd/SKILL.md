@@ -1,6 +1,6 @@
 ---
 name: especificar-sdd
-description: Plantilla y proceso para convertir secciones del DERCAS en una especificacion corta por modulo (docs/especificaciones/<modulo>.md), mas docs/reglas.md y docs/errores.md. Usar al iniciar un modulo o cambiar un requisito.
+description: "Plantilla y proceso para convertir secciones del DERCAS en docs/especificaciones/<modulo>.md, docs/reglas.md y docs/errores.md. Usar al iniciar un modulo o cambiar un requisito. No usar para implementar."
 ---
 
 # Especificar con SDD ligero
@@ -19,6 +19,7 @@ Copia `docs/especificaciones/_plantilla.md` y respeta sus secciones y su orden. 
 Ejemplo completo: `docs/especificaciones/autenticacion.md`.
 
 ## Calidad
-- Cada criterio debe poder convertirse en una prueba automatica.
+- Cada criterio de aceptacion debe poder escribirse como una prueba: Dado/Cuando/Entonces con valores concretos.
+- Seccion "Pantallas": pantalla, nodo de Figma y ruta, tomados de `docs/pantallas.md`.
 - Maximo 90 lineas; si crece, dividir el modulo.
 - Rutas bajo `/api/v1`, respuestas `{ datos, meta }` / `{ error: { codigo, mensaje, detalles } }`.
