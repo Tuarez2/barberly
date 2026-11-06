@@ -29,6 +29,9 @@ apps/movil/ios/
 # Archivos subidos en desarrollo
 apps/api/almacen/
 
+# Cliente de Prisma generado
+apps/api/src/generado/
+
 # Pruebas
 coverage/
 
