@@ -6,7 +6,7 @@ user-invocable: false
 
 # Revision de codigo
 
-Revisa con `git status --porcelain` + `git diff HEAD` (cambios en archivos con seguimiento, preparados o no) y lee completos los archivos que aparezcan como `??`. Solo lo cambiado. Bash solo para `git status`, `git diff`, `git log` y `git ls-files`.
+Revisa con `git status --porcelain` + `git diff HEAD` (cambios en archivos con seguimiento, preparados o no) y lee completos los archivos que aparezcan como `??`. Solo lo cambiado.
 
 ## Checklist
 **Bloqueante**
@@ -21,7 +21,7 @@ Revisa con `git status --porcelain` + `git diff HEAD` (cambios en archivos con s
 - [ ] SQL concatenado; `float` para dinero; fechas locales en BD.
 - [ ] Foto del rostro (RN-27) fuera de memoria: escrita en disco o logs, guardada en el dispositivo mas alla de la seleccion, o enviada a un servicio distinto del proveedor de IA.
 - [ ] `new Date()` en reglas de negocio en vez de `reloj.ahora()`.
-- [ ] Respuesta sin `select` que expone `claveHash`, `tokenHash` o correos.
+- [ ] Respuestas con `select`: ver `multi-tenencia-seguridad`.
 - [ ] Foto de referencia sin `urlTemporal`, o foto del rostro en `AlmacenArchivos`.
 
 **Importante**

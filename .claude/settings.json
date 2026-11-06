@@ -35,12 +35,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/proteger.mjs",
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/node.sh proteger.mjs",
             "onFailure": "block"
           },
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/limitar-rutas.mjs",
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/node.sh limitar-rutas.mjs",
             "onFailure": "block"
           }
         ]
@@ -52,7 +52,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/formatear.mjs"
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/node.sh formatear.mjs"
           }
         ]
       }

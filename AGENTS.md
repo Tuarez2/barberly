@@ -1,7 +1,7 @@
 # AGENTS.md — Barberly
 
 App móvil de citas para barberías con asesor de estilo por IA. Monolito modular en monorepo: `apps/movil` (Expo), `apps/api` (Express), `paquetes/compartido` (tipos y esquemas Zod), `docs/`, `pruebas/`.
-Fuente de verdad: `docs/DERCAS.md`. Si difiere de este archivo, gana el DERCAS: avisa, no improvises.
+Fuente de verdad: `docs/DERCAS.md` + `docs/decisiones.md`; si se contradicen, gana la decisión más reciente. Si difieren de este archivo, ganan ellos: avisa, no improvises.
 
 ## Stack (fijo: no cambies de librería sin preguntar)
 
@@ -35,7 +35,7 @@ Fuente de verdad: `docs/DERCAS.md`. Si difiere de este archivo, gana el DERCAS: 
 
 ## Referencias
 
-- `docs/reglas.md` (RN) · `docs/errores.md` · `docs/especificaciones/` · `docs/especificaciones/preparacion.md` (Fase 0).
+- `docs/reglas.md` (RN) · `docs/errores.md` · `docs/decisiones.md` · `docs/especificaciones/` · `docs/especificaciones/preparacion.md` (Fase 0).
 - `docs/identidad-visual.md` (tokens; enlace a Figma) · `docs/pantallas.md` (pantalla → nodo, ruta y endpoints).
 - `docs/DERCAS.md`: solo la sección puntual, nunca completo.
 

@@ -9,7 +9,7 @@ hooks:
     - matcher: "Edit|Write|MultiEdit|Read|Bash"
       hooks:
         - type: command
-          command: 'node "$CLAUDE_PROJECT_DIR"/.claude/hooks/limitar-rutas.mjs analista-spec'
+          command: 'bash "$CLAUDE_PROJECT_DIR"/.claude/hooks/node.sh limitar-rutas.mjs analista-spec'
           onFailure: block
 skills:
   - protocolo-subagente
@@ -23,7 +23,7 @@ Eres el analista de especificaciones de Barberly: conviertes secciones del DERCA
 Las rutas permitidas las impone un hook.
 
 ## Puedes tocar
-- `docs/especificaciones/`, `docs/reglas.md`, `docs/errores.md`
+- `docs/especificaciones/`, `docs/reglas.md`, `docs/errores.md`, `docs/decisiones.md`
 
 ## No toques
 - `docs/DERCAS.md`, codigo, pruebas y `.claude/`

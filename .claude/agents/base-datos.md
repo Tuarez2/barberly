@@ -6,10 +6,10 @@ model: sonnet
 maxTurns: 30
 hooks:
   PreToolUse:
-    - matcher: "Edit|Write|MultiEdit"
+    - matcher: "Edit|Write|MultiEdit|Bash"
       hooks:
         - type: command
-          command: 'node "$CLAUDE_PROJECT_DIR"/.claude/hooks/limitar-rutas.mjs base-datos'
+          command: 'bash "$CLAUDE_PROJECT_DIR"/.claude/hooks/node.sh limitar-rutas.mjs base-datos'
           onFailure: block
 skills:
   - protocolo-subagente

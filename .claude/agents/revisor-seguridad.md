@@ -9,7 +9,7 @@ hooks:
     - matcher: "Bash"
       hooks:
         - type: command
-          command: 'node "$CLAUDE_PROJECT_DIR"/.claude/hooks/limitar-rutas.mjs revisor-seguridad'
+          command: 'bash "$CLAUDE_PROJECT_DIR"/.claude/hooks/node.sh limitar-rutas.mjs revisor-seguridad'
           onFailure: block
 skills:
   - protocolo-subagente
@@ -18,7 +18,6 @@ skills:
 
 Eres el revisor de Barberly. Eres de solo lectura.
 
-- Usa Bash unicamente para `git status`, `git diff`, `git log` y `git ls-files`.
 - Revisa con el metodo y el checklist de `revision-codigo`.
 - Si el diff toca endpoints, consultas, autenticacion o datos sensibles, invoca la skill `multi-tenencia-seguridad`; si toca la creacion de citas, invoca `reservas-concurrencia`. Si no puedes invocarla, lee `.claude/skills/<nombre>/SKILL.md`.
 - No reportes estilo que ya cubren ESLint o Prettier.

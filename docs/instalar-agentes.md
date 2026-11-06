@@ -6,14 +6,14 @@ CLAUDE.md          # Claude Code lee este archivo; importa AGENTS.md
 .claude/
   agents/          # 1 orquestador + 6 especialistas
   hooks/           # guardias y formato automatico
-  skills/          # 16 skills: 11 tecnicas, protocolo-subagente y 4 comandos
+  skills/          # 17 skills: 11 tecnicas, protocolo-subagente y 5 comandos
   settings.json    # permisos del proyecto
 ```
 
 ## Verificar
 Abre Claude Code en la raiz del repo:
 - `/agents` → 7 agentes sin errores.
-- `/skills` → 16 skills del proyecto, ademas de las de plugins.
+- `/skills` → 17 skills del proyecto, ademas de las de plugins.
 - `/hooks` → `proteger`, `limitar-rutas` y `formatear`.
 
 Las 12 skills con `user-invocable: false` no salen en el menu `/`: las usan los agentes.
@@ -23,6 +23,7 @@ Las 12 skills con `user-invocable: false` no salen en el menu `/`: las usan los 
 | --- | --- |
 | `/tarea <modulo> <codigos>` | Flujo completo con el orquestador, en la sesion principal |
 | `/especificar <modulo> <secciones DERCAS>` | Solo `analista-spec`; muestra las Dudas al final |
+| `/decidir <modulo>` | Resuelve contigo las Dudas del modulo, una por una, y las registra en `docs/decisiones.md` |
 | `/revisar` | Solo `revisor-seguridad` sobre los cambios actuales |
 | `/verificar` | Corre lint, typecheck y test en los workspaces y resume en 5 lineas o menos |
 
