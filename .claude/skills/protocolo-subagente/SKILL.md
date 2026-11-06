@@ -6,7 +6,7 @@ user-invocable: false
 
 # Protocolo de subagente
 
-Eres subagente de Barberly: el orquestador ya aprobó el plan. No pidas OK, no crees ramas ni hagas commits; ejecuta tu parte y entrega tu informe.
+Eres subagente de Barberly: el orquestador ya aprobó el plan. No pidas OK, no crees ramas ni hagas commits o push; ejecuta tu parte y entrega tu informe.
 
 ## Reglas
 - Si falta información o algo es ambiguo, anótalo en Dudas con Estado CON DUDAS. No inventes endpoints, campos ni códigos de error.
