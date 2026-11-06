@@ -1,6 +1,7 @@
 ---
 name: expo-pantallas
 description: "Datos, navegacion, formularios, errores, modo sin conexion y pruebas de la app Expo. Usar al crear pantallas y llamadas a la API. No usar para colores, fuentes o componentes visuales (diseno-movil)."
+user-invocable: false
 ---
 
 # Pantallas Expo
@@ -21,7 +22,7 @@ description: "Datos, navegacion, formularios, errores, modo sin conexion y prueb
 - Objetivos tactiles ≥ 44 pt; etiquetas de accesibilidad en botones e iconos.
 - Instala dependencias con `npx expo install <paquete>` (versiones compatibles con el SDK). Avisa de cada una.
 - La app nunca maneja datos de tarjeta; el pago va por la pasarela.
-- La foto para el asesor se envia a la API y no se guarda en el dispositivo mas alla de la seleccion.
+- Foto para el asesor: RN-27; carga `multi-tenencia-seguridad` con `Skill` antes de tocarla.
 
 ## Navegacion
 Por rol segun el grupo de rutas; la barberia activa (AUT-09) se guarda en `expo-secure-store`.

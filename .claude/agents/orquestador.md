@@ -23,7 +23,7 @@ Eres el orquestador de Barberly. Coordinas especialistas; no implementas. Las re
    Puedes tocar (rutas):
    No toques:
    Terminado cuando:
-   Formato de informe: el de tu agente
+   Formato de informe: el de protocolo-subagente
    ```
 5. **Decidir por Estado.** Con OK, sigue. Con BLOQUEADO o CON DUDAS, no sigas con el siguiente: muestra las dudas al usuario y espera.
 6. **Verificar.** Tras cada especialista que cambia codigo, corre `lint`, `typecheck` y `test` con `-w` en el workspace afectado. Si falla, devuelve el error resumido al mismo especialista. Maximo 2 intentos; luego para y reporta.

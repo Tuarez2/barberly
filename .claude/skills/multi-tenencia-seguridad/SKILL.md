@@ -1,6 +1,7 @@
 ---
 name: multi-tenencia-seguridad
 description: "Aislamiento entre barberias, autenticacion, autorizacion, validacion, secretos y auditoria. Usar al escribir o revisar cualquier endpoint o consulta. No usar para la estructura del modulo (arquitectura-api)."
+user-invocable: false
 ---
 
 # Multi-tenencia y seguridad
@@ -25,7 +26,7 @@ limite de tasa → `autenticar` (401) → `contextoBarberia` → `exigirRol` (40
 - Zod `.strict()` en toda entrada; rechaza campos extra. Solo Prisma; nada de SQL concatenado (en `$queryRaw` usa plantillas etiquetadas).
 - Secretos solo en variables de entorno; `.env` fuera de git; `.env.example` sin valores.
 - Logs sin contraseñas, tokens, fotos ni datos de tarjeta; nada de `console.log` con datos sensibles.
-- Foto del rostro solo en memoria; nunca en disco ni en logs (RN-27).
+- Foto del rostro (RN-27): solo en memoria, se envia solo al proveedor de IA y se descarta; se guarda unicamente la recomendacion. Nunca en disco, logs ni `AlmacenArchivos`. La app la envia a la API y no la guarda en el dispositivo mas alla de la seleccion.
 - Webhooks de pago: verificar firma e idempotencia por `referenciaPasarela`. Pasarela solo en modo de prueba.
 
 ## Auditoria (`RegistroAuditoria`)

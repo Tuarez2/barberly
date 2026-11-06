@@ -1,6 +1,7 @@
 ---
 name: almacen-archivos
 description: "Reglas para subir, guardar, servir y eliminar imagenes con AlmacenArchivos (multer, sharp, S3). Usar al tocar foto de referencia, portada, foto del barbero o limpiarArchivos. No usar para la foto del rostro del asesor, que nunca pasa por aqui."
+user-invocable: false
 ---
 
 # Almacenamiento de archivos
@@ -29,7 +30,7 @@ Fuente: DERCAS §8.7.
 - Foto de referencia privada: `urlTemporal` de 10 minutos. Portada y foto del barbero publicas: `urlPublica`.
 
 ## Reglas
-- La foto del rostro del asesor NUNCA pasa por `AlmacenArchivos` (RN-27).
+- Foto del rostro del asesor: RN-27, ver `multi-tenencia-seguridad`.
 - RN-31: una foto por cita; la segunda reemplaza a la anterior y se elimina la vieja.
 - Estado final (incluida la cancelacion por anticipo vencido): `archivoFotoReferencia` en nulo dentro de la misma transaccion; el archivo se elimina despues del commit.
 - Si falla la eliminacion: registrar en el log, sin fallar la solicitud; `limpiarArchivos` lo reintenta recorriendo `citas/` con `listar`.

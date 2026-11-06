@@ -1,6 +1,7 @@
 ---
 name: arquitectura-api
 description: "Estructura de un modulo de la API, errores, respuestas, librerias fijas y reloj. Usar al crear o modificar endpoints. No usar para permisos (multi-tenencia-seguridad) ni para crear citas (reservas-concurrencia)."
+user-invocable: false
 ---
 
 # Arquitectura de la API
@@ -33,9 +34,14 @@ description: "Estructura de un modulo de la API, errores, respuestas, librerias 
 - Rutas bajo `/api/v1`, minusculas con guiones. Nada de `any`; `strict` de TypeScript.
 - La app solo habla con la API; solo la API toca MySQL, la IA y la pasarela.
 - Proveedor de IA detras de la interfaz `ProveedorAsesorEstilo` (metodo `analizar`).
-- Respuestas con `select` explicito de Prisma; nunca devolver `claveHash`, `tokenHash` ni el correo de otro usuario (RNF-17).
+- Campos de las respuestas: ver `multi-tenencia-seguridad` (RNF-17).
 - Dinero en JSON como string con 2 decimales (`"8.00"`); fechas ISO 8601 UTC.
 - Paginacion: `pagina` y `limite` (por defecto 1 y 10, maximo 50), con `meta.total`.
 - Dinero con `Prisma.Decimal`; fechas `Date` en UTC; Luxon solo para calcular horarios locales.
-- OpenAPI: se genera desde los esquemas Zod con `@asteasolutions/zod-to-openapi`; cada modulo declara sus rutas en `documentacion.ts`; en desarrollo se sirve en `GET /api/v1/documentacion`.
+
+## Bruno y documentacion.ts
+Fuente: DERCAS §8.8 y §10.7.
+- Bruno: coleccion versionada con Git en `apps/api/bruno/<modulo>/`, con un `.bru` por endpoint y por error de negocio relevante.
+- OpenAPI: se genera desde los esquemas Zod con `@asteasolutions/zod-to-openapi`.
+- Cada modulo declara sus rutas en `documentacion.ts`; en desarrollo se sirve en `GET /api/v1/documentacion`.
 - Nuevo endpoint: actualizar la especificacion, `documentacion.ts`, Bruno y el README.

@@ -18,8 +18,6 @@ Fuente de verdad: `docs/DERCAS.md`. Si difiere de este archivo, gana el DERCAS: 
 
 ## Flujo SDD
 
-Si eres un subagente: el orquestador ya aprobó el plan. No pidas OK, no crees ramas ni hagas commits; ejecuta tu parte y entrega tu informe.
-
 1. Lee `docs/especificaciones/<modulo>.md` y lo que referencia.
 2. Si cambia el comportamiento, actualiza antes la especificación.
 3. Presenta un plan de 5 a 8 líneas y espera OK.
@@ -60,7 +58,7 @@ Cumple su HU · pruebas pasan · `lint` y `typecheck` limpios · probado en Andr
 
 - Nombrar en inglés algo propio.
 - Saltarse la validación de reservas "porque la app ya valida".
-- Guardar la foto del rostro, pasarla a logs o a otro servicio que no sea el proveedor de IA.
+- Incumplir RN-27 (foto del rostro); ver skill `multi-tenencia-seguridad`.
 - Exponer correos de otros usuarios o datos entre barberías.
 - Usar `float` para dinero o fechas locales en BD.
 - Hacer cobros reales: la pasarela solo en modo de prueba.

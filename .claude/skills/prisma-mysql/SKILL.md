@@ -1,6 +1,7 @@
 ---
 name: prisma-mysql
 description: "Modelo Prisma con MySQL 8, migraciones, columna generada inicioActivo y seed. Usar al tocar schema.prisma, migraciones o seed. No usar para consultas de servicios (arquitectura-api)."
+user-invocable: false
 ---
 
 # Prisma + MySQL 8

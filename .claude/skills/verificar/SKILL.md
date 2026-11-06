@@ -1,5 +1,7 @@
 ---
-description: Corre lint, typecheck y test en los workspaces y resume el resultado
+name: verificar
+description: "Corre lint, typecheck y test en los workspaces y resume el resultado"
+disable-model-invocation: true
 ---
 
 Corre con Bash, en la raiz del repositorio:

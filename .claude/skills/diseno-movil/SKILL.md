@@ -1,6 +1,7 @@
 ---
 name: diseno-movil
 description: "Aspecto visual de la app: tokens, tema, fuentes, iconos, componentes y nodos de Figma. Usar al construir la interfaz de una pantalla. No usar para datos, rutas o estado (expo-pantallas)."
+user-invocable: false
 ---
 
 # Diseño movil
@@ -11,8 +12,8 @@ description: "Aspecto visual de la app: tokens, tema, fuentes, iconos, component
 
 ## Antes de construir una pantalla
 1. Busca su nodo en `docs/pantallas.md` (fileKey en ese archivo).
-2. Abre sesion con `create_session` y carga la skill de Figma `figma-design-to-code`.
-3. Consulta el nodo con `get_design_context` y `get_screenshot`; usa `get_variable_defs` si dudas de un token.
+2. Abre la sesión con `create_session` y el fileKey de `docs/pantallas.md`. Luego carga la skill `/figma-design-to-code` con `Skill` (plugin de Figma); si no está instalada, lee el recurso MCP `skill://figma/figma-design-to-code/SKILL.md` con `ReadMcpResourceTool` (servidor `claude.ai Figma`). En segundo plano esa herramienta no existe: lee la misma URI con `get_figma_skill`.
+3. Consulta el nodo con `get_design_context` y `get_screenshot`; usa `get_metadata` para ver la estructura de un marco y `get_variable_defs` si dudas de un token.
 4. El codigo de referencia de Figma se adapta a los componentes y tokens del proyecto; nunca se copia tal cual.
 
 ## Tema (`apps/movil/src/tema/`)

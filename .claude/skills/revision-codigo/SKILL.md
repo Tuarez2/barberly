@@ -1,6 +1,7 @@
 ---
 name: revision-codigo
 description: "Checklist de revision con niveles Bloqueante, Importante y Sugerencia. Usar al revisar cambios antes de cerrar una tarea. No usar para escribir o corregir codigo."
+user-invocable: false
 ---
 
 # Revision de codigo
@@ -18,7 +19,7 @@ Revisa con `git status --porcelain` + `git diff HEAD` (cambios en archivos con s
 - [ ] Creacion de citas sin transaccion + `FOR UPDATE`, o sin manejo de `P2002`.
 - [ ] Secretos, `.env`, contraseñas, tokens o fotos en codigo, logs o git.
 - [ ] SQL concatenado; `float` para dinero; fechas locales en BD.
-- [ ] Foto del rostro escrita en disco o enviada a un servicio distinto del proveedor de IA.
+- [ ] Foto del rostro (RN-27) fuera de memoria: escrita en disco o logs, guardada en el dispositivo mas alla de la seleccion, o enviada a un servicio distinto del proveedor de IA.
 - [ ] `new Date()` en reglas de negocio en vez de `reloj.ahora()`.
 - [ ] Respuesta sin `select` que expone `claveHash`, `tokenHash` o correos.
 - [ ] Foto de referencia sin `urlTemporal`, o foto del rostro en `AlmacenArchivos`.
@@ -37,5 +38,5 @@ Revisa con `git status --porcelain` + `git diff HEAD` (cambios en archivos con s
 - [ ] Duplicacion, nombres poco claros, funciones largas.
 
 ## Hallazgos
-Usa el formato de informe de tu agente. Una linea por hallazgo: `[Bloqueante] archivo.ts:42 — <problema>. Corregir: <accion>.`
+Formato: variante de `revisor-seguridad` en `protocolo-subagente`.
 Bloqueante es seguridad, fuga entre barberias, regla RN rota o concurrencia.

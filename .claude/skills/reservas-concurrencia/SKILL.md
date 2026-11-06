@@ -1,6 +1,7 @@
 ---
 name: reservas-concurrencia
 description: "Patron obligatorio para crear citas sin doble reserva (transaccion, FOR UPDATE, indice unico). Usar al implementar o modificar la creacion de citas. No usar para cancelar ni cambiar estados de una cita."
+user-invocable: false
 ---
 
 # Reservas sin doble reserva (RN-04)
@@ -66,5 +67,4 @@ Cita manual (`POST /barberias/:id/citas`): mismo patron y orden de validacion; s
 ## Reglas que se revalidan dentro de la transaccion
 RN-05/06/07 (horario, anticipacion minima y maxima), RN-08/09 (cruce y limite del cliente), RN-10 (bloques de 15 min), RN-12/34 (estado inicial segun anticipo).
 
-## Prueba obligatoria
-20 solicitudes simultaneas al mismo horario → exactamente 1 cita creada, 19 con `HORARIO_OCUPADO`. Terminar a las 10:00 y empezar a las 10:00 no se solapa.
+Pruebas: ver pruebas-api, sección Concurrencia.

@@ -1,6 +1,7 @@
 ---
 name: pruebas-api
 description: "Pruebas de la API con Vitest y Supertest: base de prueba, rojo-verde, fabricas, aislamiento y concurrencia. Usar al crear o ampliar pruebas de apps/api. No usar para pruebas de la app (expo-pantallas)."
+user-invocable: false
 ---
 
 # Pruebas de la API
