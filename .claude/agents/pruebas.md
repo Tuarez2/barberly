@@ -2,7 +2,7 @@
 name: pruebas
 description: "Escribe primero las pruebas de la API (rojo) con Vitest y Supertest desde la especificacion. Usar antes de api-backend; no escribe codigo de produccion ni pruebas de la app."
 tools: Read, Grep, Glob, Write, Edit, Bash
-model: sonnet
+model: opus
 maxTurns: 40
 hooks:
   PreToolUse:

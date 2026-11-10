@@ -125,6 +125,7 @@ Pantallas con diseño que §10.2 todavía no cubre. No se inventan rutas: se dec
 2. Leer horarios: no hay `GET` de horarios (Horarios, Editar día, Mi disponibilidad).
 3. Servicios inactivos: `GET /barberias/:id/servicios` solo devuelve activos, y el propietario necesita verlos para reactivarlos (Servicios).
 4. Registrar cita del barbero: §10.5 la incluye, pero Figma solo tiene el nodo de Propietario (23:1981). Se reutiliza ese diseño en `(barbero)/citas/nueva` con `POST /barberias/:id/citas`.
+5. Recuperar la contraseña (AUT-07, D-01): no hay nodo en Figma para pedir el código ni para restablecer la clave con `POST /autenticacion/recuperar-clave` y `POST /autenticacion/restablecer-clave`. Se diseña, o se arma con CampoTexto y Boton, antes de construirla.
 
 ## Componentes (marco "Componentes", nodo 3:2)
 

@@ -2,7 +2,7 @@
 name: app-movil
 description: "Implementa pantallas y logica de la app Expo consumiendo la API. Usar cuando el contrato de la API ya este en la especificacion; no toca la API."
 tools: Read, Grep, Glob, Write, Edit, Bash, Skill, ReadMcpResourceTool, mcp__claude_ai_Figma__create_session, mcp__claude_ai_Figma__get_design_context, mcp__claude_ai_Figma__get_metadata, mcp__claude_ai_Figma__get_screenshot, mcp__claude_ai_Figma__get_variable_defs, mcp__claude_ai_Figma__get_figma_skill
-model: sonnet
+model: opus
 maxTurns: 40
 hooks:
   PreToolUse:
