@@ -1,6 +1,6 @@
 # Catálogo de errores
 
-Fuente: DERCAS Anexo B. Formato de respuesta: §10.1.
+Fuente: DERCAS Anexo B y docs/decisiones.md. Formato de respuesta: §10.1.
 
 | Código | HTTP | Cuándo |
 | --- | --- | --- |
@@ -11,6 +11,7 @@ Fuente: DERCAS Anexo B. Formato de respuesta: §10.1.
 | NO_ENCONTRADO | 404 | Recurso inexistente o de otra barbería |
 | CORREO_REGISTRADO | 409 | Ya existe una cuenta con ese correo |
 | CREDENCIALES_INVALIDAS | 401 | Correo o contraseña incorrectos |
+| CODIGO_INVALIDO | 422 | El código de recuperación venció, ya se usó o superó 5 intentos (D-01) |
 | HORARIO_OCUPADO | 409 | El horario ya fue reservado |
 | HORARIO_PASADO | 422 | El horario ya pasó |
 | ANTICIPACION_INSUFICIENTE | 422 | No cumple la anticipación mínima |
@@ -24,6 +25,7 @@ Fuente: DERCAS Anexo B. Formato de respuesta: §10.1.
 | CANCELACION_TARDIA | 409 | Pasó el tiempo límite para cancelar |
 | TRANSICION_INVALIDA | 409 | La cita no puede cambiar a ese estado |
 | BARBERO_CON_CITAS | 409 | El barbero tiene citas futuras sin resolver |
+| ULTIMO_PROPIETARIO | 409 | Se intenta desactivar o quitar al último propietario activo (CU-20 A3, D-08) |
 | DEMASIADAS_SOLICITUDES | 429 | Demasiados intentos |
 | CONSENTIMIENTO_IA_REQUERIDO | 403 | Falta el consentimiento para usar el asesor |
 | LIMITE_IA_ALCANZADO | 429 | Se alcanzó el límite diario de consultas al asesor |
@@ -37,4 +39,3 @@ Fuente: DERCAS Anexo B. Formato de respuesta: §10.1.
 ## Dudas
 
 1. §10.4 usa 503 también para la pasarela; el Anexo B solo tiene IA_NO_DISPONIBLE.
-2. Sin código en el Anexo B: último propietario activo (CU-20 A3).

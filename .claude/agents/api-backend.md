@@ -2,7 +2,7 @@
 name: api-backend
 description: "Implementa la API de un modulo (rutas, controlador, servicio, esquemas Zod y documentacion) hasta que las pruebas pasen. Usar despues de pruebas; no escribe pruebas ni migraciones."
 tools: Read, Grep, Glob, Write, Edit, Bash, Skill
-model: sonnet
+model: opus
 maxTurns: 40
 hooks:
   PreToolUse:

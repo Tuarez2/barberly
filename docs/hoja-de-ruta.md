@@ -29,11 +29,11 @@ Entrega: usuarios que entran según su rol. Especificación: `docs/especificacio
 | F1.C | `funcionalidad/registro-sesion` | T1.5, T1.6, T1.7, T1.10, T1.11 | HU-AUT-01, HU-AUT-02 |
 | F1.D | `funcionalidad/roles` | T1.8, T1.12 | Cada rol entra a su interfaz |
 | F1.E | `feat/autenticacion-registrar-barberia` | T1.9 | HU-AUT-03 |
-| F1.F | `funcionalidad/perfil` | T1.13, T1.14 | Perfil, contraseña y barbería activa |
+| F1.F | `funcionalidad/perfil` | T1.13, T1.14, T1.15 | Perfil, contraseña, recuperación y barbería activa |
 
 | ID | Tarea | Códigos | Rama | Depende | Estado |
 | --- | --- | --- | --- | --- | --- |
-| T1.1 | Resolver las Dudas de autenticación y agregar la sección Pantallas a su especificación | AUT-01 a AUT-10 | `docs/autenticacion-decisiones` | T0.2 | pendiente |
+| T1.1 | Resolver las Dudas de autenticación y agregar la sección Pantallas a su especificación | AUT-01 a AUT-10 | `docs/autenticacion-decisiones` | T0.2 | hecha |
 | T1.2 | Modelo de datos completo, índices y restricciones, con su migración | §9.2, §9.4, §9.5 | `feat/base-datos-modelo` | T1.1 | pendiente |
 | T1.3 | Semillas de desarrollo y fábricas de prueba | §7.1, skill `pruebas-api` | `feat/base-datos-semillas` | T1.2 | pendiente |
 | T1.4 | Documentación OpenAPI base en `GET /api/v1/documentacion` | §10.7 | `chore/api-documentacion` | T1.2 | pendiente |
@@ -47,6 +47,7 @@ Entrega: usuarios que entran según su rol. Especificación: `docs/especificacio
 | T1.12 | App: entrada según el rol, rutas protegidas y cerrar sesión | AUT-03, AUT-08, HU-AUT-02 | `feat/movil-rol` | T1.8, T1.11 | pendiente |
 | T1.13 | Perfil: ver y editar datos, cambiar contraseña (API y app) | AUT-05, AUT-06 | `feat/autenticacion-perfil` | T1.12 | pendiente |
 | T1.14 | Elegir la barbería activa (API y app) | AUT-09 | `feat/autenticacion-barberia-activa` | T1.12 | pendiente |
+| T1.15 | Recuperar la contraseña con código por correo e interfaz EnvioCorreo (API y app) | AUT-07, D-01 | `feat/autenticacion-recuperar-clave` | T1.7 | pendiente |
 
 ## Fase 2. Catálogo y administración
 
