@@ -14,6 +14,7 @@
     "seed": "tsx --env-file-if-exists=.env prisma/seed.ts"
   },
   "dependencies": {
+    "@asteasolutions/zod-to-openapi": "9.1.0",
     "@barberly/compartido": "*",
     "@prisma/adapter-mariadb": "7.10.1",
     "@prisma/client": "7.10.1",
