@@ -14,7 +14,7 @@ Fuente: DERCAS §4. El backend las aplica siempre. "propuesta" = valor configura
 | RN-06 | No se reserva en el pasado; se exige anticipación mínima (propuesta: 30 minutos), configurable por barbería. | HORARIO_PASADO, ANTICIPACION_INSUFICIENTE |
 | RN-07 | La anticipación máxima de reserva está limitada (propuesta: 30 días). | FECHA_DEMASIADO_LEJANA |
 | RN-08 | Un cliente no tiene dos citas activas solapadas, aunque sean en barberías distintas. | CRUCE_DEL_CLIENTE |
-| RN-09 | Un cliente tiene como máximo 3 citas futuras activas por barbería (propuesta). | LIMITE_DE_CITAS |
+| RN-09 | Un cliente tiene como máximo `Barberia.maxCitasActivas` citas futuras activas por barbería (1 a 10, por defecto 3) (D-09). | LIMITE_DE_CITAS |
 | RN-10 | Los horarios se ofrecen en bloques de 15 minutos y la duración de un servicio es múltiplo de 15. | — |
 | RN-11 | Si dos clientes reservan el mismo horario a la vez, solo uno tiene éxito; el otro recibe error. | HORARIO_OCUPADO |
 
@@ -100,4 +100,3 @@ Estados: PENDIENTE, CONFIRMADA, COMPLETADA, CANCELADA, AUSENTE. Los tres último
 2. RN-14: sin código para el personal que cancela desde la hora de inicio.
 3. RN-18: barbero no asignado de la misma barbería: no se define si es 403 o 404.
 4. RN-19: sin código para marcar antes de la hora de inicio.
-5. RN-09: es "propuesta" (configurable según §4), pero §9.2 no tiene campo para ese valor.
