@@ -34,7 +34,7 @@ Entrega: usuarios que entran según su rol. Especificación: `docs/especificacio
 | ID | Tarea | Códigos | Rama | Depende | Estado |
 | --- | --- | --- | --- | --- | --- |
 | T1.1 | Resolver las Dudas de autenticación y agregar la sección Pantallas a su especificación | AUT-01 a AUT-10 | `docs/autenticacion-decisiones` | T0.2 | hecha |
-| T1.2 | Modelo de datos completo, índices y restricciones, con su migración | §9.2, §9.4, §9.5 | `feat/base-datos-modelo` | T1.1 | pendiente |
+| T1.2 | Modelo de datos completo, índices y restricciones, con su migración | §9.2, §9.4, §9.5 | `feat/base-datos-modelo` | T1.1 | hecha |
 | T1.3 | Semillas de desarrollo y fábricas de prueba | §7.1, skill `pruebas-api` | `feat/base-datos-semillas` | T1.2 | pendiente |
 | T1.4 | Documentación OpenAPI base en `GET /api/v1/documentacion` | §10.7 | `chore/api-documentacion` | T1.2 | pendiente |
 | T1.5 | API: registro de usuario | AUT-01, HU-AUT-01, SEG-06 | `feat/autenticacion-registro` | T1.3, T1.4 | pendiente |

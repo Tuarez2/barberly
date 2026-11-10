@@ -1,4 +1,8 @@
-// El modelo completo llega en la Fase 1 (DERCAS §9). La URL vive en prisma.config.ts.
+// Modelo de datos de Barberly (DERCAS §9.2, §9.4 y §9.5; decisiones D-01, D-04 y D-09).
+// Convenciones: skill prisma-mysql. La URL vive en prisma.config.ts.
+// Prisma no modela las restricciones CHECK ni la columna generada inicioActivo: van en el SQL de la migracion.
+// Las relaciones compuestas (id, barberiaId) obligan a que los datos enlazados sean de la misma barberia (§11.3).
+
 generator client {
   provider = "prisma-client"
   output   = "../src/generado/prisma"
@@ -6,4 +10,358 @@ generator client {
 
 datasource db {
   provider = "mysql"
+}
+
+enum RolMembresia {
+  PROPIETARIO
+  BARBERO
+}
+
+enum EstadoMembresia {
+  INVITADO
+  ACTIVO
+  INACTIVO
+}
+
+enum EstadoCita {
+  PENDIENTE
+  CONFIRMADA
+  COMPLETADA
+  CANCELADA
+  AUSENTE
+}
+
+enum TipoPago {
+  ANTICIPO
+  FINAL
+}
+
+enum MetodoPago {
+  EFECTIVO
+  TRANSFERENCIA
+  DEUNA
+  TARJETA
+}
+
+enum EstadoPago {
+  PENDIENTE
+  APROBADO
+  REEMBOLSADO
+  FALLIDO
+}
+
+model Usuario {
+  id                 String    @id @default(uuid()) @db.Char(36)
+  nombre             String    @db.VarChar(80)
+  correo             String    @unique @db.VarChar(120)
+  telefono           String    @db.VarChar(20)
+  claveHash          String    @db.VarChar(100)
+  activo             Boolean   @default(true)
+  consentimientoIaEn DateTime? @db.DateTime(3)
+  creadoEn           DateTime  @default(now()) @db.DateTime(3)
+  actualizadoEn      DateTime  @updatedAt @db.DateTime(3)
+
+  membresias          Membresia[]
+  citas               Cita[]               @relation("CitaCliente")
+  citasCanceladas     Cita[]               @relation("CitaCanceladaPor")
+  consultasEstilo     ConsultaEstilo[]
+  tokensRenovacion    TokenRenovacion[]
+  codigosRecuperacion CodigoRecuperacion[]
+  registrosAuditoria  RegistroAuditoria[]
+
+  @@map("usuarios")
+}
+
+model Barberia {
+  id                     String   @id @default(uuid()) @db.Char(36)
+  nombre                 String   @db.VarChar(80)
+  descripcion            String?  @db.VarChar(500)
+  direccion              String   @db.VarChar(200)
+  telefono               String   @db.VarChar(20)
+  archivoPortada         String?  @db.VarChar(255)
+  zonaHoraria            String   @default("America/Guayaquil") @db.VarChar(60)
+  minutosMinCancelacion  Int      @default(120)
+  minutosMinAnticipacion Int      @default(30)
+  diasMaxAnticipacion    Int      @default(30)
+  maxCitasActivas        Int      @default(3)
+  publicada              Boolean  @default(false)
+  activo                 Boolean  @default(true)
+  anticipoActivo         Boolean  @default(false)
+  montoAnticipo          Decimal? @db.Decimal(10, 2)
+  creadoEn               DateTime @default(now()) @db.DateTime(3)
+  actualizadoEn          DateTime @updatedAt @db.DateTime(3)
+
+  membresias         Membresia[]
+  perfilesBarbero    PerfilBarbero[]
+  servicios          Servicio[]
+  serviciosBarbero   ServicioBarbero[]
+  horariosAtencion   HorarioAtencion[]
+  bloqueos           Bloqueo[]
+  citas              Cita[]
+  consultasEstilo    ConsultaEstilo[]
+  pagos              Pago[]
+  registrosAuditoria RegistroAuditoria[]
+
+  @@index([activo, publicada])
+  @@map("barberias")
+}
+
+model Membresia {
+  id            String          @id @default(uuid()) @db.Char(36)
+  usuarioId     String          @db.Char(36)
+  barberiaId    String          @db.Char(36)
+  rol           RolMembresia
+  estado        EstadoMembresia
+  creadoEn      DateTime        @default(now()) @db.DateTime(3)
+  actualizadoEn DateTime        @updatedAt @db.DateTime(3)
+
+  usuario       Usuario        @relation(fields: [usuarioId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  barberia      Barberia       @relation(fields: [barberiaId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  perfilBarbero PerfilBarbero?
+
+  @@unique([usuarioId, barberiaId])
+  @@unique([id, barberiaId])
+  @@index([barberiaId])
+  @@map("membresias")
+}
+
+model PerfilBarbero {
+  id                 String   @id @default(uuid()) @db.Char(36)
+  membresiaId        String   @unique @db.Char(36)
+  barberiaId         String   @db.Char(36)
+  nombreVisible      String   @db.VarChar(80)
+  archivoFoto        String?  @db.VarChar(255)
+  puedeEditarHorario Boolean  @default(false)
+  creadoEn           DateTime @default(now()) @db.DateTime(3)
+  actualizadoEn      DateTime @updatedAt @db.DateTime(3)
+
+  membresia        Membresia         @relation(fields: [membresiaId, barberiaId], references: [id, barberiaId], onDelete: Restrict, onUpdate: Restrict)
+  barberia         Barberia          @relation(fields: [barberiaId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  servicios        ServicioBarbero[]
+  horariosAtencion HorarioAtencion[]
+  bloqueos         Bloqueo[]
+  citas            Cita[]
+
+  @@unique([membresiaId, barberiaId])
+  @@unique([id, barberiaId])
+  @@index([barberiaId])
+  @@map("perfiles_barbero")
+}
+
+model Servicio {
+  id              String   @id @default(uuid()) @db.Char(36)
+  barberiaId      String   @db.Char(36)
+  nombre          String   @db.VarChar(80)
+  descripcion     String?  @db.VarChar(300)
+  etiquetasEstilo String   @default("") @db.VarChar(200)
+  precio          Decimal  @db.Decimal(8, 2)
+  duracionMinutos Int
+  activo          Boolean  @default(true)
+  creadoEn        DateTime @default(now()) @db.DateTime(3)
+  actualizadoEn   DateTime @updatedAt @db.DateTime(3)
+
+  barberia         Barberia          @relation(fields: [barberiaId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  serviciosBarbero ServicioBarbero[]
+  citas            Cita[]
+
+  @@unique([barberiaId, nombre])
+  @@unique([id, barberiaId])
+  @@map("servicios")
+}
+
+model ServicioBarbero {
+  perfilBarberoId String   @db.Char(36)
+  servicioId      String   @db.Char(36)
+  barberiaId      String   @db.Char(36)
+  creadoEn        DateTime @default(now()) @db.DateTime(3)
+  actualizadoEn   DateTime @updatedAt @db.DateTime(3)
+
+  perfilBarbero PerfilBarbero @relation(fields: [perfilBarberoId, barberiaId], references: [id, barberiaId], onDelete: Restrict, onUpdate: Restrict)
+  servicio      Servicio      @relation(fields: [servicioId, barberiaId], references: [id, barberiaId], onDelete: Restrict, onUpdate: Restrict)
+  barberia      Barberia      @relation(fields: [barberiaId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@id([perfilBarberoId, servicioId])
+  @@index([servicioId, barberiaId])
+  @@index([barberiaId])
+  @@map("servicios_barbero")
+}
+
+// Horas locales "HH:mm" en la zona de la barberia; diaSemana de 0 a 6 (su convencion es una Duda de disponibilidad-horarios).
+model HorarioAtencion {
+  id              String   @id @default(uuid()) @db.Char(36)
+  barberiaId      String   @db.Char(36)
+  perfilBarberoId String?  @db.Char(36)
+  diaSemana       Int      @db.TinyInt
+  horaApertura    String   @db.Char(5)
+  horaCierre      String   @db.Char(5)
+  inicioPausa     String?  @db.Char(5)
+  finPausa        String?  @db.Char(5)
+  creadoEn        DateTime @default(now()) @db.DateTime(3)
+  actualizadoEn   DateTime @updatedAt @db.DateTime(3)
+
+  barberia      Barberia       @relation(fields: [barberiaId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  perfilBarbero PerfilBarbero? @relation(fields: [perfilBarberoId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@unique([barberiaId, perfilBarberoId, diaSemana])
+  @@index([perfilBarberoId])
+  @@map("horarios_atencion")
+}
+
+model Bloqueo {
+  id              String   @id @default(uuid()) @db.Char(36)
+  barberiaId      String   @db.Char(36)
+  perfilBarberoId String?  @db.Char(36)
+  iniciaEn        DateTime @db.DateTime(3)
+  terminaEn       DateTime @db.DateTime(3)
+  motivo          String?  @db.VarChar(200)
+  creadoEn        DateTime @default(now()) @db.DateTime(3)
+  actualizadoEn   DateTime @updatedAt @db.DateTime(3)
+
+  barberia      Barberia       @relation(fields: [barberiaId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  perfilBarbero PerfilBarbero? @relation(fields: [perfilBarberoId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@index([barberiaId, iniciaEn])
+  @@index([perfilBarberoId, iniciaEn])
+  @@map("bloqueos")
+}
+
+model Cita {
+  id                    String     @id @default(uuid()) @db.Char(36)
+  barberiaId            String     @db.Char(36)
+  clienteId             String?    @db.Char(36)
+  perfilBarberoId       String     @db.Char(36)
+  servicioId            String     @db.Char(36)
+  nombreCliente         String?    @db.VarChar(80)
+  telefonoCliente       String?    @db.VarChar(20)
+  iniciaEn              DateTime   @db.DateTime(3)
+  terminaEn             DateTime   @db.DateTime(3)
+  precioReserva         Decimal    @db.Decimal(8, 2)
+  duracionReserva       Int
+  estado                EstadoCita
+  notas                 String?    @db.VarChar(200)
+  canceladaPorId        String?    @db.Char(36)
+  canceladaEn           DateTime?  @db.DateTime(3)
+  motivoCancelacion     String?    @db.VarChar(200)
+  claveIdempotencia     String?    @db.VarChar(64)
+  archivoFotoReferencia String?    @db.VarChar(255)
+  anticipoVenceEn       DateTime?  @db.DateTime(3)
+  // Columna generada en la migracion (skill reservas-concurrencia): solo lectura, nunca se escribe.
+  inicioActivo          DateTime?  @db.DateTime(3)
+  creadoEn              DateTime   @default(now()) @db.DateTime(3)
+  actualizadoEn         DateTime   @updatedAt @db.DateTime(3)
+
+  barberia        Barberia         @relation(fields: [barberiaId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  cliente         Usuario?         @relation("CitaCliente", fields: [clienteId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  perfilBarbero   PerfilBarbero    @relation(fields: [perfilBarberoId, barberiaId], references: [id, barberiaId], onDelete: Restrict, onUpdate: Restrict)
+  servicio        Servicio         @relation(fields: [servicioId, barberiaId], references: [id, barberiaId], onDelete: Restrict, onUpdate: Restrict)
+  canceladaPor    Usuario?         @relation("CitaCanceladaPor", fields: [canceladaPorId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  pagos           Pago[]
+  consultasEstilo ConsultaEstilo[]
+
+  @@unique([perfilBarberoId, inicioActivo], map: "uq_citas_barbero_inicio_activo")
+  @@unique([clienteId, claveIdempotencia])
+  @@unique([id, barberiaId])
+  @@index([perfilBarberoId, iniciaEn, estado])
+  @@index([clienteId, iniciaEn])
+  @@index([barberiaId, iniciaEn])
+  @@index([servicioId, barberiaId])
+  @@index([canceladaPorId])
+  @@map("citas")
+}
+
+// La foto del rostro nunca llega aqui (RN-27): solo el resultado.
+model ConsultaEstilo {
+  id              String   @id @default(uuid()) @db.Char(36)
+  usuarioId       String   @db.Char(36)
+  barberiaId      String   @db.Char(36)
+  rasgos          Json
+  recomendaciones Json
+  citaId          String?  @db.Char(36)
+  creadoEn        DateTime @default(now()) @db.DateTime(3)
+  actualizadoEn   DateTime @updatedAt @db.DateTime(3)
+
+  usuario  Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  barberia Barberia @relation(fields: [barberiaId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  cita     Cita?    @relation(fields: [citaId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@index([usuarioId, creadoEn])
+  @@index([barberiaId])
+  @@index([citaId])
+  @@map("consultas_estilo")
+}
+
+model Pago {
+  id                 String     @id @default(uuid()) @db.Char(36)
+  citaId             String     @db.Char(36)
+  barberiaId         String     @db.Char(36)
+  tipo               TipoPago
+  metodo             MetodoPago
+  monto              Decimal    @db.Decimal(10, 2)
+  estado             EstadoPago
+  referenciaPasarela String?    @unique @db.VarChar(120)
+  motivoAjuste       String?    @db.VarChar(200)
+  creadoEn           DateTime   @default(now()) @db.DateTime(3)
+  actualizadoEn      DateTime   @updatedAt @db.DateTime(3)
+
+  cita     Cita     @relation(fields: [citaId, barberiaId], references: [id, barberiaId], onDelete: Restrict, onUpdate: Restrict)
+  barberia Barberia @relation(fields: [barberiaId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@unique([citaId, tipo])
+  @@index([barberiaId, creadoEn])
+  @@map("pagos")
+}
+
+// Cada fila es una sesion (D-04); el token se guarda solo como hash.
+model TokenRenovacion {
+  id            String    @id @default(uuid()) @db.Char(36)
+  usuarioId     String    @db.Char(36)
+  tokenHash     String    @unique @db.Char(64)
+  expiraEn      DateTime  @db.DateTime(3)
+  revocadoEn    DateTime? @db.DateTime(3)
+  dispositivo   String?   @db.VarChar(100)
+  creadoEn      DateTime  @default(now()) @db.DateTime(3)
+  actualizadoEn DateTime  @updatedAt @db.DateTime(3)
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@index([usuarioId])
+  @@map("tokens_renovacion")
+}
+
+// Recuperar la contrasena con codigo temporal (AUT-07, D-01).
+model CodigoRecuperacion {
+  id            String    @id @default(uuid()) @db.Char(36)
+  usuarioId     String    @db.Char(36)
+  codigoHash    String    @db.VarChar(100)
+  expiraEn      DateTime  @db.DateTime(3)
+  usadoEn       DateTime? @db.DateTime(3)
+  intentos      Int       @default(0)
+  creadoEn      DateTime  @default(now()) @db.DateTime(3)
+  actualizadoEn DateTime  @updatedAt @db.DateTime(3)
+
+  usuario Usuario @relation(fields: [usuarioId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@index([usuarioId, creadoEn])
+  @@map("codigos_recuperacion")
+}
+
+// Bitacora de §11.7: no se edita ni se elimina desde la aplicacion (§9.5).
+// barberiaId y actorId son opcionales: hay eventos sin barberia (inicio fallido, consentimiento) o del sistema.
+model RegistroAuditoria {
+  id          String   @id @default(uuid()) @db.Char(36)
+  barberiaId  String?  @db.Char(36)
+  actorId     String?  @db.Char(36)
+  accion      String   @db.VarChar(60)
+  tipoEntidad String   @db.VarChar(40)
+  entidadId   String?  @db.Char(36)
+  antes       Json?
+  despues     Json?
+  creadoEn    DateTime @default(now()) @db.DateTime(3)
+
+  barberia Barberia? @relation(fields: [barberiaId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  actor    Usuario?  @relation(fields: [actorId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+
+  @@index([barberiaId, creadoEn])
+  @@index([actorId])
+  @@map("registros_auditoria")
 }
