@@ -7,7 +7,7 @@ user-invocable: false
 # Pantallas Expo
 
 ## Estructura (`apps/movil/`)
-- Expo Router en `app/` con grupos por rol: `(autenticacion)`, `(cliente)`, `(barbero)`, `(propietario)`. Rutas y nombres de archivo en español, minusculas con guiones.
+- Expo Router en `app/` con grupos por rol: `(autenticacion)`, `(cliente)`, `(barbero)`. El propietario no tiene grupo en la app: usa el panel web (D-10). Rutas y nombres de archivo en español, minusculas con guiones.
 - `src/api/`: cliente HTTP unico (agrega `Authorization`, renueva el token una vez ante 401) y hooks por modulo (`useCitas`, `useCrearCita`).
 - `src/componentes/`, `src/textos/` (todos los textos de interfaz y el mapa codigo de error → mensaje), `src/utilidades/` (fechas con Luxon).
 

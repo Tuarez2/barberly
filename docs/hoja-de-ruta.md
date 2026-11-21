@@ -3,6 +3,7 @@
 Tareas y funcionalidades por fase, en orden (DERCAS §13.6). Una rama por tarea (se pide con `/tarea <ID>`) y un PR por funcionalidad (ver `docs/flujo-de-trabajo.md`).
 Estado: `pendiente`, `en-curso` o `hecha`. El usuario lo cambia a `hecha` antes del commit final de la tarea.
 La Fase 1 está detallada; las demás son provisionales y se afinan al empezar la fase, después de `/especificar` y `/decidir`.
+Lo administrativo del propietario va en el panel web (D-10) y, desde T1.17, cada tarea vive en su repositorio: API, app (`movil`) o panel (D-11).
 
 ## Fase 0. Preparación
 
@@ -30,6 +31,9 @@ Entrega: usuarios que entran según su rol. Especificación: `docs/especificacio
 | F1.D | `funcionalidad/roles` | T1.8, T1.12 | Cada rol entra a su interfaz |
 | F1.E | `feat/autenticacion-registrar-barberia` | T1.9 | HU-AUT-03 |
 | F1.F | `funcionalidad/perfil` | T1.13, T1.14, T1.15 | Perfil, contraseña, recuperación y barbería activa |
+| F1.G | `docs/panel-web` | T1.16 | Panel web y tres repositorios decididos |
+| F1.H | `chore/separar-repositorios` | T1.17 | Repositorios API, app y panel en verde |
+| F1.I | `funcionalidad/panel-acceso` | T1.18, T1.19, T1.20 | El propietario entra al panel web (HU-AUT-02, HU-AUT-03) |
 
 | ID | Tarea | Códigos | Rama | Depende | Estado |
 | --- | --- | --- | --- | --- | --- |
@@ -44,10 +48,15 @@ Entrega: usuarios que entran según su rol. Especificación: `docs/especificacio
 | T1.9 | API: registrar barbería y quedar como propietario | AUT-10, HU-AUT-03 | `feat/autenticacion-registrar-barberia` | T1.8 | pendiente |
 | T1.10 | App: sesión (cliente HTTP con token, renovación automática, almacenamiento seguro, TanStack Query) | AUT-04, §11.4 | `feat/movil-sesion` | T1.7 | pendiente |
 | T1.11 | App: pantallas Registro e Inicio de sesión con sus estados de error | HU-AUT-01, HU-AUT-02 | `feat/movil-registro-iniciar-sesion` | T1.10 | pendiente |
-| T1.12 | App: entrada según el rol, rutas protegidas y cerrar sesión | AUT-03, AUT-08, HU-AUT-02 | `feat/movil-rol` | T1.8, T1.11 | pendiente |
+| T1.12 | App: entrada según el rol (cliente o barbero), aviso del panel para el propietario, rutas protegidas y cerrar sesión | AUT-03, AUT-08, HU-AUT-02, D-10 | `feat/movil-rol` | T1.8, T1.11 | pendiente |
 | T1.13 | Perfil: ver y editar datos, cambiar contraseña (API y app) | AUT-05, AUT-06 | `feat/autenticacion-perfil` | T1.12 | pendiente |
 | T1.14 | Elegir la barbería activa (API y app) | AUT-09 | `feat/autenticacion-barberia-activa` | T1.12 | pendiente |
 | T1.15 | Recuperar la contraseña con código por correo e interfaz EnvioCorreo (API y app) | AUT-07, D-01 | `feat/autenticacion-recuperar-clave` | T1.7 | pendiente |
+| T1.16 | Decisiones del panel web y de los tres repositorios, y documentos afectados | D-10 a D-13 | `docs/panel-web` | T1.4 | en-curso |
+| T1.17 | Separar en tres repositorios (API, app y panel), cada uno con su CI y su copia del contrato | D-11, §8.9 | `chore/separar-repositorios` | T1.16 | pendiente |
+| T1.18 | Panel: proyecto base con Vite, React Router, TanStack Query, tema, cliente HTTP y CI | D-10, D-11 | `chore/panel-base` | T1.17 | pendiente |
+| T1.19 | Panel: sesión, registro, inicio de sesión, rutas solo para propietarios y cerrar sesión | AUT-01 a AUT-04, AUT-08, HU-AUT-02, D-12 | `feat/panel-sesion` | T1.8, T1.18 | pendiente |
+| T1.20 | Panel: registrar barbería, elegir la barbería activa y perfil del propietario | AUT-05, AUT-06, AUT-09, AUT-10, HU-AUT-03, D-13 | `feat/panel-barberia` | T1.9, T1.13, T1.14, T1.19 | pendiente |
 
 ## Fase 2. Catálogo y administración
 
@@ -71,8 +80,8 @@ Entrega: barbería configurable y visible para clientes.
 | T2.7 | API: estado de publicación de la barbería | ADM-13, HU-AUT-03 | `feat/administracion-publicacion` | T2.4, T2.6 | pendiente |
 | T2.8 | API: listado y búsqueda de barberías | BUS-01, BUS-02, HU-BUS-01, HU-BUS-03 | `feat/busqueda-listado` | T2.7 | pendiente |
 | T2.9 | API: detalle de barbería, servicios, barberos y horario | BUS-05 a BUS-08, HU-BUS-02 | `feat/busqueda-detalle` | T2.8 | pendiente |
-| T2.10 | App propietario: barbería, servicios y horarios | ADM-01, ADM-02, ADM-05, ADM-14 | `feat/movil-administracion` | T2.4 | pendiente |
-| T2.11 | App propietario: personal e invitaciones | ADM-03, ADM-04 | `feat/movil-personal` | T2.6 | pendiente |
+| T2.10 | Panel: barbería, servicios y horarios | ADM-01, ADM-02, ADM-05, ADM-14, D-10 | `feat/panel-administracion` | T2.4 | pendiente |
+| T2.11 | Panel: personal e invitaciones | ADM-03, ADM-04, D-10 | `feat/panel-personal` | T2.6 | pendiente |
 | T2.12 | App cliente: explorar y buscar | BUS-01, BUS-02 | `feat/movil-explorar` | T2.8 | pendiente |
 | T2.13 | App cliente: detalle de barbería con Reservar | BUS-05 a BUS-08, BUS-10 | `feat/movil-detalle-barberia` | T2.9 | pendiente |
 
@@ -148,14 +157,14 @@ Entrega: propietario que ve el rendimiento de su barbería.
 | Func. | Rama del PR | Tareas | Entrega |
 | --- | --- | --- | --- |
 | F6.A | `docs/estadisticas` | T6.1 | Especificación |
-| F6.B | `funcionalidad/panel` | T6.2, T6.3, T6.4 | HU-ADM-04, HU-EST-01, HU-EST-02 |
+| F6.B | `funcionalidad/panel-estadisticas` | T6.2, T6.3, T6.4 | HU-ADM-04, HU-EST-01, HU-EST-02 |
 
 | ID | Tarea | Códigos | Rama | Depende | Estado |
 | --- | --- | --- | --- | --- | --- |
 | T6.1 | Especificación de estadísticas y sus Dudas | §3.9, §4.6 | `docs/estadisticas` | Fase 5 | pendiente |
 | T6.2 | API: indicadores e ingresos | EST-01 a EST-03, RN-37, RN-38, HU-EST-01 | `feat/estadisticas-ingresos` | T6.1 | pendiente |
 | T6.3 | API: ocupación, mapa de calor, servicios y asesor | EST-04 a EST-06, HU-EST-02 | `feat/estadisticas-demanda` | T6.2 | pendiente |
-| T6.4 | App: panel del propietario | ADM-11, EST-01 a EST-06 | `feat/movil-estadisticas` | T6.3 | pendiente |
+| T6.4 | Panel: estadísticas del propietario | ADM-11, EST-01 a EST-06, D-10 | `feat/panel-estadisticas` | T6.3 | pendiente |
 
 ## Fase 7. Pulido y seguridad
 
@@ -165,14 +174,14 @@ Entrega: MVP estable. Se cierra con los 14 casos PO de DERCAS §12.2.
 | --- | --- | --- | --- |
 | F7.A | `feat/seguridad-auditoria` | T7.1 | SEG-10 |
 | F7.B | `funcionalidad/pruebas-obligatorias` | T7.2, T7.3, T7.5 | 14 casos PO |
-| F7.C | `fix/movil-textos-errores` | T7.4 | Errores y textos |
+| F7.C | `fix/textos-errores` | T7.4 | Errores y textos |
 
 | ID | Tarea | Códigos | Rama | Depende | Estado |
 | --- | --- | --- | --- | --- | --- |
 | T7.1 | Auditoría de acciones críticas | SEG-10, §11.7 | `feat/seguridad-auditoria` | Fase 6 | pendiente |
 | T7.2 | Repaso de aislamiento entre barberías, roles y concurrencia | PO-05 a PO-07, SEG-04, SEG-07 | `test/seguridad-aislamiento` | Fase 6 | pendiente |
 | T7.3 | Repaso de privacidad de fotos | PO-14, RN-27, RN-31, SEG-13 | `test/seguridad-fotos` | Fase 6 | pendiente |
-| T7.4 | Revisión de errores y textos de la app | SEG-08, §10.6 | `fix/movil-textos-errores` | Fase 6 | pendiente |
+| T7.4 | Revisión de errores y textos de la app y del panel | SEG-08, §10.6 | `fix/textos-errores` | Fase 6 | pendiente |
 | T7.5 | Los 14 casos PO en verde y casos adicionales de §12.2 | §12.2, §12.5 | `test/casos-obligatorios` | T7.2, T7.3 | pendiente |
 
 ## Pendientes Debería y Podría
@@ -182,5 +191,5 @@ Se programan al cerrar la fase de su módulo, si hay tiempo: BUS-03, RES-12, RES
 ## Fases 8 y 9, y Extendida
 
 - Fase 8. Piloto con barberías reales (§12.4) y prueba cerrada de Google Play (12 testers, 14 días).
-- Fase 9. Ficha de la tienda, política de privacidad y producción (§13.2).
+- Fase 9. Ficha de la tienda, política de privacidad, producción (§13.2) y despliegue del panel web (D-10).
 - Extendida. Anticipo en línea en modo de prueba: ADM-15, RES-15, PAG-04 a PAG-07, SEG-16.

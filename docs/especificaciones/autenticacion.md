@@ -77,14 +77,14 @@ Tomadas de docs/pantallas.md. Las variantes son estados de la misma ruta.
 | Registro (con errores 13:671) | 13:637 | (autenticacion)/registro |
 | Perfil del cliente | 11:579 | (cliente)/perfil |
 | Perfil del barbero | 16:1052 | (barbero)/perfil |
-| Perfil del propietario | 19:1482 | (propietario)/perfil |
+| Perfil del propietario (panel web, D-10) | 19:1482 | /perfil |
 | Editar perfil | 11:667 | (cliente)/perfil/editar |
 | Cambiar contraseña | 11:693 | (cliente)/perfil/clave |
 | Invitaciones | 22:1871 | (cliente)/perfil/invitaciones |
 | Cambiar de barbería o rol | 22:1886 | (cliente)/perfil/cambiar-rol |
-| Registrar barbería | 22:1922 | (cliente)/registrar-barberia |
+| Registrar barbería (panel web, D-13) | 22:1922 | /registrar-barberia |
 
-Editar perfil, Cambiar contraseña, Invitaciones y Cambiar de barbería o rol se reutilizan en (barbero) y (propietario) (§10.5). Recuperar la contraseña (D-01) no tiene diseño: ver Huecos en docs/pantallas.md.
+Editar perfil, Cambiar contraseña, Invitaciones y Cambiar de barbería o rol se reutilizan en (barbero) (§10.5). El propietario entra por el panel web, que tiene su propio inicio de sesión, registro, elección de barbería y perfil (D-10, D-12, D-13; rutas en docs/pantallas.md); en la app ve un aviso para ir al panel. Recuperar la contraseña (D-01) no tiene diseño: ver Huecos en docs/pantallas.md.
 
 ## Criterios de aceptación
 - HU-AUT-01: Dado un correo nuevo y datos válidos, cuando se registra, entonces la cuenta se crea, recibe los tokens y entra a la app.
@@ -93,6 +93,8 @@ Editar perfil, Cambiar contraseña, Invitaciones y Cambiar de barbería o rol se
 - HU-AUT-02: Dadas credenciales correctas, cuando inicia sesión, entonces entra a la pantalla de su rol.
 - HU-AUT-02: Dada una sesión vigente, cuando reabre la app, entonces sigue dentro.
 - HU-AUT-02: Dado un token de renovación revocado, cuando se renueva la sesión, entonces se le pide iniciar sesión.
+- HU-AUT-02: Dado un propietario, cuando inicia sesión en la app, entonces entra como cliente, o como barbero si tiene esa membresía, y ve el aviso para usar el panel web (D-10).
+- HU-AUT-02: Dado un usuario sin membresía PROPIETARIO activa, cuando inicia sesión en el panel web, entonces ve Sin acceso y no llega a ninguna pantalla de administración (D-10).
 - HU-AUT-03: Dado un usuario autenticado con nombre, dirección y teléfono, cuando registra la barbería, entonces queda como propietario.
 - HU-AUT-03: Dada una barbería recién registrada, sin servicios, horarios ni barberos, cuando se consulta el listado público, entonces no aparece (D-07).
 
