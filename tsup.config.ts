@@ -6,6 +6,4 @@ export default defineConfig({
   target: 'node26',
   clean: true,
   sourcemap: true,
-  // Sin paso de compilacion propio: el paquete compartido entra en el bundle.
-  noExternal: ['@barberly/compartido'],
 });

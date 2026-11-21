@@ -1,4 +1,4 @@
-import type { RolMembresia } from '@barberly/compartido';
+import type { RolMembresia } from '../contrato';
 import type { NextFunction, Request, Response } from 'express';
 
 import { ErrorNegocio } from '../errores';

@@ -33,4 +33,4 @@ ALTER TABLE citas
 - Unico adicional: `@@unique([clienteId, claveIdempotencia])`.
 
 ## Seed
-`npm run seed -w apps/api` crea: 1 propietario, 1 barberia con horarios, 2 barberos, servicios con etiquetas, 1 cliente y, para pruebas de aislamiento, una segunda barberia con su propietario. Usa UUID fijos, claves de ejemplo solo de desarrollo y las mismas fabricas que las pruebas cuando sea posible.
+`npm run seed` crea: 1 propietario, 1 barberia con horarios, 2 barberos, servicios con etiquetas, 1 cliente y, para pruebas de aislamiento, una segunda barberia con su propietario. Usa UUID fijos, claves de ejemplo solo de desarrollo y las mismas fabricas que las pruebas cuando sea posible.

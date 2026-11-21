@@ -1,6 +1,6 @@
 ---
 name: pruebas-api
-description: "Pruebas de la API con Vitest y Supertest: base de prueba, rojo-verde, fabricas, aislamiento y concurrencia. Usar al crear o ampliar pruebas de apps/api. No usar para pruebas de la app (expo-pantallas)."
+description: "Pruebas de la API con Vitest y Supertest: base de prueba, rojo-verde, fabricas, aislamiento y concurrencia. Usar al crear o ampliar pruebas de la API. No usar para pruebas de la app (expo-pantallas)."
 user-invocable: false
 ---
 
@@ -9,11 +9,11 @@ user-invocable: false
 ## Configuracion
 - Vitest + Supertest; base `barberly_prueba` (`DATABASE_URL` de prueba en `.env.prueba`).
 - Antes de las pruebas, aplicar las migraciones a `barberly_prueba` con `prisma migrate deploy` usando el `DATABASE_URL` de `.env.prueba`.
-- `vitest.config.ts`: `test.include: ['src/**/*.prueba.ts', '../../pruebas/**/*.prueba.ts']` y `fileParallelism: false` (las pruebas comparten la base). Si `npm run test -w apps/api` reporta 0 pruebas, es un error de configuracion, no un exito.
+- `vitest.config.ts`: `test.include: ['src/**/*.prueba.ts', 'pruebas/**/*.prueba.ts']` y `fileParallelism: false` (las pruebas comparten la base). Si `npm run test` reporta 0 pruebas, es un error de configuracion, no un exito.
 - Antes de cada archivo: limpiar tablas en orden de dependencias y sembrar lo minimo; deja dos barberias con sus propietarios para el caso de aislamiento.
 - Proveedor de IA: usar el simulado de `ProveedorAsesorEstilo`. Pasarela: simulada. Nunca llamadas reales.
 
-## Utilidades (`apps/api/src/pruebas/`)
+## Utilidades (`src/pruebas/`)
 - `fabricas.ts`: `crearBarberiaDePrueba`, `crearClienteDePrueba`, etc., con UUID fijos para que los fallos se puedan reproducir.
 - `sesiones.ts`: obtener tokens por rol.
 - La hora se fija con el reloj (`compartido/reloj.ts`).
@@ -49,6 +49,6 @@ Usa clientes distintos para evitar la idempotencia; verifica en la base que exis
 Prueba obligatoria (RN-34): con una `PENDIENTE` vencida en las 10:00, una nueva reserva a las 10:00 tiene exito.
 
 ## Flujo rojo-verde
-Escribe las pruebas, corre `npm run test -w apps/api` y confirma que fallan por falta de implementacion (no por error de sintaxis ni de entorno). No modifiques pruebas para que pasen; si una es incorrecta, reportalo.
+Escribe las pruebas, corre `npm run test` y confirma que fallan por falta de implementacion (no por error de sintaxis ni de entorno). No modifiques pruebas para que pasen; si una es incorrecta, reportalo.
 
 Las pruebas de API importan solo `app` desde `src/app.ts` y las utilidades de prueba; nunca archivos internos del modulo. Una ruta que todavia no existe responde 404: ese es el rojo correcto.

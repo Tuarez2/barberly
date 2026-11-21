@@ -44,7 +44,6 @@ jobs:
         run: npm ci
 
       - name: Preparar entorno de pruebas
-        working-directory: apps/api
         run: |
           sed -e 's#USUARIO:CLAVE@localhost#barberly:clave_ci@127.0.0.1#' \
             -e "s#^JWT_SECRETO=.*#JWT_SECRETO=$(openssl rand -hex 32)#" \

@@ -10,7 +10,7 @@ Fuente: DERCAS §8.7.
 
 ## Interfaz
 `AlmacenArchivos`: `guardar(clave, buffer, tipoMime)`, `urlPublica(clave)`, `urlTemporal(clave, segundos)`, `eliminar(clave)`, `listar(prefijo)`.
-- `AlmacenLocal`: desarrollo, carpeta `apps/api/almacen/` (ignorada en git). Sirve con `GET /api/v1/almacen/*`, solo con `ALMACEN_TIPO=local`; `urlTemporal` lleva vencimiento y firma.
+- `AlmacenLocal`: desarrollo, carpeta `almacen/` (ignorada en git). Sirve con `GET /api/v1/almacen/*`, solo con `ALMACEN_TIPO=local`; `urlTemporal` lleva vencimiento y firma.
 - `AlmacenMemoria`: pruebas. Nunca S3 ni disco en pruebas.
 - `AlmacenS3`: produccion (`@aws-sdk/client-s3`, `@aws-sdk/s3-request-presigner`); compatible con Cloudflare R2 o Supabase Storage.
 - Se elige con `ALMACEN_TIPO`.

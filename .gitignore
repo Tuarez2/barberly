@@ -10,27 +10,15 @@ node_modules/
 # Compilacion
 dist/
 build/
-web-build/
 
-# Expo y React Native
-.expo/
-expo-env.d.ts
-apps/movil/android/
-apps/movil/ios/
-
-# Credenciales de firma
-*.jks
-*.keystore
-*.p8
-*.p12
+# Credenciales
 *.pem
-*.mobileprovision
 
 # Archivos subidos en desarrollo
-apps/api/almacen/
+almacen/
 
 # Cliente de Prisma generado
-apps/api/src/generado/
+src/generado/
 
 # Pruebas
 coverage/

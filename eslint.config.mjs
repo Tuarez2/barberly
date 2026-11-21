@@ -1,20 +1,13 @@
-// Configuracion compartida: apps/api y apps/movil la importan y agregan lo suyo.
+// Configuracion de ESLint de la API.
 import js from '@eslint/js';
 import prettier from 'eslint-config-prettier';
 import tseslint from 'typescript-eslint';
 
-export const ignorados = {
-  ignores: [
-    '**/node_modules/',
-    '**/dist/',
-    '**/.expo/',
-    '**/coverage/',
-    'apps/movil/android/',
-    'apps/movil/ios/',
-  ],
+const ignorados = {
+  ignores: ['**/node_modules/', '**/dist/', '.claude/', 'src/generado/', '**/coverage/'],
 };
 
-export const reglasComunes = {
+const reglasComunes = {
   rules: {
     '@typescript-eslint/no-explicit-any': 'error',
     '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],

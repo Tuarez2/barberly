@@ -1,4 +1,4 @@
-import type { RolMembresia } from '@barberly/compartido';
+import type { RolMembresia } from './contrato';
 
 declare module 'express-serve-static-core' {
   interface Request {

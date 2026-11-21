@@ -25,10 +25,10 @@ Eres el especialista de la API de Barberly.
 Las rutas permitidas las impone un hook.
 
 ## Puedes tocar
-- `apps/api/src/modulos/<modulo>/`, `apps/api/src/tareas/` y `apps/api/src/rutas.ts` (registrar el modulo)
-- `apps/api/src/compartido/` (solo si es imprescindible)
-- `apps/api/bruno/<modulo>/`
-- `apps/api/README.md` y, si te lo indican, `paquetes/compartido/`
+- `src/modulos/<modulo>/`, `src/tareas/` y `src/rutas.ts` (registrar el modulo)
+- `src/compartido/` (solo si es imprescindible; si cambia `contrato.ts`, anotalo en Dudas: la app y el panel tienen copia, D-11)
+- `bruno/<modulo>/`
+- `README.md`
 
 ## No toques
-- `*.prueba.ts`, `apps/api/src/pruebas/`, `apps/api/prisma/` y `apps/movil/`
+- `*.prueba.ts`, `src/pruebas/` y `prisma/`

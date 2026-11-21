@@ -1,4 +1,4 @@
-import type { RespuestaError } from '@barberly/compartido';
+import type { RespuestaError } from '../contrato';
 import type { NextFunction, Request, Response } from 'express';
 
 import { ErrorNegocio } from '../errores';

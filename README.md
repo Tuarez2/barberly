@@ -1,17 +1,19 @@
-# Barberly
+# Barberly — API
 
-App móvil de citas para barberías con asesor de estilo por IA. Monorepo con npm workspaces:
+API de Barberly (citas para barberías con asesor de estilo por IA), hecha con Express, Prisma y MySQL 8. Aquí también está la documentación del proyecto: `docs/` (DERCAS, decisiones, reglas, errores, especificaciones, pantallas y hoja de ruta).
 
-- `apps/movil`: app con Expo.
-- `apps/api`: API con Express, Prisma y MySQL 8.
-- `paquetes/compartido`: tipos y esquemas Zod comunes.
-- `docs/`: especificaciones y decisiones. `pruebas/`: pruebas de extremo a extremo.
+Barberly tiene tres repositorios (D-11) que se clonan en la misma carpeta:
+
+- `barberly-api`: este repositorio.
+- `barberly-movil`: app con Expo para clientes y barberos.
+- `barberly-panel`: panel web del propietario (D-10).
+
+`src/compartido/contrato.ts` es el contrato común; la app y el panel guardan una copia. `pruebas/` guarda las pruebas de extremo a extremo.
 
 ## Requisitos
 
 - Node.js 26 (`nvm use` lee `.nvmrc`).
 - MySQL 8 en local.
-- Expo Go para Android, compatible con el SDK 58, en la misma red que el computador.
 
 ## Instalación
 
@@ -35,25 +37,26 @@ GRANT ALL PRIVILEGES ON `prisma\_migrate\_shadow\_db%`.* TO 'barberly'@'localhos
 Copia las variables de entorno y complétalas:
 
 ```bash
-cp apps/api/.env.example apps/api/.env
-cp apps/api/.env.prueba.example apps/api/.env.prueba
-cp apps/movil/.env.example apps/movil/.env
+cp .env.example .env
+cp .env.prueba.example .env.prueba
 ```
 
-Aplica las migraciones:
+Para usar el panel web en local, agrega su origen a `ORIGENES_CORS` (por ejemplo `http://localhost:5173`).
+
+Aplica las migraciones y carga las semillas:
 
 ```bash
-cd apps/api && npx prisma migrate deploy
+npx prisma migrate deploy
+npm run seed
 ```
 
 ## Uso
 
 ```bash
-npm run dev -w apps/api      # API en http://localhost:3000/api/v1
-npm run start -w apps/movil  # Expo: escanea el QR con Expo Go
+npm run dev   # API en http://localhost:3000/api/v1
 ```
 
-En el teléfono, `EXPO_PUBLIC_URL_API` debe usar la IP local del computador. Sin red común: `npx expo start --tunnel` en `apps/movil`.
+La documentación OpenAPI está en `GET /api/v1/documentacion`, y la colección de Bruno en `bruno/`.
 
 ## Verificación
 
@@ -61,4 +64,4 @@ En el teléfono, `EXPO_PUBLIC_URL_API` debe usar la IP local del computador. Sin
 bash .claude/skills/verificar/scripts/verificar.sh
 ```
 
-Corre `lint`, `typecheck` y `test` en la API y en la app. Las pruebas de la API usan la base `barberly_prueba`.
+Corre `lint`, `typecheck` y `test`. Las pruebas usan la base `barberly_prueba`.

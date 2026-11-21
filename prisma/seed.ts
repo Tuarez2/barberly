@@ -1,4 +1,4 @@
-// Semillas de desarrollo (DERCAS §7.1, skill prisma-mysql): npm run seed -w apps/api
+// Semillas de desarrollo (DERCAS §7.1, skill prisma-mysql): npm run seed
 // Borra la base local y la vuelve a sembrar con las mismas fabricas que las pruebas.
 // Todos los usuarios entran con la clave CLAVE_PRUEBA de src/pruebas/fabricas.ts (solo desarrollo).
 import { baseDatos } from '../src/compartido/base-datos';

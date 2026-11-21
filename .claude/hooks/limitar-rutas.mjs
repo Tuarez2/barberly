@@ -5,7 +5,7 @@
 import path from 'node:path';
 import { bloquear, dividir, leerEvento, raizProyecto, rutaRelativa, sinEnvoltorios } from './comun.mjs';
 
-const PRUEBA_API = /^(?!apps\/movil\/).*\.prueba\.ts$/;
+const PRUEBA_API = /\.prueba\.ts$/;
 
 const AGENTES = {
   'analista-spec': {
@@ -15,19 +15,17 @@ const AGENTES = {
   },
   'api-backend': {
     permitidas: [
-      'apps/api/src/modulos/',
-      'apps/api/src/tareas/',
-      'apps/api/src/rutas.ts',
-      'apps/api/src/compartido/',
-      'apps/api/bruno/',
-      'apps/api/README.md',
-      'paquetes/compartido/',
+      'src/modulos/',
+      'src/tareas/',
+      'src/rutas.ts',
+      'src/compartido/',
+      'bruno/',
+      'README.md',
     ],
     prohibidas: [/\.prueba\.tsx?$/],
   },
-  'app-movil': { permitidas: ['apps/movil/', 'paquetes/compartido/'] },
-  'base-datos': { permitidas: ['apps/api/prisma/', 'apps/api/src/compartido/base-datos.ts'] },
-  pruebas: { permitidas: [PRUEBA_API, 'apps/api/src/pruebas/', 'pruebas/'] },
+  'base-datos': { permitidas: ['prisma/', 'src/compartido/base-datos.ts'] },
+  pruebas: { permitidas: [PRUEBA_API, 'src/pruebas/', 'pruebas/'] },
   'revisor-seguridad': {
     permitidas: [],
     comandos: [/^git (status|diff|log|ls-files)(\s|$)/],

@@ -6,8 +6,8 @@
       "Read(./**/.env.prueba)",
       "Read(./**/.env.produccion)",
       "Bash(npx prisma migrate reset:*)",
-      "Bash(npx prisma db push:*)",
-      "Bash(rm -rf:*)"
+      "Bash(npx prisma db push:*)"
+      // "Bash(rm -rf:*)"
     ],
     "ask": [
       "Bash(git commit:*)",

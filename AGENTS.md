@@ -1,14 +1,15 @@
-# AGENTS.md — Barberly
+# AGENTS.md — Barberly (API)
 
-App móvil de citas para barberías con asesor de estilo por IA. Monolito modular en monorepo: `apps/movil` (Expo), `apps/api` (Express), `paquetes/compartido` (tipos y esquemas Zod), `docs/`, `pruebas/`.
-Lo administrativo del propietario va en un panel web (D-10) y el proyecto se separa en tres repositorios: API, app y panel (D-11, tarea T1.17). Hasta entonces sigue este monorepo.
+Barberly: citas para barberías con asesor de estilo por IA. Este repositorio es `barberly-api`: la API (monolito modular en Express) y la documentación del proyecto en `docs/`.
+Hay tres repositorios (D-11), clonados en la misma carpeta: `barberly-api` (este), `barberly-movil` (app de clientes y barberos) y `barberly-panel` (panel web del propietario, D-10). La app y el panel leen la documentación en `../barberly-api/docs/`.
+`src/compartido/contrato.ts` es el contrato común: la app y el panel guardan una copia; si cambia, se copia en la misma funcionalidad.
 Fuente de verdad: `docs/DERCAS.md` + `docs/decisiones.md`; si se contradicen, gana la decisión más reciente. Si difieren de este archivo, ganan ellos: avisa, no improvises.
 
 ## Stack (fijo: no cambies de librería sin preguntar)
 
-- App: React Native, Expo Router, TypeScript estricto, TanStack Query, React Hook Form + Zod, Luxon, expo-secure-store, jest-expo.
 - API: Node.js LTS, Express, TypeScript estricto, Zod, Prisma, MySQL 8, JWT, `bcryptjs`, Vitest + Supertest.
-- Panel web (D-10): React + Vite, React Router, TypeScript estricto, TanStack Query, React Hook Form + Zod, Luxon, Vitest + Testing Library; sesión según D-12.
+- App (`barberly-movil`): React Native, Expo Router, TanStack Query, React Hook Form + Zod, Luxon, expo-secure-store, jest-expo.
+- Panel (`barberly-panel`, D-10): React + Vite, React Router, TanStack Query, React Hook Form + Zod, Luxon, Vitest + Testing Library; sesión según D-12.
 - ESLint y Prettier. Sin microservicios. Toda dependencia nueva se justifica en el PR.
 
 ## Nombres
@@ -35,12 +36,11 @@ Fuente de verdad: `docs/DERCAS.md` + `docs/decisiones.md`; si se contradicen, ga
 - Nunca push a `main` ni con `--force`: `main` solo recibe código por PR con CI verde.
 - Los especialistas no crean ramas ni hacen commit o push.
 
-## Comandos (ajustar al crear los package.json)
+## Comandos
 
-- `npm install` una sola vez en la raíz (workspaces `apps/*`, `paquetes/*`).
-- Scripts: `npm run <script> -w apps/api` o `-w apps/movil`.
-- En `apps/api`: `npx prisma migrate dev` · `npx prisma migrate deploy` (producción).
-- En `apps/movil`: `npx expo start` (Expo Go, Android).
+- `npm install` en la raíz.
+- `npm run dev` · `npm run lint` · `npm run typecheck` · `npm run test` · `npm run seed` · `npm run formato`.
+- `npx prisma migrate dev` · `npx prisma migrate deploy` (producción).
 
 ## Referencias
 
@@ -59,11 +59,11 @@ Fuente de verdad: `docs/DERCAS.md` + `docs/decisiones.md`; si se contradicen, ga
 - Datos: UUID, `Decimal`, UTC y borrado lógico; ver skill `prisma-mysql`.
 - Imágenes: ver skill `almacen-archivos`.
 - Pruebas: cada regla y endpoint, también con otra barbería; ver skill `pruebas-api`.
-- App y panel web: solo hablan con la API; ver skills `expo-pantallas` y `diseno-movil`. La app no tiene pantallas de propietario (D-10).
+- App y panel web: solo hablan con la API y viven en sus repositorios; la app no tiene pantallas de propietario (D-10).
 
 ## Hecho significa
 
-Cumple su HU · pruebas pasan · `lint` y `typecheck` limpios · probado en Android (Expo Go) si toca la app · `documentacion.ts`, Bruno y README del módulo actualizados.
+Cumple su HU · pruebas pasan · `lint` y `typecheck` limpios · `documentacion.ts`, Bruno y README del módulo actualizados.
 
 ## No hacer
 

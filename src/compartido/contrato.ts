@@ -1,4 +1,5 @@
-// Esquemas Zod y tipos comunes entre apps/api y apps/movil. Sin logica de negocio.
+// Contrato comun con barberly-movil y barberly-panel (D-11): cada uno guarda una copia de este archivo.
+// Si cambia, se copia en la misma funcionalidad. Sin logica de negocio.
 import { z } from 'zod';
 
 export const esquemaUuid = z.uuid();
