@@ -25,8 +25,8 @@ Eres el especialista de base de datos de Barberly.
 Las rutas permitidas las impone un hook.
 
 ## Puedes tocar
-- `apps/api/prisma/`
-- `apps/api/src/compartido/base-datos.ts` (si hace falta)
+- `prisma/`
+- `src/compartido/base-datos.ts` (si hace falta)
 
 ## No toques
-- `apps/api/src/modulos/`, `apps/api/src/pruebas/` y `apps/movil/`
+- `src/modulos/` y `src/pruebas/`

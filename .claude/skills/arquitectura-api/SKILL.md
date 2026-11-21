@@ -9,7 +9,7 @@ user-invocable: false
 ## Modulos
 `autenticacion`, `barberias`, `reservas`, `agenda`, `administracion`, `seguridad`, `asesor-estilo`, `pagos`, `estadisticas`.
 
-## Estructura de un modulo (`apps/api/src/modulos/<modulo>/`)
+## Estructura de un modulo (`src/modulos/<modulo>/`)
 - `rutas.ts` — `express.Router`, une ruta + middlewares + controlador. Sin logica.
 - `controlador.ts` — lee `req`, llama al servicio, arma la respuesta. Sin Prisma ni reglas.
 - `servicio.ts` — toda la logica de negocio y el acceso a Prisma.
@@ -17,7 +17,7 @@ user-invocable: false
 - `documentacion.ts` — declara las rutas del modulo para OpenAPI.
 - `<modulo>.prueba.ts` — pruebas.
 
-## Compartido (`apps/api/src/compartido/`)
+## Compartido (`src/compartido/`)
 - `errores.ts`: `class ErrorNegocio extends Error { constructor(public codigo: string, public http: number, mensaje: string, public detalles?: unknown) }`.
 - `middleware/`: `autenticar`, `contextoBarberia`, `exigirRol(...roles)`, `validar(esquema)`, `manejarErrores`.
 - `base-datos.ts`: instancia unica de `PrismaClient`.
@@ -41,7 +41,7 @@ user-invocable: false
 
 ## Bruno y documentacion.ts
 Fuente: DERCAS §8.8 y §10.7.
-- Bruno: coleccion versionada con Git en `apps/api/bruno/<modulo>/`, con un `.bru` por endpoint y por error de negocio relevante.
+- Bruno: coleccion versionada con Git en `bruno/<modulo>/`, con un `.bru` por endpoint y por error de negocio relevante.
 - OpenAPI: se genera desde los esquemas Zod con `@asteasolutions/zod-to-openapi`.
 - Cada modulo declara sus rutas en `documentacion.ts`; en desarrollo se sirve en `GET /api/v1/documentacion`.
 - Nuevo endpoint: actualizar `documentacion.ts`, Bruno y el README. Si la especificacion debe cambiar, anotalo en Dudas.

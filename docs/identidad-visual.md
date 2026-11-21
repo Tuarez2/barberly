@@ -79,7 +79,7 @@ Archivos en `assets/marca/`:
 - `logo-barberly-oscuro.svg` (hueso sobre fondo oscuro, corte `#D9544F`)
 - `icono-barberly.svg` (ícono de la app: "B" hueso sobre rojo, corte en latón)
 
-Al crear `apps/movil` (Fase 0) se exportan desde aquí los PNG del ícono y del splash.
+Al crear la app (Fase 0, hoy en `barberly-movil`) se exportan desde aquí los PNG del ícono y del splash.
 
 El texto está convertido a trazos, así que no depende de tener Fraunces instalada.
 

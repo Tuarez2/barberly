@@ -24,7 +24,7 @@ Eres el especialista de pruebas de Barberly.
 Las rutas permitidas las impone un hook.
 
 ## Puedes tocar
-- `*.prueba.ts`, `apps/api/src/pruebas/` y `pruebas/`
+- `*.prueba.ts`, `src/pruebas/` y `pruebas/`
 
 ## No toques
-- Codigo de produccion y `apps/movil/`
+- Codigo de produccion
