@@ -1,10 +1,10 @@
 # Pantallas de Barberly
 
-Mapa entre el prototipo de Figma, las rutas de Expo Router y la API. Archivo: https://www.figma.com/design/r8GKmXYO7AVhJBvdBqq992 (fileKey `r8GKmXYO7AVhJBvdBqq992`).
+Mapa entre el prototipo de Figma, las rutas de Expo Router (app), las del panel web (React Router, D-10) y la API. Archivo: https://www.figma.com/design/r8GKmXYO7AVhJBvdBqq992 (fileKey `r8GKmXYO7AVhJBvdBqq992`).
 Para ver una pantalla: herramienta de Figma `get_design_context` o `get_screenshot` con el nodo indicado.
 Las variantes ("con errores", "vacío", "(hoja)"...) son estados de la misma ruta, no rutas nuevas.
-Las rutas son relativas a la carpeta de Expo Router y los endpoints van bajo `/api/v1` (DERCAS §10.2). Una ruta repetida entre grupos (`citas/[id]`, `perfil`) se enlaza siempre con su grupo en el `href`.
-Las pantallas comunes de §10.5 (Editar perfil, Cambiar contraseña, Invitaciones, Cambiar de barbería o rol) figuran en `(cliente)` y se reutilizan en `(barbero)` y `(propietario)`.
+Las rutas de la app son relativas a la carpeta de Expo Router, las del panel a la raíz del sitio, y los endpoints van bajo `/api/v1` (DERCAS §10.2). Una ruta repetida entre grupos (`citas/[id]`, `perfil`) se enlaza siempre con su grupo en el `href`.
+Las pantallas comunes de §10.5 (Editar perfil, Cambiar contraseña, Invitaciones, Cambiar de barbería o rol) figuran en `(cliente)` y se reutilizan en `(barbero)`. El propietario usa el panel web (D-10); en la app solo ve el aviso para ir al panel.
 
 ## Acceso
 
@@ -53,7 +53,6 @@ Las pantallas comunes de §10.5 (Editar perfil, Cambiar contraseña, Invitacione
 | Retirar consentimiento (hoja) | 22:1829 | `(cliente)/perfil` | `PUT /usuarios/yo/consentimiento-ia` |
 | Invitaciones | 22:1871 | `(cliente)/perfil/invitaciones` | `GET /invitaciones/mias`, `PATCH /invitaciones/:id` |
 | Cambiar de barbería o rol | 22:1886 | `(cliente)/perfil/cambiar-rol` | `GET /usuarios/yo` |
-| Registrar barbería | 22:1922 | `(cliente)/registrar-barberia` | `POST /barberias` |
 
 ## Barbero
 
@@ -77,37 +76,46 @@ Las pantallas comunes de §10.5 (Editar perfil, Cambiar contraseña, Invitacione
 | Mi disponibilidad con permiso | 23:1831 | `(barbero)/disponibilidad` | `GET /barberias/:id/bloqueos`, `DELETE /barberias/:id/bloqueos/:bloqueoId`; horario base: ver Huecos |
 | Editar mi día | 23:1912 | `(barbero)/disponibilidad/[dia]` | Ver Huecos |
 
-## Propietario
+## Propietario (panel web, D-10)
 
-| Pantalla | Nodo | Ruta Expo Router | Endpoints |
+Rutas de React Router del panel. Los nodos son el diseño móvil: sirven de referencia de contenido hasta tener el de escritorio (ver Huecos).
+
+| Pantalla | Nodo | Ruta del panel | Endpoints |
 | --- | --- | --- | --- |
-| Resumen | 17:990 | `(propietario)/resumen` | `GET /barberias/:id/estadisticas`, `GET /barberias/:id/agenda` |
-| Agenda | 17:1068 | `(propietario)/agenda` | `GET /barberias/:id/agenda` |
-| Detalle de cita | 17:1190 | `(propietario)/citas/[id]` | `GET /citas/:id`, `GET /citas/:id/ficha-estilo`, `PATCH /citas/:id/estado` |
-| Gestión | 17:1233 | `(propietario)/gestion` | `GET /barberias/:id` |
-| Datos de la barbería | 17:1333 | `(propietario)/gestion/datos` | `PATCH /barberias/:id`, `PUT` y `DELETE /barberias/:id/portada` |
-| Servicios | 17:1367 | `(propietario)/gestion/servicios` | `GET /barberias/:id/servicios`; inactivos: ver Huecos |
-| Editar servicio | 18:1233 | `(propietario)/gestion/servicios/[servicioId]` | `PATCH /barberias/:id/servicios/:servicioId` |
-| Personal | 18:1273 | `(propietario)/gestion/personal` | `GET /barberias/:id/personal` |
-| Detalle de barbero con citas | 18:1315 | `(propietario)/gestion/personal/[membresiaId]` | `PATCH /barberias/:id/personal/:membresiaId`, `PUT` y `DELETE /barberias/:id/barberos/:barberoId/foto` |
-| Invitar barbero | 18:1347 | `(propietario)/gestion/personal/invitar` | `POST /barberias/:id/personal/invitaciones` |
-| Horarios | 18:1365 | `(propietario)/gestion/horarios` | `PUT /barberias/:id/horarios`; lectura: ver Huecos |
-| Horario con citas afectadas | 18:1424 | `(propietario)/gestion/horarios` | `PUT /barberias/:id/horarios` |
-| Reglas de reserva | 18:1450 | `(propietario)/gestion/reglas` | `PATCH /barberias/:id` |
-| Pagos | 19:1366 | `(propietario)/gestion/pagos` | `GET /barberias/:id/pagos` |
-| Corregir pago | 19:1426 | `(propietario)/gestion/pagos/[id]` | `PATCH /pagos/:id` |
-| Anticipo | 19:1459 | `(propietario)/gestion/anticipo` | `PATCH /barberias/:id` |
-| Perfil | 19:1482 | `(propietario)/perfil` | `GET /usuarios/yo`, `POST /autenticacion/cerrar-sesion` |
-| Estadísticas | 19:1581 | `(propietario)/estadisticas` | `GET /barberias/:id/estadisticas`, `GET /barberias/:id/estadisticas/exportar` |
-| Reasignar cita | 23:1951 | `(propietario)/citas/[id]/reasignar` | `GET /barberias/:id/barberos`, `PATCH /citas/:id/reasignar` |
-| Registrar cita | 23:1981 | `(propietario)/citas/nueva` | `POST /barberias/:id/citas`, `GET /barberias/:id/disponibilidad` |
-| Editar día | 23:2025 | `(propietario)/gestion/horarios/[dia]` | `PUT /barberias/:id/horarios`; lectura: ver Huecos |
-| Feriados y cierres | 23:2063 | `(propietario)/gestion/horarios/cierres` | `GET /barberias/:id/bloqueos`, `DELETE /barberias/:id/bloqueos/:bloqueoId` |
-| Agregar cierre | 23:2085 | `(propietario)/gestion/horarios/cierres/nuevo` | `POST /barberias/:id/bloqueos` |
-| Agregar servicio | 23:2107 | `(propietario)/gestion/servicios/nuevo` | `POST /barberias/:id/servicios` |
-| Gestión no publicada | 23:2147 | `(propietario)/gestion` | `GET /barberias/:id` |
-| Citas futuras de barbero | 23:2168 | `(propietario)/gestion/personal/[membresiaId]/citas` | `GET /barberias/:id/citas`, `PATCH /citas/:id/reasignar` |
-| Cancelar cita (hoja) | 25:2060 | `(propietario)/citas/[id]` | `PATCH /citas/:id/cancelar` |
+| Inicio de sesión | 13:555 | `/iniciar-sesion` | `POST /autenticacion/iniciar-sesion` |
+| Registro | 13:637 | `/registro` | `POST /autenticacion/registro` |
+| Sin acceso (usuario sin membresía de propietario) | — | `/sin-acceso` | `GET /usuarios/yo` |
+| Registrar barbería | 22:1922 | `/registrar-barberia` | `POST /barberias` (D-13) |
+| Elegir barbería | 22:1886 | `/elegir-barberia` | `GET /usuarios/yo` |
+| Editar perfil | 11:667 | `/perfil/editar` | `PATCH /usuarios/yo` |
+| Cambiar contraseña | 11:693 | `/perfil/clave` | `PATCH /usuarios/yo/clave` |
+| Resumen | 17:990 | `/resumen` | `GET /barberias/:id/estadisticas`, `GET /barberias/:id/agenda` |
+| Agenda | 17:1068 | `/agenda` | `GET /barberias/:id/agenda` |
+| Detalle de cita | 17:1190 | `/citas/:id` | `GET /citas/:id`, `GET /citas/:id/ficha-estilo`, `PATCH /citas/:id/estado` |
+| Gestión | 17:1233 | `/gestion` | `GET /barberias/:id` |
+| Datos de la barbería | 17:1333 | `/gestion/datos` | `PATCH /barberias/:id`, `PUT` y `DELETE /barberias/:id/portada` |
+| Servicios | 17:1367 | `/gestion/servicios` | `GET /barberias/:id/servicios`; inactivos: ver Huecos |
+| Editar servicio | 18:1233 | `/gestion/servicios/:servicioId` | `PATCH /barberias/:id/servicios/:servicioId` |
+| Personal | 18:1273 | `/gestion/personal` | `GET /barberias/:id/personal` |
+| Detalle de barbero con citas | 18:1315 | `/gestion/personal/:membresiaId` | `PATCH /barberias/:id/personal/:membresiaId`, `PUT` y `DELETE /barberias/:id/barberos/:barberoId/foto` |
+| Invitar barbero | 18:1347 | `/gestion/personal/invitar` | `POST /barberias/:id/personal/invitaciones` |
+| Horarios | 18:1365 | `/gestion/horarios` | `PUT /barberias/:id/horarios`; lectura: ver Huecos |
+| Horario con citas afectadas | 18:1424 | `/gestion/horarios` | `PUT /barberias/:id/horarios` |
+| Reglas de reserva | 18:1450 | `/gestion/reglas` | `PATCH /barberias/:id` |
+| Pagos | 19:1366 | `/gestion/pagos` | `GET /barberias/:id/pagos` |
+| Corregir pago | 19:1426 | `/gestion/pagos/:id` | `PATCH /pagos/:id` |
+| Anticipo | 19:1459 | `/gestion/anticipo` | `PATCH /barberias/:id` |
+| Perfil | 19:1482 | `/perfil` | `GET /usuarios/yo`, `POST /autenticacion/cerrar-sesion` |
+| Estadísticas | 19:1581 | `/estadisticas` | `GET /barberias/:id/estadisticas`, `GET /barberias/:id/estadisticas/exportar` |
+| Reasignar cita | 23:1951 | `/citas/:id/reasignar` | `GET /barberias/:id/barberos`, `PATCH /citas/:id/reasignar` |
+| Registrar cita | 23:1981 | `/citas/nueva` | `POST /barberias/:id/citas`, `GET /barberias/:id/disponibilidad` |
+| Editar día | 23:2025 | `/gestion/horarios/:dia` | `PUT /barberias/:id/horarios`; lectura: ver Huecos |
+| Feriados y cierres | 23:2063 | `/gestion/horarios/cierres` | `GET /barberias/:id/bloqueos`, `DELETE /barberias/:id/bloqueos/:bloqueoId` |
+| Agregar cierre | 23:2085 | `/gestion/horarios/cierres/nuevo` | `POST /barberias/:id/bloqueos` |
+| Agregar servicio | 23:2107 | `/gestion/servicios/nuevo` | `POST /barberias/:id/servicios` |
+| Gestión no publicada | 23:2147 | `/gestion` | `GET /barberias/:id` |
+| Citas futuras de barbero | 23:2168 | `/gestion/personal/:membresiaId/citas` | `GET /barberias/:id/citas`, `PATCH /citas/:id/reasignar` |
+| Cancelar cita (hoja) | 25:2060 | `/citas/:id` | `PATCH /citas/:id/cancelar` |
 
 ## Estados
 
@@ -126,6 +134,7 @@ Pantallas con diseño que §10.2 todavía no cubre. No se inventan rutas: se dec
 3. Servicios inactivos: `GET /barberias/:id/servicios` solo devuelve activos, y el propietario necesita verlos para reactivarlos (Servicios).
 4. Registrar cita del barbero: §10.5 la incluye, pero Figma solo tiene el nodo de Propietario (23:1981). Se reutiliza ese diseño en `(barbero)/citas/nueva` con `POST /barberias/:id/citas`.
 5. Recuperar la contraseña (AUT-07, D-01): no hay nodo en Figma para pedir el código ni para restablecer la clave con `POST /autenticacion/recuperar-clave` y `POST /autenticacion/restablecer-clave`. Se diseña, o se arma con CampoTexto y Boton, antes de construirla.
+6. Panel web (D-10): Figma solo tiene el diseño móvil del propietario. Falta el diseño de escritorio (menú lateral, tablas y gráficos) con los mismos tokens de `docs/identidad-visual.md`, y la pantalla Sin acceso.
 
 ## Componentes (marco "Componentes", nodo 3:2)
 

@@ -123,3 +123,7 @@ Las pantallas viven en [Barberly App Móvil](https://www.figma.com/design/r8GKmX
 - La estructura de las pantallas sale de `docs/DERCAS.md` §10.5. Si difiere de este documento, gana el DERCAS.
 
 Se descartó Stitch: no ofrece Fraunces y reescribe los colores al generar.
+
+## 10. Panel web
+
+El panel del propietario (D-10) usa los mismos tokens, fuentes y voz que la app, como variables CSS. Sus pantallas se diseñan para escritorio (menú lateral, tablas y gráficos) en una fila nueva del lienzo de Figma, "Panel web"; mientras no exista, los nodos de la fila Propietario son la referencia de contenido (ver Huecos en `docs/pantallas.md`).

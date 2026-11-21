@@ -1,12 +1,14 @@
 # AGENTS.md — Barberly
 
 App móvil de citas para barberías con asesor de estilo por IA. Monolito modular en monorepo: `apps/movil` (Expo), `apps/api` (Express), `paquetes/compartido` (tipos y esquemas Zod), `docs/`, `pruebas/`.
+Lo administrativo del propietario va en un panel web (D-10) y el proyecto se separa en tres repositorios: API, app y panel (D-11, tarea T1.17). Hasta entonces sigue este monorepo.
 Fuente de verdad: `docs/DERCAS.md` + `docs/decisiones.md`; si se contradicen, gana la decisión más reciente. Si difieren de este archivo, ganan ellos: avisa, no improvises.
 
 ## Stack (fijo: no cambies de librería sin preguntar)
 
 - App: React Native, Expo Router, TypeScript estricto, TanStack Query, React Hook Form + Zod, Luxon, expo-secure-store, jest-expo.
 - API: Node.js LTS, Express, TypeScript estricto, Zod, Prisma, MySQL 8, JWT, `bcryptjs`, Vitest + Supertest.
+- Panel web (D-10): React + Vite, React Router, TypeScript estricto, TanStack Query, React Hook Form + Zod, Luxon, Vitest + Testing Library; sesión según D-12.
 - ESLint y Prettier. Sin microservicios. Toda dependencia nueva se justifica en el PR.
 
 ## Nombres
@@ -57,7 +59,7 @@ Fuente de verdad: `docs/DERCAS.md` + `docs/decisiones.md`; si se contradicen, ga
 - Datos: UUID, `Decimal`, UTC y borrado lógico; ver skill `prisma-mysql`.
 - Imágenes: ver skill `almacen-archivos`.
 - Pruebas: cada regla y endpoint, también con otra barbería; ver skill `pruebas-api`.
-- App: solo habla con la API; ver skills `expo-pantallas` y `diseno-movil`.
+- App y panel web: solo hablan con la API; ver skills `expo-pantallas` y `diseno-movil`. La app no tiene pantallas de propietario (D-10).
 
 ## Hecho significa
 
