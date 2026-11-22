@@ -100,6 +100,24 @@ export const esquemaInicioSesion = z.strictObject(
 
 export type EntradaInicioSesion = z.infer<typeof esquemaInicioSesion>;
 
+// D-17: renovar y cerrar sesion reciben solo el token de renovacion (43 caracteres en base64url).
+export const esquemaTokenSesion = z.strictObject(
+  {
+    tokenRenovacion: z
+      .string({ error: 'El token de renovación es obligatorio' })
+      .min(1, 'El token de renovación es obligatorio')
+      .max(128, 'El token de renovación no es válido'),
+  },
+  {
+    error: (problema) =>
+      problema.code === 'unrecognized_keys'
+        ? `Campos no permitidos: ${problema.keys.join(', ')}`
+        : 'Envía el token de renovación',
+  },
+);
+
+export type EntradaTokenSesion = z.infer<typeof esquemaTokenSesion>;
+
 export interface UsuarioSesion {
   id: string;
   nombre: string;
@@ -110,6 +128,12 @@ export interface UsuarioSesion {
 // D-14: lo devuelven el registro y el inicio de sesion (D-16).
 export interface DatosSesion {
   usuario: UsuarioSesion;
+  tokenAcceso: string;
+  tokenRenovacion: string;
+}
+
+// D-17: lo devuelve renovar.
+export interface DatosRenovacion {
   tokenAcceso: string;
   tokenRenovacion: string;
 }

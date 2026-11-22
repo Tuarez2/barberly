@@ -60,6 +60,12 @@ Inicio de sesión (D-16):
 - Solo cuenta como fallo CREDENCIALES_INVALIDAS. Hay un contador por IP y otro por correo, con ventana de 15 minutos desde el primer fallo; al quinto fallo, todo intento responde DEMASIADAS_SOLICITUDES hasta que se cierra, aunque la clave sea correcta. Un inicio correcto no reinicia el contador.
 - Si el correo no existe, la clave se compara igual contra un hash de relleno.
 
+Renovar y cerrar sesión (D-17):
+- Renovar: `{ tokenRenovacion }` responde 200 `{ datos: { tokenAcceso, tokenRenovacion } }`. Revoca la fila anterior solo si sigue vigente y crea otra con el mismo `dispositivo` y 30 días desde la renovación; de dos renovaciones simultáneas solo una gana.
+- Cerrar sesión: con el token de acceso y `{ tokenRenovacion }`, revoca esa fila si es del usuario y responde 204; también 204, sin cambios, si ya estaba revocada, no existe o es de otro usuario.
+- No hay detección de reutilización de un token revocado en el MVP.
+- Cliente (T1.10 y el panel): una sola renovación a la vez; las solicitudes que reciben TOKEN_VENCIDO mientras tanto esperan esa renovación. Solo AUTENTICACION_REQUERIDA borra la sesión local; un error de red o un 500 no la borra.
+
 ## API
 Prefijo /api/v1. Pública = sin sesión; Pub = cualquier usuario autenticado.
 | Método | Ruta | Rol | Éxito |

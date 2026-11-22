@@ -24,6 +24,11 @@ assert {
   res.body.datos.tokenRenovacion: isString
 }
 
+vars:post-response {
+  tokenAcceso: res.body.datos.tokenAcceso
+  tokenRenovacion: res.body.datos.tokenRenovacion
+}
+
 docs {
-  AUT-02, HU-AUT-02. Usuario de las semillas (`npm run seed`). Abre una sesión nueva por dispositivo (D-04).
+  AUT-02, HU-AUT-02. Usuario de las semillas (`npm run seed`). Abre una sesión nueva por dispositivo (D-04). Guarda `tokenAcceso` y `tokenRenovacion` para Renovar y Cerrar sesión.
 }

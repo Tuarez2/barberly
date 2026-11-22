@@ -1,7 +1,14 @@
 import type { Request, Response } from 'express';
 
 import type { RespuestaExito } from '../../compartido/contrato';
-import type { DatosSesion, EntradaInicioSesion, EntradaRegistro } from './esquemas';
+import { ErrorNegocio } from '../../compartido/errores';
+import type {
+  DatosRenovacion,
+  DatosSesion,
+  EntradaInicioSesion,
+  EntradaRegistro,
+  EntradaTokenSesion,
+} from './esquemas';
 import * as servicio from './servicio';
 
 export async function registrar(
@@ -18,4 +25,19 @@ export async function iniciarSesion(
 ): Promise<void> {
   const datos = await servicio.iniciarSesion(req.validado as EntradaInicioSesion);
   res.status(200).json({ datos });
+}
+
+export async function renovar(
+  req: Request,
+  res: Response<RespuestaExito<DatosRenovacion>>,
+): Promise<void> {
+  const datos = await servicio.renovar(req.validado as EntradaTokenSesion);
+  res.status(200).json({ datos });
+}
+
+export async function cerrarSesion(req: Request, res: Response): Promise<void> {
+  // autenticar va antes en la ruta; esto solo protege si alguien la quita.
+  if (!req.usuario) throw new ErrorNegocio('AUTENTICACION_REQUERIDA', 401, 'Debes iniciar sesión');
+  await servicio.cerrarSesion(req.usuario.id, req.validado as EntradaTokenSesion);
+  res.status(204).end();
 }

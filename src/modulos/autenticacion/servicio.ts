@@ -1,4 +1,4 @@
-// Logica de autenticacion (AUT-01, AUT-02, SEG-06, §11.4, D-03, D-05, D-14, D-16).
+// Logica de autenticacion (AUT-01 a AUT-04, SEG-06, §11.4, D-02 a D-05, D-14, D-16, D-17).
 import { createHash, randomBytes } from 'node:crypto';
 
 import bcrypt from 'bcryptjs';
@@ -9,7 +9,13 @@ import { configuracion } from '../../compartido/configuracion';
 import { ErrorNegocio } from '../../compartido/errores';
 import { ahora } from '../../compartido/reloj';
 import { Prisma } from '../../generado/prisma/client';
-import type { DatosSesion, EntradaInicioSesion, EntradaRegistro } from './esquemas';
+import type {
+  DatosRenovacion,
+  DatosSesion,
+  EntradaInicioSesion,
+  EntradaRegistro,
+  EntradaTokenSesion,
+} from './esquemas';
 
 const DIA_MS = 24 * 60 * 60 * 1000;
 const COSTO_BCRYPT = 12; // SEG-06, §14.3: fijo, no configurable
@@ -23,6 +29,10 @@ const correoRegistrado = () =>
 // §11.4 y D-05: el mismo error si falta el correo, la clave no coincide o la cuenta esta inactiva.
 const credencialesInvalidas = () =>
   new ErrorNegocio('CREDENCIALES_INVALIDAS', 401, 'Correo o contraseña incorrectos');
+
+// D-02 y D-05: el mismo error si el token vencio, se revoco, no existe o el usuario esta inactivo.
+const sesionInvalida = () =>
+  new ErrorNegocio('AUTENTICACION_REQUERIDA', 401, 'Debes iniciar sesión');
 
 // D-16: con un correo inexistente se compara igual, para que el tiempo no revele que correos existen.
 // Hash fijo de costo 12 de un texto aleatorio que se descarto: nada lo hace coincidir y no hay que
@@ -114,4 +124,59 @@ export async function iniciarSesion(entrada: EntradaInicioSesion): Promise<Datos
   };
   const tokenRenovacion = await abrirSesion(baseDatos, usuario.id, entrada.dispositivo);
   return { usuario, tokenAcceso: firmarTokenAcceso(usuario.id), tokenRenovacion };
+}
+
+// D-03 y D-17: rota la sesion. La fila anterior se revoca solo si sigue vigente: de dos
+// renovaciones simultaneas, la segunda espera el bloqueo de la fila y ya no la encuentra vigente.
+export async function renovar(entrada: EntradaTokenSesion): Promise<DatosRenovacion> {
+  const tokenHash = hashTokenRenovacion(entrada.tokenRenovacion);
+  const momento = ahora();
+
+  const renovada = await baseDatos.$transaction(async (tx) => {
+    const sesion = await tx.tokenRenovacion.findUnique({
+      where: { tokenHash },
+      select: {
+        id: true,
+        usuarioId: true,
+        dispositivo: true,
+        expiraEn: true,
+        revocadoEn: true,
+        usuario: { select: { activo: true } },
+      },
+    });
+    if (!sesion || sesion.revocadoEn || sesion.expiraEn <= momento || !sesion.usuario.activo) {
+      return null;
+    }
+
+    const { count } = await tx.tokenRenovacion.updateMany({
+      where: { id: sesion.id, revocadoEn: null, expiraEn: { gt: momento } },
+      data: { revocadoEn: momento },
+    });
+    if (count !== 1) return null;
+
+    const tokenRenovacion = await abrirSesion(
+      tx,
+      sesion.usuarioId,
+      sesion.dispositivo ?? undefined,
+    );
+    return { usuarioId: sesion.usuarioId, tokenRenovacion };
+  });
+
+  if (!renovada) throw sesionInvalida();
+  return {
+    tokenAcceso: firmarTokenAcceso(renovada.usuarioId),
+    tokenRenovacion: renovada.tokenRenovacion,
+  };
+}
+
+// AUT-03 y D-17: revoca solo esa sesion y solo si es del usuario; si no, no hace nada.
+export async function cerrarSesion(usuarioId: string, entrada: EntradaTokenSesion): Promise<void> {
+  await baseDatos.tokenRenovacion.updateMany({
+    where: {
+      tokenHash: hashTokenRenovacion(entrada.tokenRenovacion),
+      usuarioId,
+      revocadoEn: null,
+    },
+    data: { revocadoEn: ahora() },
+  });
 }

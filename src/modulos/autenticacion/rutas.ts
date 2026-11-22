@@ -5,9 +5,9 @@ import {
   limitarInicioPorIp,
   limitarRegistro,
 } from '../../compartido/limites';
-import { validar } from '../../compartido/middleware';
+import { autenticar, validar } from '../../compartido/middleware';
 import * as controlador from './controlador';
-import { esquemaInicioSesion, esquemaRegistro } from './esquemas';
+import { esquemaInicioSesion, esquemaRegistro, esquemaTokenSesion } from './esquemas';
 
 export const rutasAutenticacion = Router();
 
@@ -26,4 +26,15 @@ rutasAutenticacion.post(
   validar(esquemaInicioSesion),
   limitarInicioPorCuenta,
   controlador.iniciarSesion,
+);
+
+// D-17: el token de renovacion tiene 256 bits; basta el limite general de app.ts.
+rutasAutenticacion.post('/renovar', validar(esquemaTokenSesion), controlador.renovar);
+
+// AUT-03: autenticar (401) → validar (422) → servicio.
+rutasAutenticacion.post(
+  '/cerrar-sesion',
+  autenticar,
+  validar(esquemaTokenSesion),
+  controlador.cerrarSesion,
 );

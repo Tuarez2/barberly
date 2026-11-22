@@ -1,5 +1,5 @@
 // Autenticacion: registro (T1.5, AUT-01, HU-AUT-01, SEG-06, §11.4, D-03, D-14) e inicio de sesion
-// (T1.6, AUT-02, HU-AUT-02, SEG-09, D-05, D-16).
+// (T1.6, AUT-02, HU-AUT-02, SEG-09, D-05, D-16), renovar y cerrar sesion (T1.7, AUT-03, AUT-04, D-17).
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import request from 'supertest';
@@ -11,6 +11,7 @@ import { configuracion } from '../../compartido/configuracion';
 import { reiniciarLimites } from '../../compartido/limites';
 import { fijarAhora, restaurarAhora } from '../../compartido/reloj';
 import { CLAVE_PRUEBA, crearUsuarioDePrueba, limpiarBase } from '../../pruebas/fabricas';
+import { cabeceraDePrueba, tokenDePrueba } from '../../pruebas/sesiones';
 
 const RUTA = '/api/v1/autenticacion/registro';
 
@@ -824,5 +825,302 @@ describe('SEG-09, D-16: limite de inicios fallidos, casos de borde', () => {
       '"300-in-1min"',
       '"inicio-ip"',
     ]);
+  });
+});
+
+const RUTA_RENOVAR = '/api/v1/autenticacion/renovar';
+const RUTA_CERRAR = '/api/v1/autenticacion/cerrar-sesion';
+
+async function abrirSesionDe(correo: string, dispositivo?: string) {
+  const { body } = await iniciarSesion({ correo, clave: CLAVE_PRUEBA, dispositivo });
+  return body.datos as { usuario: { id: string }; tokenAcceso: string; tokenRenovacion: string };
+}
+
+function renovar(cuerpo: unknown) {
+  return request(app)
+    .post(RUTA_RENOVAR)
+    .send(cuerpo as object);
+}
+
+function cerrarSesion(tokenAcceso: string | undefined, cuerpo: unknown) {
+  const peticion = request(app).post(RUTA_CERRAR);
+  if (tokenAcceso) peticion.set(cabeceraDePrueba(tokenAcceso));
+  return peticion.send(cuerpo as object);
+}
+
+function sesionesVigentes(usuarioId: string) {
+  return baseDatos.tokenRenovacion.count({ where: { usuarioId, revocadoEn: null } });
+}
+
+describe('AUT-04, D-17: POST /api/v1/autenticacion/renovar', () => {
+  it('HU-AUT-02: con un token vigente responde 200 con tokens nuevos, sin el usuario', async () => {
+    await crearAna();
+    const sesion = await abrirSesionDe(CORREO_ANA);
+
+    const respuesta = await renovar({ tokenRenovacion: sesion.tokenRenovacion });
+
+    expect(respuesta.status).toBe(200);
+    expect(respuesta.body).toEqual({
+      datos: { tokenAcceso: expect.any(String), tokenRenovacion: expect.any(String) },
+    });
+    expect(respuesta.body.datos.tokenRenovacion).not.toBe(sesion.tokenRenovacion);
+    const contenido = jwt.verify(respuesta.body.datos.tokenAcceso, configuracion.JWT_SECRETO, {
+      algorithms: ['HS256'],
+    });
+    if (typeof contenido === 'string') throw new Error('Se esperaba un JWT con contenido');
+    expect(contenido.sub).toBe(sesion.usuario.id);
+  });
+
+  it('D-03: rota la sesion: revoca la fila anterior y crea otra con el mismo dispositivo y 30 dias nuevos', async () => {
+    await crearAna();
+    fijarAhora(new Date('2026-11-21T15:00:00Z'));
+    const sesion = await abrirSesionDe(CORREO_ANA, 'Pixel 7');
+
+    fijarAhora(new Date('2026-11-25T10:00:00Z'));
+    await renovar({ tokenRenovacion: sesion.tokenRenovacion });
+
+    const filas = await baseDatos.tokenRenovacion.findMany({
+      where: { usuarioId: sesion.usuario.id },
+      orderBy: { creadoEn: 'asc' },
+    });
+    expect(filas).toHaveLength(2);
+    const [anterior, nueva] = filas;
+    expect(anterior?.revocadoEn?.toISOString()).toBe('2026-11-25T10:00:00.000Z');
+    expect(nueva?.revocadoEn).toBeNull();
+    expect(nueva?.dispositivo).toBe('Pixel 7');
+    expect(nueva?.expiraEn.toISOString()).toBe('2026-12-25T10:00:00.000Z');
+  });
+
+  it('HU-AUT-02: el token anterior ya no sirve y el nuevo si', async () => {
+    await crearAna();
+    const sesion = await abrirSesionDe(CORREO_ANA);
+    const { body } = await renovar({ tokenRenovacion: sesion.tokenRenovacion });
+
+    const conAnterior = await renovar({ tokenRenovacion: sesion.tokenRenovacion });
+    const conNuevo = await renovar({ tokenRenovacion: body.datos.tokenRenovacion });
+
+    expect(conAnterior.status).toBe(401);
+    expect(conAnterior.body.error.codigo).toBe('AUTENTICACION_REQUERIDA');
+    expect(conNuevo.status).toBe(200);
+  });
+
+  it('D-04: renovar una sesion no toca las demas del usuario', async () => {
+    await crearAna();
+    const telefono = await abrirSesionDe(CORREO_ANA, 'Pixel 7');
+    const tableta = await abrirSesionDe(CORREO_ANA, 'Tableta');
+
+    await renovar({ tokenRenovacion: telefono.tokenRenovacion });
+
+    expect(await sesionesVigentes(telefono.usuario.id)).toBe(2);
+    expect((await renovar({ tokenRenovacion: tableta.tokenRenovacion })).status).toBe(200);
+  });
+
+  it('D-02: con un token vencido responde 401 AUTENTICACION_REQUERIDA; un milisegundo antes todavia sirve', async () => {
+    await crearAna();
+    fijarAhora(new Date('2026-11-21T15:00:00Z'));
+    const primera = await abrirSesionDe(CORREO_ANA);
+    const segunda = await abrirSesionDe(CORREO_ANA);
+
+    fijarAhora(new Date('2026-12-21T14:59:59.999Z'));
+    const antes = await renovar({ tokenRenovacion: primera.tokenRenovacion });
+    fijarAhora(new Date('2026-12-21T15:00:00.000Z'));
+    const justoAlVencer = await renovar({ tokenRenovacion: segunda.tokenRenovacion });
+
+    expect(antes.status).toBe(200);
+    expect(justoAlVencer.status).toBe(401);
+    expect(justoAlVencer.body.error.codigo).toBe('AUTENTICACION_REQUERIDA');
+  });
+
+  it('D-02, D-05: vencido, revocado, inexistente e inactivo responden exactamente lo mismo', async () => {
+    await crearAna();
+    const luis = await crearUsuarioDePrueba({ correo: 'luis@correo.ec' });
+    const vencida = await abrirSesionDe(CORREO_ANA);
+    const revocada = await abrirSesionDe(CORREO_ANA);
+    const inactiva = await abrirSesionDe('luis@correo.ec');
+    await baseDatos.tokenRenovacion.updateMany({
+      where: { usuarioId: vencida.usuario.id },
+      data: { expiraEn: new Date('2020-01-01T00:00:00Z') },
+    });
+    await cerrarSesion(revocada.tokenAcceso, { tokenRenovacion: revocada.tokenRenovacion });
+    await baseDatos.usuario.update({ where: { id: luis.id }, data: { activo: false } });
+
+    const respuestas = await Promise.all([
+      renovar({ tokenRenovacion: vencida.tokenRenovacion }),
+      renovar({ tokenRenovacion: revocada.tokenRenovacion }),
+      renovar({ tokenRenovacion: 'token-que-no-existe' }),
+      renovar({ tokenRenovacion: inactiva.tokenRenovacion }),
+    ]);
+
+    for (const respuesta of respuestas) {
+      expect(respuesta.status).toBe(401);
+      expect(respuesta.body).toEqual(respuestas[0]?.body);
+    }
+    expect(respuestas[0]?.body.error.codigo).toBe('AUTENTICACION_REQUERIDA');
+  });
+
+  it('D-05: un usuario inactivo no puede renovar y su sesion no rota', async () => {
+    await crearAna();
+    const sesion = await abrirSesionDe(CORREO_ANA);
+    await baseDatos.usuario.update({ where: { id: sesion.usuario.id }, data: { activo: false } });
+
+    const respuesta = await renovar({ tokenRenovacion: sesion.tokenRenovacion });
+
+    expect(respuesta.status).toBe(401);
+    expect(respuesta.body.error.codigo).toBe('AUTENTICACION_REQUERIDA');
+    expect(await baseDatos.tokenRenovacion.count()).toBe(1);
+  });
+
+  it('D-17: de cinco renovaciones simultaneas con el mismo token solo una gana', async () => {
+    await crearAna();
+    const sesion = await abrirSesionDe(CORREO_ANA);
+
+    const respuestas = await Promise.all(
+      Array.from({ length: 5 }, () => renovar({ tokenRenovacion: sesion.tokenRenovacion })),
+    );
+
+    expect(respuestas.filter((respuesta) => respuesta.status === 200)).toHaveLength(1);
+    expect(respuestas.filter((respuesta) => respuesta.status === 401)).toHaveLength(4);
+    expect(await sesionesVigentes(sesion.usuario.id)).toBe(1);
+    expect(await baseDatos.tokenRenovacion.count()).toBe(2);
+  });
+
+  it.each([
+    ['sin cuerpo', undefined],
+    ['sin token', {}],
+    ['el token vacio', { tokenRenovacion: '' }],
+    ['un token que no es texto', { tokenRenovacion: 123 }],
+    ['un token de mas de 128 caracteres', { tokenRenovacion: 't'.repeat(129) }],
+    ['un campo no esperado', { tokenRenovacion: 'abc', usuarioId: 'otro' }],
+  ])('D-17: con %s responde 422 DATOS_INVALIDOS', async (_caso, cuerpo) => {
+    const respuesta = await renovar(cuerpo);
+
+    expect(respuesta.status).toBe(422);
+    expect(respuesta.body.error.codigo).toBe('DATOS_INVALIDOS');
+  });
+});
+
+describe('AUT-03, D-17: POST /api/v1/autenticacion/cerrar-sesion', () => {
+  it('AUT-03: revoca la sesion del dispositivo y responde 204 sin cuerpo', async () => {
+    await crearAna();
+    fijarAhora(new Date('2026-11-21T15:00:00Z'));
+    const sesion = await abrirSesionDe(CORREO_ANA);
+
+    const respuesta = await cerrarSesion(sesion.tokenAcceso, {
+      tokenRenovacion: sesion.tokenRenovacion,
+    });
+
+    expect(respuesta.status).toBe(204);
+    expect(respuesta.text).toBe('');
+    const fila = await baseDatos.tokenRenovacion.findFirstOrThrow();
+    expect(fila.revocadoEn?.toISOString()).toBe('2026-11-21T15:00:00.000Z');
+  });
+
+  it('HU-AUT-02: despues de cerrar sesion, renovar con ese token pide iniciar sesion', async () => {
+    await crearAna();
+    const sesion = await abrirSesionDe(CORREO_ANA);
+    await cerrarSesion(sesion.tokenAcceso, { tokenRenovacion: sesion.tokenRenovacion });
+
+    const respuesta = await renovar({ tokenRenovacion: sesion.tokenRenovacion });
+
+    expect(respuesta.status).toBe(401);
+    expect(respuesta.body.error.codigo).toBe('AUTENTICACION_REQUERIDA');
+  });
+
+  it('D-04: cierra solo esa sesion; las de otros dispositivos siguen vigentes', async () => {
+    await crearAna();
+    const telefono = await abrirSesionDe(CORREO_ANA, 'Pixel 7');
+    const tableta = await abrirSesionDe(CORREO_ANA, 'Tableta');
+
+    await cerrarSesion(telefono.tokenAcceso, { tokenRenovacion: telefono.tokenRenovacion });
+
+    expect(await sesionesVigentes(telefono.usuario.id)).toBe(1);
+    expect((await renovar({ tokenRenovacion: tableta.tokenRenovacion })).status).toBe(200);
+  });
+
+  it('SEG-02: sin token de acceso responde 401 y no revoca nada', async () => {
+    await crearAna();
+    const sesion = await abrirSesionDe(CORREO_ANA);
+
+    const respuesta = await cerrarSesion(undefined, { tokenRenovacion: sesion.tokenRenovacion });
+
+    expect(respuesta.status).toBe(401);
+    expect(respuesta.body.error.codigo).toBe('AUTENTICACION_REQUERIDA');
+    expect(await sesionesVigentes(sesion.usuario.id)).toBe(1);
+  });
+
+  it('SEG-02: con el token de acceso vencido responde 401 TOKEN_VENCIDO y no revoca nada', async () => {
+    await crearAna();
+    const sesion = await abrirSesionDe(CORREO_ANA);
+
+    const respuesta = await cerrarSesion(tokenDePrueba(sesion.usuario.id, -1), {
+      tokenRenovacion: sesion.tokenRenovacion,
+    });
+
+    expect(respuesta.status).toBe(401);
+    expect(respuesta.body.error.codigo).toBe('TOKEN_VENCIDO');
+    expect(await sesionesVigentes(sesion.usuario.id)).toBe(1);
+  });
+
+  it('D-17: con el token de renovacion de otro usuario responde 204 y no lo revoca', async () => {
+    await crearAna();
+    await crearUsuarioDePrueba({ correo: 'luis@correo.ec' });
+    const ana = await abrirSesionDe(CORREO_ANA);
+    const luis = await abrirSesionDe('luis@correo.ec');
+
+    const respuesta = await cerrarSesion(ana.tokenAcceso, {
+      tokenRenovacion: luis.tokenRenovacion,
+    });
+
+    expect(respuesta.status).toBe(204);
+    expect(await sesionesVigentes(luis.usuario.id)).toBe(1);
+    expect(await sesionesVigentes(ana.usuario.id)).toBe(1);
+    expect((await renovar({ tokenRenovacion: luis.tokenRenovacion })).status).toBe(200);
+  });
+
+  it('D-17: cerrar dos veces la misma sesion o con un token inexistente responde 204', async () => {
+    await crearAna();
+    fijarAhora(new Date('2026-11-21T15:00:00Z'));
+    const sesion = await abrirSesionDe(CORREO_ANA);
+    await cerrarSesion(sesion.tokenAcceso, { tokenRenovacion: sesion.tokenRenovacion });
+
+    fijarAhora(new Date('2026-11-21T16:00:00Z'));
+    const otraVez = await cerrarSesion(sesion.tokenAcceso, {
+      tokenRenovacion: sesion.tokenRenovacion,
+    });
+    const inexistente = await cerrarSesion(sesion.tokenAcceso, { tokenRenovacion: 'no-existe' });
+
+    expect(otraVez.status).toBe(204);
+    expect(inexistente.status).toBe(204);
+    // La fecha de revocacion no cambia al repetir.
+    const fila = await baseDatos.tokenRenovacion.findFirstOrThrow();
+    expect(fila.revocadoEn?.toISOString()).toBe('2026-11-21T15:00:00.000Z');
+  });
+
+  it.each([
+    ['sin token', {}],
+    ['el token vacio', { tokenRenovacion: '' }],
+    ['un campo no esperado', { tokenRenovacion: 'abc', todas: true }],
+  ])('D-17: con %s responde 422 DATOS_INVALIDOS', async (_caso, cuerpo) => {
+    await crearAna();
+    const sesion = await abrirSesionDe(CORREO_ANA);
+
+    const respuesta = await cerrarSesion(sesion.tokenAcceso, cuerpo);
+
+    expect(respuesta.status).toBe(422);
+    expect(respuesta.body.error.codigo).toBe('DATOS_INVALIDOS');
+    expect(await sesionesVigentes(sesion.usuario.id)).toBe(1);
+  });
+});
+
+describe('§10.7: documentacion de renovar y cerrar sesion', () => {
+  it('GET /api/v1/documentacion incluye renovar y cerrar sesion', async () => {
+    const { body } = await request(app).get('/api/v1/documentacion');
+
+    expect(Object.keys(body.paths['/autenticacion/renovar'].post.responses)).toEqual(
+      expect.arrayContaining(['200', '401', '422']),
+    );
+    const cerrar = body.paths['/autenticacion/cerrar-sesion'].post;
+    expect(Object.keys(cerrar.responses)).toEqual(expect.arrayContaining(['204', '401', '422']));
+    expect(cerrar.security).toEqual([{ bearer: [] }]);
   });
 });

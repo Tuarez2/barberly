@@ -1,10 +1,20 @@
-// Esquemas de entrada y salida de autenticacion (§11.4, D-14, D-16). La validacion vive en el contrato comun.
+// Esquemas de entrada y salida de autenticacion (§11.4, D-14, D-16, D-17). La validacion vive en el contrato comun.
 import { z } from 'zod';
 
-import { esquemaInicioSesion, esquemaRegistro } from '../../compartido/contrato';
+import {
+  esquemaInicioSesion,
+  esquemaRegistro,
+  esquemaTokenSesion,
+} from '../../compartido/contrato';
 
-export { esquemaInicioSesion, esquemaRegistro };
-export type { DatosSesion, EntradaInicioSesion, EntradaRegistro } from '../../compartido/contrato';
+export { esquemaInicioSesion, esquemaRegistro, esquemaTokenSesion };
+export type {
+  DatosRenovacion,
+  DatosSesion,
+  EntradaInicioSesion,
+  EntradaRegistro,
+  EntradaTokenSesion,
+} from '../../compartido/contrato';
 
 // Solo para la documentacion OpenAPI.
 export const esquemaRespuestaSesion = z
@@ -25,3 +35,14 @@ export const esquemaRespuestaSesion = z
     }),
   })
   .meta({ id: 'RespuestaSesion' });
+
+export const esquemaRespuestaRenovacion = z
+  .object({
+    datos: z.object({
+      tokenAcceso: z.string().meta({ description: 'JWT nuevo (D-03)' }),
+      tokenRenovacion: z
+        .string()
+        .meta({ description: 'Reemplaza al enviado, que queda revocado (D-03, D-17)' }),
+    }),
+  })
+  .meta({ id: 'RespuestaRenovacion' });
