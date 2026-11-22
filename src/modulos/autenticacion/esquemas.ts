@@ -1,10 +1,11 @@
-// Esquemas de entrada y salida de autenticacion (§11.4, D-14, D-16, D-17). La validacion vive en el contrato comun.
+// Esquemas de entrada y salida de autenticacion (§11.4, D-14, D-16, D-17, D-18). La validacion vive en el contrato comun.
 import { z } from 'zod';
 
 import {
   esquemaInicioSesion,
   esquemaRegistro,
   esquemaTokenSesion,
+  ROLES_MEMBRESIA,
 } from '../../compartido/contrato';
 
 export { esquemaInicioSesion, esquemaRegistro, esquemaTokenSesion };
@@ -14,6 +15,7 @@ export type {
   EntradaInicioSesion,
   EntradaRegistro,
   EntradaTokenSesion,
+  PerfilUsuario,
 } from '../../compartido/contrato';
 
 // Solo para la documentacion OpenAPI.
@@ -46,3 +48,31 @@ export const esquemaRespuestaRenovacion = z
     }),
   })
   .meta({ id: 'RespuestaRenovacion' });
+
+export const esquemaRespuestaPerfil = z
+  .object({
+    datos: z.object({
+      id: z.uuid(),
+      nombre: z.string(),
+      correo: z.email(),
+      telefono: z.string(),
+      consentimientoIaEn: z.iso
+        .datetime()
+        .nullable()
+        .meta({ description: 'Consentimiento del asesor (RN-28)' }),
+      membresias: z
+        .array(
+          z.object({
+            id: z.uuid(),
+            rol: z.enum(ROLES_MEMBRESIA),
+            barberoId: z
+              .uuid()
+              .nullable()
+              .meta({ description: 'PerfilBarbero; solo si rol es BARBERO' }),
+            barberia: z.object({ id: z.uuid(), nombre: z.string() }),
+          }),
+        )
+        .meta({ description: 'Solo ACTIVO de barberías activas, por nombre de barbería (D-18)' }),
+    }),
+  })
+  .meta({ id: 'RespuestaPerfil' });

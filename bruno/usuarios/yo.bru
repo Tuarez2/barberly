@@ -1,0 +1,24 @@
+meta {
+  name: Mi perfil y membresías
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{urlBase}}/usuarios/yo
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAcceso}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.datos.membresias: isArray
+}
+
+docs {
+  AUT-08, D-18. Ejecuta antes autenticacion/Iniciar sesión. Solo membresías ACTIVO de barberías activas; un cliente recibe la lista vacía. `barberoId` es el PerfilBarbero o null.
+}

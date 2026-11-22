@@ -10,6 +10,7 @@ Registro, sesiones, perfil e invitaciones. Especificación: `docs/especificacion
 | POST   | /api/v1/autenticacion/iniciar-sesion | Pública | 200   | DATOS_INVALIDOS 422, CREDENCIALES_INVALIDAS 401, DEMASIADAS_SOLICITUDES 429 | T1.6  |
 | POST   | /api/v1/autenticacion/renovar        | Pública | 200   | DATOS_INVALIDOS 422, AUTENTICACION_REQUERIDA 401                            | T1.7  |
 | POST   | /api/v1/autenticacion/cerrar-sesion  | Pub     | 204   | DATOS_INVALIDOS 422, AUTENTICACION_REQUERIDA 401, TOKEN_VENCIDO 401         | T1.7  |
+| GET    | /api/v1/usuarios/yo                  | Pub     | 200   | AUTENTICACION_REQUERIDA 401, TOKEN_VENCIDO 401                              | T1.8  |
 
 ### POST /autenticacion/registro (AUT-01, HU-AUT-01)
 
@@ -76,6 +77,40 @@ Exige `Authorization: Bearer <token de acceso>` y el cuerpo `{ "tokenRenovacion"
 - Si ya estaba revocada, no existe o es de otro usuario, también responde 204 sin cambiar nada: repetir el cierre no falla y no revela de quién es un token.
 - El token de acceso sigue valiendo hasta que vence (15 minutos); la app lo borra al cerrar sesión.
 
+### GET /usuarios/yo (AUT-08, D-18)
+
+Exige el token de acceso. Responde:
+
+```json
+{
+  "datos": {
+    "id": "…",
+    "nombre": "Ana Pérez",
+    "correo": "ana@correo.ec",
+    "telefono": "+593991234567",
+    "consentimientoIaEn": null,
+    "membresias": [
+      {
+        "id": "…",
+        "rol": "BARBERO",
+        "barberoId": "…",
+        "barberia": { "id": "…", "nombre": "Barberia Centro" }
+      }
+    ]
+  }
+}
+```
+
+- Solo membresías ACTIVO de barberías activas, ordenadas por el nombre de la barbería. Las INVITADO van por `/invitaciones/mias`; un cliente recibe la lista vacía.
+- `barberoId` es el PerfilBarbero (§10.1), solo con rol BARBERO; si no, `null`. `consentimientoIaEn` es la fecha del consentimiento del asesor (RN-28) o `null`.
+- La app elige la interfaz del rol con esta lista y el panel muestra Sin acceso si no hay ninguna PROPIETARIO (D-10).
+
+## Middlewares compartidos (D-18)
+
+- `autenticar`: además del JWT, consulta el usuario; si no existe o está inactivo responde `AUTENTICACION_REQUERIDA` 401 (D-05). Desactivar una cuenta corta el acceso de inmediato.
+- `contextoBarberia`: toma la barbería del parámetro `:id` de la ruta y exige una membresía ACTIVO del usuario en una barbería activa. Cualquier otro caso (id que no es UUID, barbería inexistente o inactiva, otra barbería, INVITADO o INACTIVO) responde `NO_ENCONTRADO` 404. Llena `req.contextoBarberia` con `{ barberiaId, rol }` para `exigirRol`, con el id de la base aunque la URL lo traiga en mayúsculas. Solo sirve en rutas `/barberias/:id/...` (con `mergeParams` si el router se monta ahí) y sin otro `:id` hijo; un recurso con la barbería en su fila, como `PATCH /citas/:id`, necesita su propia verificación.
+- Orden en una ruta interna: `autenticar` → `contextoBarberia` → `exigirRol` → `validar` → servicio.
+
 ## Pruebas
 
-`autenticacion.prueba.ts`: criterios de HU-AUT-01 y HU-AUT-02 (lo que toca a la API), cada validación de §11.4 con sus límites, el registro simultáneo con el mismo correo, el límite por IP, la IP detrás de un proxy (D-15), el límite de inicios fallidos por cuenta, por IP y en el tiempo (D-16), y la rotación, la carrera entre renovaciones y el cierre de sesión (D-17). Bruno: `bruno/autenticacion/`.
+`autenticacion.prueba.ts`: criterios de HU-AUT-01 y HU-AUT-02 (lo que toca a la API), cada validación de §11.4 con sus límites, el registro simultáneo con el mismo correo, el límite por IP, la IP detrás de un proxy (D-15), el límite de inicios fallidos por cuenta, por IP y en el tiempo (D-16), la rotación, la carrera entre renovaciones y el cierre de sesión (D-17), y el perfil con sus membresías (D-18). Los middlewares se prueban en `src/compartido/middleware/middleware.prueba.ts`, también con la otra barbería. Bruno: `bruno/autenticacion/` y `bruno/usuarios/`.

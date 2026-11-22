@@ -8,6 +8,7 @@ import type {
   EntradaInicioSesion,
   EntradaRegistro,
   EntradaTokenSesion,
+  PerfilUsuario,
 } from './esquemas';
 import * as servicio from './servicio';
 
@@ -40,4 +41,13 @@ export async function cerrarSesion(req: Request, res: Response): Promise<void> {
   if (!req.usuario) throw new ErrorNegocio('AUTENTICACION_REQUERIDA', 401, 'Debes iniciar sesión');
   await servicio.cerrarSesion(req.usuario.id, req.validado as EntradaTokenSesion);
   res.status(204).end();
+}
+
+export async function consultarPerfil(
+  req: Request,
+  res: Response<RespuestaExito<PerfilUsuario>>,
+): Promise<void> {
+  if (!req.usuario) throw new ErrorNegocio('AUTENTICACION_REQUERIDA', 401, 'Debes iniciar sesión');
+  const datos = await servicio.consultarPerfil(req.usuario.id);
+  res.status(200).json({ datos });
 }

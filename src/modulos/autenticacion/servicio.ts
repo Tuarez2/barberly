@@ -1,4 +1,4 @@
-// Logica de autenticacion (AUT-01 a AUT-04, SEG-06, §11.4, D-02 a D-05, D-14, D-16, D-17).
+// Logica de autenticacion (AUT-01 a AUT-04, AUT-08, SEG-06, §11.4, D-02 a D-05, D-14, D-16 a D-18).
 import { createHash, randomBytes } from 'node:crypto';
 
 import bcrypt from 'bcryptjs';
@@ -15,6 +15,7 @@ import type {
   EntradaInicioSesion,
   EntradaRegistro,
   EntradaTokenSesion,
+  PerfilUsuario,
 } from './esquemas';
 
 const DIA_MS = 24 * 60 * 60 * 1000;
@@ -179,4 +180,41 @@ export async function cerrarSesion(usuarioId: string, entrada: EntradaTokenSesio
     },
     data: { revocadoEn: ahora() },
   });
+}
+
+// AUT-08 y D-18: perfil y membresias ACTIVO de barberias activas. autenticar ya verifico que el
+// usuario existe y esta activo; si se borro justo despues, responde como una sesion invalida.
+export async function consultarPerfil(usuarioId: string): Promise<PerfilUsuario> {
+  const usuario = await baseDatos.usuario.findUnique({
+    where: { id: usuarioId },
+    select: {
+      ...seleccionUsuario,
+      consentimientoIaEn: true,
+      membresias: {
+        where: { estado: 'ACTIVO', barberia: { activo: true } },
+        orderBy: [{ barberia: { nombre: 'asc' } }, { id: 'asc' }],
+        select: {
+          id: true,
+          rol: true,
+          perfilBarbero: { select: { id: true } },
+          barberia: { select: { id: true, nombre: true } },
+        },
+      },
+    },
+  });
+  if (!usuario) throw sesionInvalida();
+
+  return {
+    id: usuario.id,
+    nombre: usuario.nombre,
+    correo: usuario.correo,
+    telefono: usuario.telefono,
+    consentimientoIaEn: usuario.consentimientoIaEn?.toISOString() ?? null,
+    membresias: usuario.membresias.map((membresia) => ({
+      id: membresia.id,
+      rol: membresia.rol,
+      barberoId: membresia.rol === 'BARBERO' ? (membresia.perfilBarbero?.id ?? null) : null,
+      barberia: { id: membresia.barberia.id, nombre: membresia.barberia.nombre },
+    })),
+  };
 }

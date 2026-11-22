@@ -44,7 +44,7 @@ Entrega: usuarios que entran según su rol. Especificación: `docs/especificacio
 | T1.5 | API: registro de usuario | AUT-01, HU-AUT-01, SEG-06 | `feat/autenticacion-registro` | T1.3, T1.4 | hecha |
 | T1.6 | API: inicio de sesión con límite de intentos | AUT-02, HU-AUT-02, SEG-09 | `feat/autenticacion-iniciar-sesion` | T1.5 | hecha |
 | T1.7 | API: renovar y cerrar sesión | AUT-03, AUT-04, HU-AUT-02 | `feat/autenticacion-sesion` | T1.6 | hecha |
-| T1.8 | API: `GET /usuarios/yo` con membresías y `contextoBarberia` real; `autenticar` rechaza usuarios inactivos | AUT-08, SEG-03, SEG-04, D-05 | `feat/autenticacion-membresias` | T1.7 | pendiente |
+| T1.8 | API: `GET /usuarios/yo` con membresías y `contextoBarberia` real; `autenticar` rechaza usuarios inactivos | AUT-08, SEG-03, SEG-04, D-05 | `feat/autenticacion-membresias` | T1.7 | hecha |
 | T1.9 | API: registrar barbería y quedar como propietario | AUT-10, HU-AUT-03 | `feat/autenticacion-registrar-barberia` | T1.8 | pendiente |
 | T1.10 | App: sesión (cliente HTTP con token, renovación automática, almacenamiento seguro, TanStack Query) | AUT-04, §11.4 | `feat/movil-sesion` | T1.7 | pendiente |
 | T1.11 | App: pantallas Registro e Inicio de sesión con sus estados de error | HU-AUT-01, HU-AUT-02 | `feat/movil-registro-iniciar-sesion` | T1.10 | pendiente |

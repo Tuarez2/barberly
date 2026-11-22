@@ -4,6 +4,7 @@ import { respuestaError, SEGURIDAD_BEARER } from '../../compartido/documentacion
 import {
   esquemaInicioSesion,
   esquemaRegistro,
+  esquemaRespuestaPerfil,
   esquemaRespuestaRenovacion,
   esquemaRespuestaSesion,
   esquemaTokenSesion,
@@ -108,6 +109,25 @@ export const registrarAutenticacion: RegistrarDocumentacion = (registro) => {
         'AUTENTICACION_REQUERIDA o TOKEN_VENCIDO: falta el token de acceso o no sirve',
       ),
       422: respuestaError('DATOS_INVALIDOS: los detalles dicen qué campo falla'),
+    },
+  });
+
+  registro.registerPath({
+    method: 'get',
+    path: '/usuarios/yo',
+    tags: ['autenticacion'],
+    summary: 'Ver mi perfil y mis membresías (AUT-08)',
+    description:
+      'La app y el panel eligen la interfaz con las membresías: un cliente recibe la lista vacía (D-10, D-18).',
+    security: SEGURIDAD_BEARER,
+    responses: {
+      200: {
+        description: 'Perfil del usuario autenticado',
+        content: { 'application/json': { schema: esquemaRespuestaPerfil } },
+      },
+      401: respuestaError(
+        'AUTENTICACION_REQUERIDA o TOKEN_VENCIDO: sin token, token inválido o cuenta inactiva (D-05)',
+      ),
     },
   });
 };

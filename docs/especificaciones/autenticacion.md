@@ -66,6 +66,11 @@ Renovar y cerrar sesión (D-17):
 - No hay detección de reutilización de un token revocado en el MVP.
 - Cliente (T1.10 y el panel): una sola renovación a la vez; las solicitudes que reciben TOKEN_VENCIDO mientras tanto esperan esa renovación. Solo AUTENTICACION_REQUERIDA borra la sesión local; un error de red o un 500 no la borra.
 
+Perfil y membresías (D-18):
+- GET /usuarios/yo: `{ datos: { id, nombre, correo, telefono, consentimientoIaEn, membresias: [{ id, rol, barberoId, barberia: { id, nombre } }] } }`. Solo membresías ACTIVO de barberías activas, por nombre de barbería; `barberoId` es el PerfilBarbero o null.
+- `contextoBarberia`: barbería del parámetro `:id`, con membresía ACTIVO en una barbería activa; si no, NO_ENCONTRADO 404 (también con un id que no es UUID).
+- `autenticar`: un usuario inexistente o inactivo responde AUTENTICACION_REQUERIDA 401 aunque su token sea válido (D-05).
+
 ## API
 Prefijo /api/v1. Pública = sin sesión; Pub = cualquier usuario autenticado.
 | Método | Ruta | Rol | Éxito |

@@ -132,6 +132,19 @@ export interface DatosSesion {
   tokenRenovacion: string;
 }
 
+// D-18: lo devuelve GET /usuarios/yo. Fechas en ISO 8601 UTC.
+export interface MembresiaUsuario {
+  id: string;
+  rol: RolMembresia;
+  barberoId: string | null; // PerfilBarbero, solo si rol es BARBERO (§10.1)
+  barberia: { id: string; nombre: string };
+}
+
+export interface PerfilUsuario extends UsuarioSesion {
+  consentimientoIaEn: string | null;
+  membresias: MembresiaUsuario[];
+}
+
 // D-17: lo devuelve renovar.
 export interface DatosRenovacion {
   tokenAcceso: string;

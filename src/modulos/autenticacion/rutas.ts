@@ -38,3 +38,8 @@ rutasAutenticacion.post(
   validar(esquemaTokenSesion),
   controlador.cerrarSesion,
 );
+
+// Montado en /usuarios (D-18).
+export const rutasUsuarios = Router();
+
+rutasUsuarios.get('/yo', autenticar, controlador.consultarPerfil);

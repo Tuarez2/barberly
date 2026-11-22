@@ -1,5 +1,6 @@
 // Autenticacion: registro (T1.5, AUT-01, HU-AUT-01, SEG-06, §11.4, D-03, D-14) e inicio de sesion
-// (T1.6, AUT-02, HU-AUT-02, SEG-09, D-05, D-16), renovar y cerrar sesion (T1.7, AUT-03, AUT-04, D-17).
+// (T1.6, AUT-02, HU-AUT-02, SEG-09, D-05, D-16), renovar y cerrar sesion
+// (T1.7, AUT-03, AUT-04, D-17) y perfil con membresias (T1.8, AUT-08, D-05, D-18).
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import request from 'supertest';
@@ -10,7 +11,16 @@ import { baseDatos } from '../../compartido/base-datos';
 import { configuracion } from '../../compartido/configuracion';
 import { reiniciarLimites } from '../../compartido/limites';
 import { fijarAhora, restaurarAhora } from '../../compartido/reloj';
-import { CLAVE_PRUEBA, crearUsuarioDePrueba, limpiarBase } from '../../pruebas/fabricas';
+import {
+  CLAVE_PRUEBA,
+  crearBarberiaDePrueba,
+  crearBarberoDePrueba,
+  crearUsuarioDePrueba,
+  escenarioBase,
+  IDS_PRUEBA,
+  idPrueba,
+  limpiarBase,
+} from '../../pruebas/fabricas';
 import { cabeceraDePrueba, tokenDePrueba } from '../../pruebas/sesiones';
 
 const RUTA = '/api/v1/autenticacion/registro';
@@ -1122,5 +1132,179 @@ describe('§10.7: documentacion de renovar y cerrar sesion', () => {
     const cerrar = body.paths['/autenticacion/cerrar-sesion'].post;
     expect(Object.keys(cerrar.responses)).toEqual(expect.arrayContaining(['204', '401', '422']));
     expect(cerrar.security).toEqual([{ bearer: [] }]);
+  });
+});
+
+const RUTA_YO = '/api/v1/usuarios/yo';
+
+function consultarYo(usuarioId?: string) {
+  const peticion = request(app).get(RUTA_YO);
+  if (usuarioId) peticion.set(cabeceraDePrueba(tokenDePrueba(usuarioId)));
+  return peticion;
+}
+
+describe('AUT-08, D-18: GET /api/v1/usuarios/yo', () => {
+  beforeEach(async () => {
+    await escenarioBase();
+  });
+
+  it('un cliente recibe su perfil y la lista de membresias vacia', async () => {
+    const respuesta = await consultarYo(IDS_PRUEBA.cliente);
+
+    expect(respuesta.status).toBe(200);
+    expect(respuesta.body).toEqual({
+      datos: {
+        id: IDS_PRUEBA.cliente,
+        nombre: 'Cliente',
+        correo: 'cliente@barberly.test',
+        telefono: '0991234567',
+        consentimientoIaEn: null,
+        membresias: [],
+      },
+    });
+  });
+
+  it('un propietario ve su membresia sin barberoId', async () => {
+    const respuesta = await consultarYo(IDS_PRUEBA.propietario);
+
+    expect(respuesta.body.datos.membresias).toEqual([
+      {
+        id: expect.any(String),
+        rol: 'PROPIETARIO',
+        barberoId: null,
+        barberia: { id: IDS_PRUEBA.barberia, nombre: 'Barberia Centro' },
+      },
+    ]);
+  });
+
+  it('un barbero ve su membresia con el id de su PerfilBarbero (§10.1)', async () => {
+    const respuesta = await consultarYo(IDS_PRUEBA.barbero);
+
+    expect(respuesta.body.datos.membresias).toEqual([
+      {
+        id: expect.any(String),
+        rol: 'BARBERO',
+        barberoId: IDS_PRUEBA.perfilBarbero,
+        barberia: { id: IDS_PRUEBA.barberia, nombre: 'Barberia Centro' },
+      },
+    ]);
+  });
+
+  it('AUT-09: con roles en varias barberias las devuelve todas, ordenadas por nombre de barberia', async () => {
+    await crearBarberoDePrueba({
+      usuarioId: IDS_PRUEBA.propietario,
+      barberiaId: IDS_PRUEBA.otraBarberia,
+      perfilId: idPrueba(310),
+      servicioIds: [IDS_PRUEBA.servicioOtra],
+    });
+    await crearBarberiaDePrueba({ propietarioId: IDS_PRUEBA.propietario, nombre: 'Alfa Barberia' });
+
+    const { body } = await consultarYo(IDS_PRUEBA.propietario);
+
+    expect(
+      body.datos.membresias.map((membresia: { rol: string; barberia: { nombre: string } }) => [
+        membresia.barberia.nombre,
+        membresia.rol,
+      ]),
+    ).toEqual([
+      ['Alfa Barberia', 'PROPIETARIO'],
+      ['Barberia Centro', 'PROPIETARIO'],
+      ['Barberia Norte', 'BARBERO'],
+    ]);
+    expect(body.datos.membresias[2].barberoId).toBe(idPrueba(310));
+  });
+
+  it('D-18: no incluye membresias INVITADO ni INACTIVO ni de barberias inactivas', async () => {
+    await baseDatos.membresia.createMany({
+      data: [
+        {
+          id: idPrueba(501),
+          usuarioId: IDS_PRUEBA.cliente,
+          barberiaId: IDS_PRUEBA.barberia,
+          rol: 'BARBERO',
+          estado: 'INVITADO',
+        },
+        {
+          id: idPrueba(502),
+          usuarioId: IDS_PRUEBA.cliente,
+          barberiaId: IDS_PRUEBA.otraBarberia,
+          rol: 'BARBERO',
+          estado: 'INACTIVO',
+        },
+      ],
+    });
+    const { barberia } = await crearBarberiaDePrueba({
+      propietarioId: IDS_PRUEBA.cliente,
+      nombre: 'Barberia Cerrada',
+    });
+    await baseDatos.barberia.update({ where: { id: barberia.id }, data: { activo: false } });
+
+    const respuesta = await consultarYo(IDS_PRUEBA.cliente);
+
+    expect(respuesta.status).toBe(200);
+    expect(respuesta.body.datos.membresias).toEqual([]);
+  });
+
+  it('RN-28: devuelve la fecha del consentimiento de IA en ISO 8601 UTC', async () => {
+    await baseDatos.usuario.update({
+      where: { id: IDS_PRUEBA.cliente },
+      data: { consentimientoIaEn: new Date('2026-11-20T18:30:00Z') },
+    });
+
+    const { body } = await consultarYo(IDS_PRUEBA.cliente);
+
+    expect(body.datos.consentimientoIaEn).toBe('2026-11-20T18:30:00.000Z');
+  });
+
+  it('RNF-17: no expone la clave, el estado de la cuenta ni datos de otros usuarios', async () => {
+    const { body } = await consultarYo(IDS_PRUEBA.barbero);
+
+    const texto = JSON.stringify(body);
+    expect(texto).not.toMatch(/claveHash|activo|estado|usuarioId/);
+    expect(texto).not.toMatch(/propietario@barberly\.test|cliente@barberly\.test|barbero\.otra/);
+    expect(Object.keys(body.datos.membresias[0].barberia)).toEqual(['id', 'nombre']);
+  });
+
+  it('SEG-02: sin token responde 401 AUTENTICACION_REQUERIDA', async () => {
+    const respuesta = await consultarYo();
+
+    expect(respuesta.status).toBe(401);
+    expect(respuesta.body.error.codigo).toBe('AUTENTICACION_REQUERIDA');
+  });
+
+  it('D-05: un usuario inactivo con un token vigente responde 401 AUTENTICACION_REQUERIDA', async () => {
+    await baseDatos.usuario.update({ where: { id: IDS_PRUEBA.cliente }, data: { activo: false } });
+
+    const respuesta = await consultarYo(IDS_PRUEBA.cliente);
+
+    expect(respuesta.status).toBe(401);
+    expect(respuesta.body.error.codigo).toBe('AUTENTICACION_REQUERIDA');
+  });
+
+  it('D-18: con el token de un usuario que no existe responde 401', async () => {
+    const respuesta = await consultarYo(idPrueba(999));
+
+    expect(respuesta.status).toBe(401);
+    expect(respuesta.body.error.codigo).toBe('AUTENTICACION_REQUERIDA');
+  });
+
+  it('D-05: tras desactivar la cuenta, cerrar sesion tambien responde 401', async () => {
+    await crearAna();
+    const sesion = await abrirSesionDe(CORREO_ANA);
+    await baseDatos.usuario.update({ where: { id: sesion.usuario.id }, data: { activo: false } });
+
+    const respuesta = await cerrarSesion(sesion.tokenAcceso, {
+      tokenRenovacion: sesion.tokenRenovacion,
+    });
+
+    expect(respuesta.status).toBe(401);
+  });
+
+  it('§10.7: la documentacion incluye GET /usuarios/yo con token de acceso', async () => {
+    const { body } = await request(app).get('/api/v1/documentacion');
+
+    const yo = body.paths['/usuarios/yo'].get;
+    expect(Object.keys(yo.responses)).toEqual(expect.arrayContaining(['200', '401']));
+    expect(yo.security).toEqual([{ bearer: [] }]);
   });
 });
