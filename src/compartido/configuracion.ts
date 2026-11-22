@@ -19,6 +19,8 @@ const esquemaConfiguracion = z.object({
   TOKEN_ACCESO_MINUTOS: z.coerce.number().int().min(1).max(60).default(15),
   TOKEN_RENOVACION_DIAS: z.coerce.number().int().min(1).max(90).default(30),
   REGISTRO_LIMITE_POR_HORA: z.coerce.number().int().min(1).default(5),
+  INICIO_INTENTOS_MAXIMOS: z.coerce.number().int().min(1).default(5),
+  INICIO_ESPERA_MINUTOS: z.coerce.number().int().min(1).default(15),
   // D-15: proxies propios delante de la API (0 en desarrollo; 1 en Railway, Render o un VPS con Nginx).
   PROXIES_CONFIABLES: z.coerce.number().int().min(0).max(5).default(0),
 });

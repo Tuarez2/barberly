@@ -55,6 +55,11 @@ Cuerpos (D-14):
 - Contraseña: los 72 caracteres tampoco pueden pasar de 72 bytes en UTF-8, el límite de bcrypt.
 - El límite de registro cuenta todas las solicitudes de la IP, también las rechazadas.
 
+Inicio de sesión (D-16):
+- Cuerpo `{ correo, clave, dispositivo? }`; la clave solo se exige no vacía y de máximo 72 caracteres. Responde 200 con la forma del registro.
+- Solo cuenta como fallo CREDENCIALES_INVALIDAS. Hay un contador por IP y otro por correo, con ventana de 15 minutos desde el primer fallo; al quinto fallo, todo intento responde DEMASIADAS_SOLICITUDES hasta que se cierra, aunque la clave sea correcta. Un inicio correcto no reinicia el contador.
+- Si el correo no existe, la clave se compara igual contra un hash de relleno.
+
 ## API
 Prefijo /api/v1. Pública = sin sesión; Pub = cualquier usuario autenticado.
 | Método | Ruta | Rol | Éxito |

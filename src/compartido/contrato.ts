@@ -80,6 +80,26 @@ export const esquemaRegistro = z.strictObject(
 
 export type EntradaRegistro = z.infer<typeof esquemaRegistro>;
 
+// D-16: sin las reglas del registro; solo no vacia y de maximo 72 caracteres.
+export const esquemaInicioSesion = z.strictObject(
+  {
+    correo: esquemaCorreo,
+    clave: z
+      .string({ error: 'La contraseña es obligatoria' })
+      .min(1, 'Escribe tu contraseña')
+      .max(72, 'La contraseña debe tener como máximo 72 caracteres'),
+    dispositivo: esquemaDispositivo.optional(),
+  },
+  {
+    error: (problema) =>
+      problema.code === 'unrecognized_keys'
+        ? `Campos no permitidos: ${problema.keys.join(', ')}`
+        : 'Envía tu correo y tu contraseña',
+  },
+);
+
+export type EntradaInicioSesion = z.infer<typeof esquemaInicioSesion>;
+
 export interface UsuarioSesion {
   id: string;
   nombre: string;
@@ -87,7 +107,7 @@ export interface UsuarioSesion {
   telefono: string;
 }
 
-// D-14: lo devuelven el registro y el inicio de sesion.
+// D-14: lo devuelven el registro y el inicio de sesion (D-16).
 export interface DatosSesion {
   usuario: UsuarioSesion;
   tokenAcceso: string;

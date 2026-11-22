@@ -1,9 +1,13 @@
 import { Router } from 'express';
 
-import { limitarRegistro } from '../../compartido/limites';
+import {
+  limitarInicioPorCuenta,
+  limitarInicioPorIp,
+  limitarRegistro,
+} from '../../compartido/limites';
 import { validar } from '../../compartido/middleware';
 import * as controlador from './controlador';
-import { esquemaRegistro } from './esquemas';
+import { esquemaInicioSesion, esquemaRegistro } from './esquemas';
 
 export const rutasAutenticacion = Router();
 
@@ -13,4 +17,13 @@ rutasAutenticacion.post(
   limitarRegistro,
   validar(esquemaRegistro),
   controlador.registrar,
+);
+
+// D-16: limite por IP → validar (422) → limite por cuenta, con el correo ya validado.
+rutasAutenticacion.post(
+  '/iniciar-sesion',
+  limitarInicioPorIp,
+  validar(esquemaInicioSesion),
+  limitarInicioPorCuenta,
+  controlador.iniciarSesion,
 );

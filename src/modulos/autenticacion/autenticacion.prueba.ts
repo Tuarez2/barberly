@@ -1,15 +1,16 @@
-// Autenticacion: registro de usuario (T1.5, AUT-01, HU-AUT-01, SEG-06, §11.4, D-03, D-14).
+// Autenticacion: registro (T1.5, AUT-01, HU-AUT-01, SEG-06, §11.4, D-03, D-14) e inicio de sesion
+// (T1.6, AUT-02, HU-AUT-02, SEG-09, D-05, D-16).
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import request from 'supertest';
-import { afterAll, afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { app } from '../../app';
 import { baseDatos } from '../../compartido/base-datos';
 import { configuracion } from '../../compartido/configuracion';
 import { reiniciarLimites } from '../../compartido/limites';
 import { fijarAhora, restaurarAhora } from '../../compartido/reloj';
-import { crearUsuarioDePrueba, limpiarBase } from '../../pruebas/fabricas';
+import { CLAVE_PRUEBA, crearUsuarioDePrueba, limpiarBase } from '../../pruebas/fabricas';
 
 const RUTA = '/api/v1/autenticacion/registro';
 
@@ -414,5 +415,414 @@ describe('D-15: IP del cliente detras de un proxy', () => {
     const sexta = await registrarDesde('203.0.113.99', 6);
 
     expect(sexta.status).toBe(429);
+  });
+});
+
+const RUTA_INICIO = '/api/v1/autenticacion/iniciar-sesion';
+const CORREO_ANA = 'ana@correo.ec';
+
+function iniciarSesion(cuerpo: Record<string, unknown>, ip?: string) {
+  const peticion = request(app).post(RUTA_INICIO);
+  if (ip) peticion.set('X-Forwarded-For', ip);
+  return peticion.send(cuerpo);
+}
+
+function crearAna(cambios: { activo?: boolean } = {}) {
+  return crearUsuarioDePrueba({
+    nombre: 'Ana Pérez',
+    correo: CORREO_ANA,
+    telefono: '+593991234567',
+    ...cambios,
+  });
+}
+
+describe('HU-AUT-02: POST /api/v1/autenticacion/iniciar-sesion', () => {
+  it('AUT-02: con credenciales correctas responde 200 con el usuario y los tokens (D-14)', async () => {
+    const ana = await crearAna();
+
+    const respuesta = await iniciarSesion({ correo: CORREO_ANA, clave: CLAVE_PRUEBA });
+
+    expect(respuesta.status).toBe(200);
+    expect(respuesta.body).toEqual({
+      datos: {
+        usuario: {
+          id: ana.id,
+          nombre: 'Ana Pérez',
+          correo: CORREO_ANA,
+          telefono: '+593991234567',
+        },
+        tokenAcceso: expect.any(String),
+        tokenRenovacion: expect.any(String),
+      },
+    });
+    expect(JSON.stringify(respuesta.body)).not.toMatch(/claveHash|tokenHash|activo/);
+  });
+
+  it('AUT-02: el token de acceso es un JWT con el id del usuario (D-03)', async () => {
+    const ana = await crearAna();
+
+    const { body } = await iniciarSesion({ correo: CORREO_ANA, clave: CLAVE_PRUEBA });
+
+    const contenido = jwt.verify(body.datos.tokenAcceso, configuracion.JWT_SECRETO, {
+      algorithms: ['HS256'],
+    });
+    if (typeof contenido === 'string') throw new Error('Se esperaba un JWT con contenido');
+    expect(contenido.sub).toBe(ana.id);
+    expect((contenido.exp ?? 0) - (contenido.iat ?? 0)).toBe(
+      configuracion.TOKEN_ACCESO_MINUTOS * 60,
+    );
+  });
+
+  it('D-04: cada inicio abre su propia sesion de 30 dias con su dispositivo', async () => {
+    const ana = await crearAna();
+    fijarAhora(new Date('2026-11-21T15:00:00Z'));
+
+    const primero = await iniciarSesion({
+      correo: CORREO_ANA,
+      clave: CLAVE_PRUEBA,
+      dispositivo: 'Pixel 7',
+    });
+    const segundo = await iniciarSesion({ correo: CORREO_ANA, clave: CLAVE_PRUEBA });
+
+    expect(primero.body.datos.tokenRenovacion).not.toBe(segundo.body.datos.tokenRenovacion);
+    const sesiones = await baseDatos.tokenRenovacion.findMany({
+      where: { usuarioId: ana.id },
+      orderBy: { dispositivo: 'desc' },
+    });
+    expect(sesiones.map((sesion) => sesion.dispositivo)).toEqual(['Pixel 7', null]);
+    for (const sesion of sesiones) {
+      expect(sesion.expiraEn.toISOString()).toBe('2026-12-21T15:00:00.000Z');
+      expect(sesion.revocadoEn).toBeNull();
+      expect(sesion.tokenHash).toHaveLength(64);
+    }
+  });
+
+  it('AUT-02: el correo no distingue mayusculas ni espacios', async () => {
+    await crearAna();
+
+    const respuesta = await iniciarSesion({ correo: '  ANA@Correo.EC ', clave: CLAVE_PRUEBA });
+
+    expect(respuesta.status).toBe(200);
+  });
+
+  it('§11.4: con la clave incorrecta responde 401 CREDENCIALES_INVALIDAS y no abre sesion', async () => {
+    await crearAna();
+
+    const respuesta = await iniciarSesion({ correo: CORREO_ANA, clave: 'OtraClave99' });
+
+    expect(respuesta.status).toBe(401);
+    expect(respuesta.body.error.codigo).toBe('CREDENCIALES_INVALIDAS');
+    expect(await baseDatos.tokenRenovacion.count()).toBe(0);
+  });
+
+  it('§11.4: con un correo inexistente responde lo mismo que con la clave incorrecta', async () => {
+    await crearAna();
+
+    const claveIncorrecta = await iniciarSesion({ correo: CORREO_ANA, clave: 'OtraClave99' });
+    const correoInexistente = await iniciarSesion({
+      correo: 'nadie@correo.ec',
+      clave: CLAVE_PRUEBA,
+    });
+
+    expect(correoInexistente.status).toBe(401);
+    expect(correoInexistente.body).toEqual(claveIncorrecta.body);
+  });
+
+  it('D-05: un usuario inactivo con la clave correcta recibe CREDENCIALES_INVALIDAS', async () => {
+    await crearAna({ activo: false });
+
+    const respuesta = await iniciarSesion({ correo: CORREO_ANA, clave: CLAVE_PRUEBA });
+
+    expect(respuesta.status).toBe(401);
+    expect(respuesta.body.error.codigo).toBe('CREDENCIALES_INVALIDAS');
+    expect(await baseDatos.tokenRenovacion.count()).toBe(0);
+  });
+
+  it('D-16: una clave que no cumple las reglas del registro responde 401, no 422', async () => {
+    await crearAna();
+
+    const respuesta = await iniciarSesion({ correo: CORREO_ANA, clave: 'abc' });
+
+    expect(respuesta.status).toBe(401);
+    expect(respuesta.body.error.codigo).toBe('CREDENCIALES_INVALIDAS');
+  });
+
+  it.each([
+    ['un campo no esperado', { correo: CORREO_ANA, clave: CLAVE_PRUEBA, rol: 'PROPIETARIO' }, ''],
+    ['sin correo', { clave: CLAVE_PRUEBA }, 'correo'],
+    ['un correo mal escrito', { correo: 'ana.correo.ec', clave: CLAVE_PRUEBA }, 'correo'],
+    ['sin clave', { correo: CORREO_ANA }, 'clave'],
+    ['la clave vacia', { correo: CORREO_ANA, clave: '' }, 'clave'],
+    ['una clave de 73 caracteres', { correo: CORREO_ANA, clave: `${'a'.repeat(72)}1` }, 'clave'],
+    [
+      'un dispositivo de 101 caracteres',
+      { correo: CORREO_ANA, clave: CLAVE_PRUEBA, dispositivo: 'd'.repeat(101) },
+      'dispositivo',
+    ],
+  ])('D-16: con %s responde 422 DATOS_INVALIDOS', async (_caso, cuerpo, campo) => {
+    await crearAna();
+
+    const respuesta = await iniciarSesion(cuerpo);
+
+    expect(respuesta.status).toBe(422);
+    expect(respuesta.body.error.codigo).toBe('DATOS_INVALIDOS');
+    expect(respuesta.body.error.detalles).toEqual(
+      expect.arrayContaining([expect.objectContaining({ campo })]),
+    );
+  });
+});
+
+describe('SEG-09, D-03, D-16: limite de inicios fallidos', () => {
+  const proxiesOriginales = configuracion.PROXIES_CONFIABLES;
+
+  beforeEach(() => {
+    // Con un proxy de confianza, cada prueba elige la IP del cliente (D-15).
+    configuracion.PROXIES_CONFIABLES = 1;
+  });
+
+  afterEach(() => {
+    configuracion.PROXIES_CONFIABLES = proxiesOriginales;
+    vi.useRealTimers();
+  });
+
+  async function fallar(veces: number, correo: string, ip: (intento: number) => string) {
+    for (let intento = 1; intento <= veces; intento += 1) {
+      const respuesta = await iniciarSesion({ correo, clave: 'OtraClave99' }, ip(intento));
+      expect(respuesta.status).toBe(401);
+    }
+  }
+
+  it('por cuenta: tras 5 fallos, el sexto intento responde 429 aunque la clave sea correcta y venga de otra IP', async () => {
+    await crearAna();
+    await fallar(5, CORREO_ANA, (intento) => `203.0.113.${intento}`);
+
+    const respuesta = await iniciarSesion(
+      { correo: CORREO_ANA, clave: CLAVE_PRUEBA },
+      '203.0.113.50',
+    );
+
+    expect(respuesta.status).toBe(429);
+    expect(respuesta.body.error.codigo).toBe('DEMASIADAS_SOLICITUDES');
+    expect(await baseDatos.tokenRenovacion.count()).toBe(0);
+  });
+
+  it('por cuenta: el contador usa el correo normalizado', async () => {
+    await crearAna();
+    const variantes = [
+      'ana@correo.ec',
+      'ANA@correo.ec',
+      ' Ana@Correo.ec',
+      'ana@CORREO.EC ',
+      'aNa@correo.ec',
+    ];
+    for (const [indice, correo] of variantes.entries()) {
+      const respuesta = await iniciarSesion(
+        { correo, clave: 'OtraClave99' },
+        `203.0.113.${indice + 1}`,
+      );
+      expect(respuesta.status).toBe(401);
+    }
+
+    const respuesta = await iniciarSesion(
+      { correo: CORREO_ANA, clave: CLAVE_PRUEBA },
+      '203.0.113.50',
+    );
+
+    expect(respuesta.status).toBe(429);
+  });
+
+  it('por IP: tras 5 fallos con cuentas distintas, la misma IP queda bloqueada para cualquier cuenta', async () => {
+    await crearAna();
+    for (let intento = 1; intento <= 5; intento += 1) {
+      const respuesta = await iniciarSesion(
+        { correo: `nadie${intento}@correo.ec`, clave: 'OtraClave99' },
+        '203.0.113.7',
+      );
+      expect(respuesta.status).toBe(401);
+    }
+
+    const mismaIp = await iniciarSesion({ correo: CORREO_ANA, clave: CLAVE_PRUEBA }, '203.0.113.7');
+    const otraIp = await iniciarSesion({ correo: CORREO_ANA, clave: CLAVE_PRUEBA }, '203.0.113.8');
+
+    expect(mismaIp.status).toBe(429);
+    expect(otraIp.status).toBe(200);
+  });
+
+  it('4 fallos todavia permiten entrar con la clave correcta', async () => {
+    await crearAna();
+    await fallar(4, CORREO_ANA, () => '203.0.113.7');
+
+    const respuesta = await iniciarSesion(
+      { correo: CORREO_ANA, clave: CLAVE_PRUEBA },
+      '203.0.113.7',
+    );
+
+    expect(respuesta.status).toBe(200);
+  });
+
+  it('D-16: los 422 no cuentan como fallos', async () => {
+    await crearAna();
+    for (let intento = 1; intento <= 6; intento += 1) {
+      const respuesta = await iniciarSesion({ correo: CORREO_ANA, clave: '' }, '203.0.113.7');
+      expect(respuesta.status).toBe(422);
+    }
+
+    const respuesta = await iniciarSesion(
+      { correo: CORREO_ANA, clave: CLAVE_PRUEBA },
+      '203.0.113.7',
+    );
+
+    expect(respuesta.status).toBe(200);
+  });
+
+  it('D-16: un inicio correcto no reinicia el contador', async () => {
+    await crearAna();
+    await fallar(4, CORREO_ANA, () => '203.0.113.7');
+    expect(
+      (await iniciarSesion({ correo: CORREO_ANA, clave: CLAVE_PRUEBA }, '203.0.113.7')).status,
+    ).toBe(200);
+    await fallar(1, CORREO_ANA, () => '203.0.113.7');
+
+    const respuesta = await iniciarSesion(
+      { correo: CORREO_ANA, clave: CLAVE_PRUEBA },
+      '203.0.113.7',
+    );
+
+    expect(respuesta.status).toBe(429);
+  });
+
+  it('D-03: pasados 15 minutos desde el primer fallo se puede volver a entrar', async () => {
+    await crearAna();
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2026-11-21T15:00:00Z'));
+    await fallar(5, CORREO_ANA, () => '203.0.113.7');
+
+    vi.setSystemTime(new Date('2026-11-21T15:14:59Z'));
+    const antes = await iniciarSesion({ correo: CORREO_ANA, clave: CLAVE_PRUEBA }, '203.0.113.7');
+    vi.setSystemTime(new Date('2026-11-21T15:15:01Z'));
+    const despues = await iniciarSesion({ correo: CORREO_ANA, clave: CLAVE_PRUEBA }, '203.0.113.7');
+
+    expect(antes.status).toBe(429);
+    expect(despues.status).toBe(200);
+  });
+});
+
+describe('§10.7: documentacion del inicio de sesion', () => {
+  it('GET /api/v1/documentacion incluye POST /autenticacion/iniciar-sesion', async () => {
+    const { body } = await request(app).get('/api/v1/documentacion');
+
+    expect(body.paths['/autenticacion/iniciar-sesion'].post.responses).toEqual(
+      expect.objectContaining({
+        200: expect.anything(),
+        401: expect.anything(),
+        422: expect.anything(),
+        429: expect.anything(),
+      }),
+    );
+  });
+});
+
+describe('SEG-09, D-16: limite de inicios fallidos, casos de borde', () => {
+  const proxiesOriginales = configuracion.PROXIES_CONFIABLES;
+
+  beforeEach(() => {
+    configuracion.PROXIES_CONFIABLES = 1;
+  });
+
+  afterEach(() => {
+    configuracion.PROXIES_CONFIABLES = proxiesOriginales;
+    vi.useRealTimers();
+  });
+
+  function contar(respuestas: { status: number }[]) {
+    return respuestas.reduce<Record<number, number>>((cuenta, { status }) => {
+      cuenta[status] = (cuenta[status] ?? 0) + 1;
+      return cuenta;
+    }, {});
+  }
+
+  it('por cuenta: 10 intentos simultaneos desde IPs distintas dan 5 fallos y 5 bloqueos', async () => {
+    await crearAna();
+
+    const respuestas = await Promise.all(
+      Array.from({ length: 10 }, (_, indice) =>
+        iniciarSesion({ correo: CORREO_ANA, clave: 'OtraClave99' }, `203.0.113.${indice + 1}`),
+      ),
+    );
+
+    expect(contar(respuestas)).toEqual({ 401: 5, 429: 5 });
+  });
+
+  it('por IP: 10 intentos simultaneos con correos distintos dan 5 fallos y 5 bloqueos', async () => {
+    const respuestas = await Promise.all(
+      Array.from({ length: 10 }, (_, indice) =>
+        iniciarSesion({ correo: `nadie${indice}@correo.ec`, clave: 'OtraClave99' }, '203.0.113.7'),
+      ),
+    );
+
+    expect(contar(respuestas)).toEqual({ 401: 5, 429: 5 });
+  });
+
+  it('por cuenta: un correo inexistente se bloquea igual que uno existente, sin delatar cual existe', async () => {
+    await crearAna();
+    const correos = [CORREO_ANA, 'nadie@correo.ec'];
+
+    const bloqueos = [];
+    for (const [indiceCorreo, correo] of correos.entries()) {
+      for (let intento = 1; intento <= 5; intento += 1) {
+        const ip = `198.51.${indiceCorreo}.${intento}`;
+        expect((await iniciarSesion({ correo, clave: 'OtraClave99' }, ip)).status).toBe(401);
+      }
+      bloqueos.push(
+        await iniciarSesion({ correo, clave: 'OtraClave99' }, `198.51.${indiceCorreo}.99`),
+      );
+    }
+
+    expect(bloqueos.map((respuesta) => respuesta.status)).toEqual([429, 429]);
+    expect(bloqueos[0]?.body).toEqual(bloqueos[1]?.body);
+  });
+
+  it('D-16: la ventana empieza en el primer fallo, no en un intento correcto ni en un 422', async () => {
+    await crearAna();
+    vi.useFakeTimers({ toFake: ['Date'] });
+    const ip = '203.0.113.7';
+
+    vi.setSystemTime(new Date('2026-11-21T15:00:00Z'));
+    expect((await iniciarSesion({ correo: CORREO_ANA, clave: CLAVE_PRUEBA }, ip)).status).toBe(200);
+    expect((await iniciarSesion({ correo: CORREO_ANA, clave: '' }, ip)).status).toBe(422);
+
+    vi.setSystemTime(new Date('2026-11-21T15:10:00Z'));
+    for (let intento = 1; intento <= 5; intento += 1) {
+      expect((await iniciarSesion({ correo: CORREO_ANA, clave: 'OtraClave99' }, ip)).status).toBe(
+        401,
+      );
+    }
+
+    // 15:16 ya pasa de 15 minutos desde el primer intento, pero no desde el primer fallo.
+    vi.setSystemTime(new Date('2026-11-21T15:16:00Z'));
+    const dentro = await iniciarSesion({ correo: CORREO_ANA, clave: CLAVE_PRUEBA }, ip);
+    vi.setSystemTime(new Date('2026-11-21T15:25:01Z'));
+    const fuera = await iniciarSesion({ correo: CORREO_ANA, clave: CLAVE_PRUEBA }, ip);
+
+    expect(dentro.status).toBe(429);
+    expect(fuera.status).toBe(200);
+  });
+
+  it('D-16: solo el limite por IP envia la cabecera RateLimit, con su propio nombre', async () => {
+    await crearAna();
+
+    const respuesta = await iniciarSesion(
+      { correo: CORREO_ANA, clave: 'OtraClave99' },
+      '203.0.113.7',
+    );
+
+    // draft-8 junta las entradas: la del limite general de app.ts y la de inicio-ip, ninguna de la cuenta.
+    const nombres = (cabecera: string | undefined) =>
+      (cabecera ?? '').split(',').map((entrada) => entrada.trim().split(';')[0]);
+    expect(nombres(respuesta.headers.ratelimit)).toEqual(['"300-in-1min"', '"inicio-ip"']);
+    expect(nombres(respuesta.headers['ratelimit-policy'])).toEqual([
+      '"300-in-1min"',
+      '"inicio-ip"',
+    ]);
   });
 });

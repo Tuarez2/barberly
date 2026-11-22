@@ -1,10 +1,10 @@
-// Esquemas de entrada y salida de autenticacion (§11.4, D-14). La validacion vive en el contrato comun.
+// Esquemas de entrada y salida de autenticacion (§11.4, D-14, D-16). La validacion vive en el contrato comun.
 import { z } from 'zod';
 
-import { esquemaRegistro } from '../../compartido/contrato';
+import { esquemaInicioSesion, esquemaRegistro } from '../../compartido/contrato';
 
-export { esquemaRegistro };
-export type { EntradaRegistro, DatosSesion } from '../../compartido/contrato';
+export { esquemaInicioSesion, esquemaRegistro };
+export type { DatosSesion, EntradaInicioSesion, EntradaRegistro } from '../../compartido/contrato';
 
 // Solo para la documentacion OpenAPI.
 export const esquemaRespuestaSesion = z
