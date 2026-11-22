@@ -36,6 +36,7 @@ Sesiones (§11.4):
 - Inicio fallido: mensaje genérico; tras 5 intentos fallidos desde la misma cuenta o IP, espera de 15 minutos con DEMASIADAS_SOLICITUDES (D-03).
 - Registro: máximo 5 por IP por hora, con DEMASIADAS_SOLICITUDES (D-03).
 - Las duraciones y límites van en la configuración validada con Zod (D-03).
+- Los límites por IP usan la IP del cliente según PROXIES_CONFIABLES (D-15).
 - Usuario con `activo` falso: CREDENCIALES_INVALIDAS al iniciar sesión y AUTENTICACION_REQUERIDA al renovar o al usar su token de acceso, sin revelar que la cuenta existe (D-05).
 - Cambiar la contraseña (AUT-06) con la actual incorrecta: CREDENCIALES_INVALIDAS (401); la app no cierra la sesión por este código (D-05).
 
@@ -46,6 +47,13 @@ Validaciones de registro (§11.4):
 | Correo | Obligatorio, formato válido, único, guardado en minúsculas |
 | Teléfono | Obligatorio, 7 a 15 dígitos, formato ecuatoriano aceptado (09XXXXXXXX o +5939XXXXXXXX), normalizado al guardar |
 | Contraseña | Mínimo 8 caracteres, al menos una letra y un número, máximo 72 |
+
+Cuerpos (D-14):
+- Registro: `{ nombre, correo, telefono, clave, dispositivo? }`; un campo extra responde DATOS_INVALIDOS.
+- Registro e inicio de sesión responden `{ datos: { usuario: { id, nombre, correo, telefono }, tokenAcceso, tokenRenovacion } }`.
+- Teléfono: se quitan espacios, guiones, puntos y paréntesis; 09XXXXXXXX se guarda como +5939XXXXXXXX, y cualquier otro número de 7 a 15 dígitos (con + opcional) se guarda tal cual.
+- Contraseña: los 72 caracteres tampoco pueden pasar de 72 bytes en UTF-8, el límite de bcrypt.
+- El límite de registro cuenta todas las solicitudes de la IP, también las rechazadas.
 
 ## API
 Prefijo /api/v1. Pública = sin sesión; Pub = cualquier usuario autenticado.

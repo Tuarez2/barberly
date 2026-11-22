@@ -17,6 +17,83 @@ export type Paginacion = z.infer<typeof esquemaPaginacion>;
 export const ROLES_MEMBRESIA = ['PROPIETARIO', 'BARBERO'] as const;
 export type RolMembresia = (typeof ROLES_MEMBRESIA)[number];
 
+// Autenticacion: registro (§11.4, D-14). Mensajes en español: la app los muestra junto al campo.
+const BYTES_MAXIMOS_CLAVE = 72; // limite de bcrypt
+
+export function normalizarTelefono(telefono: string): string {
+  return /^09\d{8}$/.test(telefono) ? `+593${telefono.slice(1)}` : telefono;
+}
+
+export const esquemaNombre = z
+  .string({ error: 'El nombre es obligatorio' })
+  .trim()
+  .min(2, 'El nombre debe tener al menos 2 caracteres')
+  .max(80, 'El nombre debe tener como máximo 80 caracteres')
+  .regex(/^[^\p{Cc}\p{Cf}]*$/u, 'El nombre no puede tener caracteres de control');
+
+export const esquemaCorreo = z
+  .string({ error: 'El correo es obligatorio' })
+  .trim()
+  .toLowerCase()
+  .max(120, 'El correo debe tener como máximo 120 caracteres')
+  .pipe(z.email('Escribe un correo válido'));
+
+export const esquemaTelefono = z
+  .string({ error: 'El teléfono es obligatorio' })
+  .transform((telefono) => telefono.replace(/[\s\-.()]/g, ''))
+  .pipe(z.string().regex(/^\+?\d{7,15}$/, 'El teléfono debe tener de 7 a 15 dígitos'))
+  .transform(normalizarTelefono);
+
+export const esquemaClave = z
+  .string({ error: 'La contraseña es obligatoria' })
+  .min(8, 'La contraseña debe tener al menos 8 caracteres')
+  .max(72, 'La contraseña debe tener como máximo 72 caracteres')
+  .regex(/\p{L}/u, 'La contraseña debe tener al menos una letra')
+  .regex(/\d/, 'La contraseña debe tener al menos un número')
+  .refine(
+    (clave) => new TextEncoder().encode(clave).length <= BYTES_MAXIMOS_CLAVE,
+    'La contraseña es demasiado larga',
+  );
+
+export const esquemaDispositivo = z
+  .string()
+  .trim()
+  .min(1, 'El dispositivo no puede estar vacío')
+  .max(100, 'El dispositivo debe tener como máximo 100 caracteres')
+  .regex(/^\P{Cc}*$/u, 'El dispositivo no puede tener caracteres de control');
+
+export const esquemaRegistro = z.strictObject(
+  {
+    nombre: esquemaNombre,
+    correo: esquemaCorreo,
+    telefono: esquemaTelefono,
+    clave: esquemaClave,
+    dispositivo: esquemaDispositivo.optional(),
+  },
+  {
+    error: (problema) =>
+      problema.code === 'unrecognized_keys'
+        ? `Campos no permitidos: ${problema.keys.join(', ')}`
+        : 'Envía los datos del registro',
+  },
+);
+
+export type EntradaRegistro = z.infer<typeof esquemaRegistro>;
+
+export interface UsuarioSesion {
+  id: string;
+  nombre: string;
+  correo: string;
+  telefono: string;
+}
+
+// D-14: lo devuelven el registro y el inicio de sesion.
+export interface DatosSesion {
+  usuario: UsuarioSesion;
+  tokenAcceso: string;
+  tokenRenovacion: string;
+}
+
 export interface MetaPaginacion {
   pagina: number;
   limite: number;

@@ -1,0 +1,29 @@
+meta {
+  name: Registro con correo registrado
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{urlBase}}/autenticacion/registro
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "nombre": "Cliente repetido",
+    "correo": "cliente.dos@barberly.test",
+    "telefono": "0991234567",
+    "clave": "Barberly2026"
+  }
+}
+
+assert {
+  res.status: eq 409
+  res.body.error.codigo: eq CORREO_REGISTRADO
+}
+
+docs {
+  HU-AUT-01. Usa un correo que ya exista (`cliente.dos@barberly.test` existe tras `npm run seed`).
+}

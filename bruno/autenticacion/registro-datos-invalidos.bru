@@ -1,0 +1,29 @@
+meta {
+  name: Registro con datos inválidos
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{urlBase}}/autenticacion/registro
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "nombre": "Ana Pérez",
+    "correo": "ana@correo.ec",
+    "telefono": "0991234567",
+    "clave": "corta"
+  }
+}
+
+assert {
+  res.status: eq 422
+  res.body.error.codigo: eq DATOS_INVALIDOS
+}
+
+docs {
+  HU-AUT-01. Contraseña de menos de 8 caracteres: `detalles` dice qué requisito falta (§11.4).
+}

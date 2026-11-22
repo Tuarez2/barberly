@@ -41,7 +41,7 @@ Entrega: usuarios que entran según su rol. Especificación: `docs/especificacio
 | T1.2 | Modelo de datos completo, índices y restricciones, con su migración | §9.2, §9.4, §9.5 | `feat/base-datos-modelo` | T1.1 | hecha |
 | T1.3 | Semillas de desarrollo y fábricas de prueba | §7.1, skill `pruebas-api` | `feat/base-datos-semillas` | T1.2 | hecha |
 | T1.4 | Documentación OpenAPI base en `GET /api/v1/documentacion` | §10.7 | `chore/api-documentacion` | T1.2 | hecha |
-| T1.5 | API: registro de usuario | AUT-01, HU-AUT-01, SEG-06 | `feat/autenticacion-registro` | T1.3, T1.4 | pendiente |
+| T1.5 | API: registro de usuario | AUT-01, HU-AUT-01, SEG-06 | `feat/autenticacion-registro` | T1.3, T1.4 | hecha |
 | T1.6 | API: inicio de sesión con límite de intentos | AUT-02, HU-AUT-02, SEG-09 | `feat/autenticacion-iniciar-sesion` | T1.5 | pendiente |
 | T1.7 | API: renovar y cerrar sesión | AUT-03, AUT-04, HU-AUT-02 | `feat/autenticacion-sesion` | T1.6 | pendiente |
 | T1.8 | API: `GET /usuarios/yo` con membresías y `contextoBarberia` real | AUT-08, SEG-03, SEG-04 | `feat/autenticacion-membresias` | T1.7 | pendiente |

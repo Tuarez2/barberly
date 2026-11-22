@@ -11,6 +11,12 @@ import { rutas } from './rutas';
 
 export const app = express();
 
+// D-15: la IP del cliente (limites de tasa) sale de X-Forwarded-For saltando solo los proxies propios.
+// Nunca true: permitiria inventar la IP. Se lee en cada peticion para que las pruebas puedan cambiarla.
+app.set(
+  'trust proxy',
+  (_direccion: string, salto: number) => salto < configuracion.PROXIES_CONFIABLES,
+);
 app.use(helmet());
 app.use(cors({ origin: configuracion.ORIGENES_CORS }));
 app.use(
