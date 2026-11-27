@@ -964,8 +964,8 @@ Barberly/                       # Carpeta de trabajo (no es un repositorio)
 │   ├── prisma/schema.prisma    # Modelo de datos (sección 9)
 │   ├── src/modulos/            # Un módulo: rutas, controlador, servicio y pruebas
 │   └── docs/                   # DERCAS, decisiones, reglas, hoja de ruta
-├── movil/                      # barberly-movil: Expo (clientes y barberos)
-└── panel/                      # barberly-panel: React + Vite (propietarios, D-10)
+├── frontend/                   # barberly-movil: Expo (clientes y barberos)
+└── web/                        # barberly-panel: React + Vite (propietarios, D-10)
 ```
 
 ### 8.10 Tiempo y zona horaria
@@ -1625,7 +1625,7 @@ Linux Mint Cinnamon con Node.js, npm, Git y Visual Studio Code ya instalados; se
 
 ### 13.5 Uso de agentes de IA en el desarrollo
 
-Los agentes de IA desarrollan por rebanadas verticales (D-27): una funcionalidad completa (API, app y panel) por sesión, con un orquestador en la carpeta de trabajo que conoce los tres repositorios. El usuario aprueba el plan de la funcionalidad una vez; los especialistas (base de datos, API, app, panel, diseño, asesor de IA, pagos, pruebas y seguridad) trabajan hasta dejar la funcionalidad lista para el PR, y cada cambio pasa por lint, tipos, pruebas y revisión de seguridad antes de integrarse a `main`. Los AGENTS.md de cada repositorio definen arquitectura, convenciones y reglas; los hooks impiden tocar secretos y archivos fuera de su alcance.
+Los agentes de IA desarrollan por rebanadas verticales (D-27): una funcionalidad completa (API, app y panel) por sesión, con un orquestador en la carpeta de trabajo que conoce los tres repositorios. El usuario aprueba el plan de la funcionalidad una vez; los especialistas (base de datos, API, app, panel, diseño, asesor de IA, pagos, pruebas y seguridad) trabajan hasta dejar la funcionalidad lista para el PR, y cada cambio pasa por lint, tipos, pruebas y revisión de seguridad. El orquestador hace los commits, las ramas, el push y el PR (D-29); el usuario prueba, revisa y fusiona cada PR en `main`. Los AGENTS.md de cada repositorio definen arquitectura, convenciones y reglas; los hooks impiden tocar secretos y archivos fuera de su alcance.
 
 ### 13.6 Plan por fases
 

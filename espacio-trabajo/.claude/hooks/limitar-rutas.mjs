@@ -5,10 +5,10 @@
 import path from 'node:path';
 import { bloquear, dividir, leerEvento, raizProyecto, rutaRelativa, sinEnvoltorios } from './comun.mjs';
 
-// Espacio de trabajo Barberly/ (D-27): las rutas empiezan por el repositorio (api/, movil/, panel/).
+// Espacio de trabajo Barberly/ (D-27): las rutas empiezan por el repositorio (api/, frontend/, web/).
 const PRUEBA_API = /^api\/.*\.prueba\.ts$/;
-const PRUEBA_APP = /^(movil|panel)\/.*\.prueba\.tsx?$/;
-const SOLO_GIT = [/^git -C (api|movil|panel) (status|diff|log|ls-files)(\s|$)/, /^git (status|diff|log|ls-files)(\s|$)/];
+const PRUEBA_APP = /^(frontend|web)\/.*\.prueba\.tsx?$/;
+const SOLO_GIT = [/^git -C (api|frontend|web) (status|diff|log|ls-files)(\s|$)/, /^git (status|diff|log|ls-files)(\s|$)/];
 
 const AGENTES = {
   'analista-spec': {
@@ -36,16 +36,16 @@ const AGENTES = {
     prohibidas: [/\.prueba\.tsx?$/],
   },
   'app-movil': {
-    permitidas: [/^movil\/(?!\.claude\/|\.github\/)/],
+    permitidas: [/^frontend\/(?!\.claude\/|\.github\/)/],
   },
   'panel-web': {
-    permitidas: [/^panel\/(?!\.claude\/|\.github\/)/],
+    permitidas: [/^web\/(?!\.claude\/|\.github\/)/],
   },
   'disenador-ui': {
-    permitidas: ['movil/src/componentes/', 'movil/src/tema/', 'panel/src/componentes/', 'panel/src/tema/', PRUEBA_APP],
+    permitidas: ['frontend/src/componentes/', 'frontend/src/tema/', 'web/src/componentes/', 'web/src/tema/', PRUEBA_APP],
   },
   'qa-e2e': {
-    permitidas: ['movil/.maestro/', 'panel/pruebas-e2e/', PRUEBA_APP],
+    permitidas: ['frontend/.maestro/', 'web/pruebas-e2e/', PRUEBA_APP],
   },
   'revisor-seguridad': { permitidas: [], comandos: SOLO_GIT },
 };

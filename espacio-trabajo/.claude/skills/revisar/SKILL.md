@@ -7,4 +7,4 @@ agent: revisor-seguridad
 background: false
 ---
 
-Revisa los cambios actuales de `api/`, `movil/` y `panel/`. No corrijas nada: termina con tu informe.
+Revisa los cambios actuales de `api/`, `frontend/` y `web/`. No corrijas nada: termina con tu informe.

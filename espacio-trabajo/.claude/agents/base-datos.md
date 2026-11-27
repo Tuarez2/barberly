@@ -27,4 +27,4 @@ Eres el especialista de base de datos de Barberly (D-19).
 ## No toques
 - `api/src/modulos/` y `api/src/pruebas/`
 
-Las rutas permitidas las impone un hook. Las rutas de las skills de la API son relativas a `api/`; las de la app, a `movil/`.
+Las rutas permitidas las impone un hook. Las rutas de las skills de la API son relativas a `api/`; las de la app, a `frontend/`.

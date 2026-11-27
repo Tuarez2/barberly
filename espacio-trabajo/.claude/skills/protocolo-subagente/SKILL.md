@@ -6,7 +6,7 @@ user-invocable: false
 
 # Protocolo de subagente (espacio de trabajo)
 
-Eres subagente de Barberly: el orquestador ya aprobó el plan. No pidas OK, no crees ramas ni hagas commits o push; ejecuta tu parte y entrega tu informe. Todas las rutas empiezan por el repositorio (`api/`, `movil/`, `panel/`).
+Eres subagente de Barberly: el orquestador ya aprobó el plan. No pidas OK, no crees ramas ni hagas commits o push; ejecuta tu parte y entrega tu informe. Todas las rutas empiezan por el repositorio (`api/`, `frontend/`, `web/`).
 
 ## Reglas
 - Si falta información, decide lo más simple cuando sea un detalle (nombre, texto, estilo) y anótalo en "Decidido"; si cambia una regla de negocio, un endpoint o un código de error, anótalo en Dudas con Estado CON DUDAS.

@@ -2,11 +2,11 @@
 
 Barberly: citas para barberías con asesor de estilo por IA. Esta carpeta no es un repositorio: contiene los tres (D-11).
 
-| Carpeta  | Repositorio      | Qué es                                                                      | Reglas            |
-| -------- | ---------------- | --------------------------------------------------------------------------- | ----------------- |
-| `api/`   | `barberly-api`   | API Express + Prisma + PostgreSQL y **toda la documentación** (`api/docs/`) | `api/AGENTS.md`   |
-| `movil/` | `barberly-movil` | App Expo para clientes y barberos                                           | `movil/AGENTS.md` |
-| `panel/` | `barberly-panel` | Panel web del propietario (React + Vite)                                    | `panel/AGENTS.md` |
+| Carpeta     | Repositorio      | Qué es                                                                      | Reglas               |
+| ----------- | ---------------- | --------------------------------------------------------------------------- | -------------------- |
+| `api/`      | `barberly-api`   | API Express + Prisma + PostgreSQL y **toda la documentación** (`api/docs/`) | `api/AGENTS.md`      |
+| `frontend/` | `barberly-movil` | App Expo para clientes y barberos                                           | `frontend/AGENTS.md` |
+| `web/`      | `barberly-panel` | Panel web del propietario (React + Vite)                                    | `web/AGENTS.md`      |
 
 Fuente de verdad: `api/docs/DERCAS.md` (solo la sección puntual, con `.claude/scripts/seccion-dercas.sh`) + `api/docs/decisiones.md`; si se contradicen, gana la decisión más reciente. El AGENTS.md de cada repositorio manda dentro de él.
 
@@ -16,17 +16,20 @@ Fuente de verdad: `api/docs/DERCAS.md` (solo la sección puntual, con `.claude/s
 - `/funcionalidad <ID>` (ej. `/funcionalidad E2.C`): el orquestador planifica toda la funcionalidad, pide un solo OK y delega tarea por tarea en el repositorio de cada una.
 - `/tarea <ID>`: una sola tarea. `/verificar [repo]` · `/revisar` · `/especificar <modulo> <secciones>` · `/decidir <modulo>`.
 - Dudas menores: se decide lo más simple y se anota en el PR; solo las que cambian reglas de negocio van a `/decidir`.
-- Cada repositorio tiene su git: usa `git -C api …`, `git -C movil …` o `git -C panel …`.
+- Cada repositorio tiene su git: usa `git -C api …`, `git -C frontend …` o `git -C web …`.
 
 ## Git
 
 - Una rama por tarea y un PR por funcionalidad, en cada repositorio que toque la funcionalidad (`api/docs/flujo-de-trabajo.md`).
-- El usuario aprueba el plan, revisa y fusiona en GitHub. Nunca push a `main` ni con `--force`.
-- Los especialistas no crean ramas ni hacen commit o push.
+- Git es automático (D-29): Claude crea la rama de la funcionalidad y la de cada tarea, hace el commit de cada tarea cuando `verificar.sh` está en verde y `revisor-seguridad` no tiene Bloqueantes, la une a su funcionalidad con `--no-ff`, publica la rama y abre el PR con `gh pr create`.
+- El usuario aprueba el plan, prueba en el teléfono, revisa el PR y lo fusiona en GitHub con el CI en verde. Claude nunca fusiona un PR.
+- Nunca commit ni merge en `main`, nunca push a `main` ni con `--force`: lo bloquea el hook `proteger`.
+- Los especialistas no crean ramas ni hacen commit o push: lo hace el orquestador.
+- Requisito único: `gh auth login` hecho en este computador.
 
 ## Contrato
 
-`api/src/compartido/contrato.ts` es el original; `movil/src/api/contrato.ts` y `panel/src/api/contrato.ts` son copias. Si cambia, se copia en la misma funcionalidad.
+`api/src/compartido/contrato.ts` es el original; `frontend/src/api/contrato.ts` y `web/src/api/contrato.ts` son copias. Si cambia, se copia en la misma funcionalidad.
 
 ## No negociable
 

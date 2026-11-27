@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# Uso: bash .claude/scripts/verificar.sh [api|movil|panel]...  (sin argumentos: los que existan)
+# Uso: bash .claude/scripts/verificar.sh [api|frontend|web]...  (sin argumentos: los que existan)
 # Corre el verificar.sh de cada repositorio y resume en pocas lineas (D-27).
 set -uo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/../.."
 repos=("$@")
-[[ ${#repos[@]} -eq 0 ]] && repos=(api movil panel)
+[[ ${#repos[@]} -eq 0 ]] && repos=(api frontend web)
 estado=0
 for repo in "${repos[@]}"; do
   script="$repo/.claude/skills/verificar/scripts/verificar.sh"

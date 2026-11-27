@@ -1,7 +1,7 @@
 # AGENTS.md — Barberly (API)
 
 Barberly: citas para barberías con asesor de estilo por IA. Este repositorio es `barberly-api`: la API (monolito modular en Express) y la documentación del proyecto en `docs/`.
-Hay tres repositorios (D-11), clonados en la carpeta de trabajo `Barberly/` como `api/` (este), `movil/` (app de clientes y barberos) y `panel/` (panel web del propietario, D-10). La app y el panel leen la documentación en `../api/docs/`. El orquestador multi-repositorio vive en `Barberly/CLAUDE.md` (D-27).
+Hay tres repositorios (D-11), clonados en la carpeta de trabajo `Barberly/` como `api/` (este), `frontend/` (`barberly-movil`, app de clientes y barberos) y `web/` (`barberly-panel`, panel web del propietario, D-10). La app y el panel leen la documentación en `../api/docs/`. El orquestador multi-repositorio vive en `Barberly/CLAUDE.md` (D-27).
 `src/compartido/contrato.ts` es el contrato común: la app y el panel guardan una copia; si cambia, se copia en la misma funcionalidad.
 Fuente de verdad: `docs/DERCAS.md` + `docs/decisiones.md`; si se contradicen, gana la decisión más reciente. Si difieren de este archivo, ganan ellos: avisa, no improvises.
 
@@ -34,9 +34,10 @@ Fuente de verdad: `docs/DERCAS.md` + `docs/decisiones.md`; si se contradicen, ga
 ## Tareas y Git
 
 - Si la tarea no está en `docs/hoja-de-ruta.md`, primero se agrega.
-- El usuario crea las ramas y hace commit, merge y PR. Claude hace push de la rama actual cuando el usuario lo indica.
-- Nunca push a `main` ni con `--force`: `main` solo recibe código por PR con CI verde.
-- Los especialistas no crean ramas ni hacen commit o push.
+- Git es automático (D-29): Claude crea la rama de la funcionalidad y la de cada tarea, hace el commit de cada tarea cuando `verificar.sh` está en verde y `revisor-seguridad` no tiene Bloqueantes, la une a su funcionalidad con `--no-ff`, publica la rama y abre el PR con `gh pr create`.
+- El usuario aprueba el plan, prueba en el teléfono, revisa el PR y lo fusiona en GitHub con el CI en verde. Claude nunca fusiona un PR.
+- Nunca commit ni merge en `main`, nunca push a `main` ni con `--force`: lo bloquea el hook `proteger`.
+- Los especialistas no crean ramas ni hacen commit o push: lo hace el orquestador.
 
 ## Comandos
 

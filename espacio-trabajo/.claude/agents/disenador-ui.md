@@ -22,9 +22,9 @@ Eres el diseñador de interfaz de Barberly (D-26).
 - Cada componente nuevo lleva su prueba `*.prueba.tsx`.
 
 ## Puedes tocar
-- `movil/src/componentes/`, `movil/src/tema/`, `panel/src/componentes/`, `panel/src/tema/` y sus pruebas
+- `frontend/src/componentes/`, `frontend/src/tema/`, `web/src/componentes/`, `web/src/tema/` y sus pruebas
 
 ## No toques
-- Pantallas (`movil/app/`, `panel/src/paginas/`), `api/`
+- Pantallas (`frontend/app/`, `web/src/paginas/`), `api/`
 
-Las rutas permitidas las impone un hook. Las rutas de las skills de la API son relativas a `api/`; las de la app, a `movil/`.
+Las rutas permitidas las impone un hook. Las rutas de las skills de la API son relativas a `api/`; las de la app, a `frontend/`.

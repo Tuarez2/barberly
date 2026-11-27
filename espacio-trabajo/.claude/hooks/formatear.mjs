@@ -16,10 +16,10 @@ try {
   const evento = JSON.parse(readFileSync(0, 'utf8'));
   const espacio = path.resolve(process.env.CLAUDE_PROJECT_DIR ?? evento.cwd ?? process.cwd());
   const archivo = evento.tool_input?.file_path;
-  // D-27: cada repositorio (api, movil, panel) tiene su Prettier y su ESLint.
+  // D-27: cada repositorio (api, frontend, web) tiene su Prettier y su ESLint.
   const relativa = typeof archivo === 'string' ? path.relative(espacio, path.resolve(espacio, archivo)) : '';
   const repositorio = relativa.split(path.sep)[0] ?? '';
-  const raiz = ['api', 'movil', 'panel'].includes(repositorio) ? path.join(espacio, repositorio) : espacio;
+  const raiz = ['api', 'frontend', 'web'].includes(repositorio) ? path.join(espacio, repositorio) : espacio;
   const prettier = path.join(raiz, 'node_modules/.bin/prettier');
   const eslint = path.join(raiz, 'node_modules/.bin/eslint');
   if (typeof archivo === 'string' && EXTENSIONES.has(path.extname(archivo)) && existsSync(prettier)) {

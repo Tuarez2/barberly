@@ -2,10 +2,11 @@
 // con las rutas vistas desde la carpeta raiz. Guardia de archivos y comandos peligrosos.
 // El analisis de Bash es de mejor esfuerzo: mira la palabra de comando de cada segmento e ignora
 // cadenas y heredocs, salvo los .env (cualquier mencion) y los heredocs que van a un shell.
+import { spawnSync } from 'node:child_process';
 import path from 'node:path';
 import { bloquear, dividir, esEnvProtegido, leerEvento, rutaRelativa, sinEnvoltorios } from './comun.mjs';
 
-const SOLO_LECTURA_PARA_CLAUDE = new Set(['api/docs/DERCAS.md', '.claude/settings.json', 'api/.claude/settings.json', 'movil/.claude/settings.json', 'panel/.claude/settings.json']);
+const SOLO_LECTURA_PARA_CLAUDE = new Set(['api/docs/DERCAS.md', '.claude/settings.json', 'api/.claude/settings.json', 'frontend/.claude/settings.json', 'web/.claude/settings.json']);
 const HERRAMIENTAS_DE_EDICION = new Set(['Edit', 'Write', 'MultiEdit']);
 const SHELLS = new Set(['bash', 'sh', 'zsh', 'dash']);
 const CLIENTES_SQL = new Set(['psql', 'pg_dump', 'pg_restore', 'dropdb', 'mysql', 'mariadb']);
@@ -46,6 +47,47 @@ function shellPorEntrada({ tokens }) {
   return SHELLS.has(nombreDe(args)) && args.slice(1).every((a) => a.startsWith('-'));
 }
 
+// D-29: Claude hace commits, merges de tarea, push y PR; main solo recibe codigo por PR.
+const OPCIONES_PUSH_PELIGROSAS = /^(-f|--force|--force-with-lease.*|--force-if-includes|--mirror|--delete|-d|--prune)$/;
+
+function ramaActual(directorio) {
+  const r = spawnSync('git', [...(directorio ? ['-C', directorio] : []), 'branch', '--show-current'], {
+    cwd: evento.cwd ?? process.cwd(),
+    encoding: 'utf8',
+  });
+  return r.status === 0 ? r.stdout.trim() : '';
+}
+
+function revisarGit(args) {
+  const nombre = nombreDe(args);
+  if (nombre === 'gh' && args[1] === 'pr' && args[2] === 'merge') {
+    bloquear('Bloqueado: el PR lo fusiona el usuario en GitHub con el CI en verde (D-29).');
+  }
+  if (nombre !== 'git') return;
+  let i = 1;
+  let directorio;
+  while (i < args.length && args[i].startsWith('-')) {
+    if (args[i] === '-C') {
+      directorio = args[i + 1];
+      i += 2;
+    } else if (args[i] === '-c') i += 2;
+    else i += 1;
+  }
+  const subcomando = args[i];
+  const resto = args.slice(i + 1);
+  if (subcomando === 'push') {
+    if (resto.some((a) => OPCIONES_PUSH_PELIGROSAS.test(a) || a.startsWith('+') || a.startsWith(':'))) {
+      bloquear('Bloqueado: push forzado o que borra ramas remotas (D-29).');
+    }
+    if (resto.some((a) => /(^|:)(refs\/heads\/)?main$/.test(a)) || ramaActual(directorio) === 'main') {
+      bloquear('Bloqueado: nunca push a main; el código entra por PR (D-29).');
+    }
+  }
+  if ((subcomando === 'commit' || subcomando === 'merge') && ramaActual(directorio) === 'main') {
+    bloquear(`Bloqueado: no se hace ${subcomando} en main; trabaja en la rama de la tarea (D-29).`);
+  }
+}
+
 function revisarSimple(tokens, nivel) {
   const args = sinEnvoltorios(tokens);
   if (args.length === 0) return;
@@ -57,6 +99,7 @@ function revisarSimple(tokens, nivel) {
   if (nombre === 'git' && args.includes('reset') && args.includes('--hard')) {
     bloquear('Bloqueado: git reset --hard descarta cambios; pídeselo al usuario.');
   }
+  revisarGit(args);
 
   if (nivel >= 3) return;
   const posicionC = args.findIndex((a) => /^-[a-z]*c$/.test(a));

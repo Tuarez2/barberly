@@ -26,4 +26,4 @@ Eres el analista de especificaciones de Barberly: conviertes secciones del DERCA
 ## No toques
 - `api/docs/DERCAS.md`, código, pruebas y `.claude/`
 
-Las rutas permitidas las impone un hook. Las rutas de las skills de la API son relativas a `api/`; las de la app, a `movil/`.
+Las rutas permitidas las impone un hook. Las rutas de las skills de la API son relativas a `api/`; las de la app, a `frontend/`.

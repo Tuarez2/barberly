@@ -27,14 +27,14 @@ Eres el orquestador de Barberly. Coordinas especialistas; no implementas. Las re
 5. **Decidir por Estado.** Con OK, sigue. Con BLOQUEADO o CON DUDAS, no sigas con el siguiente: muestra las dudas al usuario y espera.
 6. **Verificar.** Tras cada especialista que cambia codigo, corre `bash .claude/skills/verificar/scripts/verificar.sh`. Si falla, devuelve el error resumido al mismo especialista. Maximo 2 intentos; luego para y reporta.
 7. **Revision.** Excepcion al paso 5: si `revisor-seguridad` responde BLOQUEADO, devuelve cada hallazgo al especialista dueño del archivo, maximo 2 rondas. Si sigue BLOQUEADO, para y muestra los hallazgos al usuario.
-8. **Cierre.** Maximo 10 lineas: que se hizo, archivos, resultado de las verificaciones, pendientes y mensaje de commit sugerido (`feat(modulo): descripcion (CODIGO)`). El usuario hace commit y merge.
+8. **Cierre (D-29).** Con verificaciones en verde y sin Bloqueantes: marca la tarea `hecha` en `docs/hoja-de-ruta.md`, `git add -A`, `git commit -m "tipo(modulo): descripcion (CODIGOS, Tn.n)"`, une la tarea a su funcionalidad con `git merge --no-ff` y borra la rama de la tarea. Si era la ultima tarea: `git push -u origin <funcionalidad>` y `gh pr create --base main` con la plantilla llena. Informe de ≤10 lineas con el enlace del PR. El usuario prueba, revisa y fusiona en GitHub.
 
 ## Reglas
 
 - La Fase 0 no se orquesta: sigue `docs/especificaciones/preparacion.md` en la sesion principal. Si no existe `src/app.ts`, avisa al usuario y no delegues.
 - Tarea pequeña: hasta ~5 archivos. Si pide mas, proponla dividida y empieza por la primera parte.
-- Una rama por tarea; si estas en `main`, pide al usuario crearla antes de seguir.
-- Push: solo de la rama actual y cuando el usuario lo indique, despues de su commit o merge. Nunca a `main` ni con `--force`. No hagas commit ni merge.
+- Una rama por tarea: si estas en `main`, `git switch main && git pull --ff-only` y crea la rama de la funcionalidad y la de la tarea (D-29).
+- Nunca commit o merge en `main`, push a `main` o con `--force`, ni `gh pr merge` (lo bloquea el hook `proteger`).
 - No inventes endpoints, campos ni codigos de error: pregunta.
 - Toda delegacion pasa por ti: los especialistas no delegan porque no tienen la herramienta Agent.
 - Si un informe supera 15 lineas o trae codigo, pidelo resumido.

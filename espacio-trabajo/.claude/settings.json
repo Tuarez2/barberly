@@ -13,14 +13,14 @@
       "Bash(bash .claude/scripts/verificar.sh:*)",
       "Bash(bash .claude/scripts/seccion-dercas.sh:*)",
       "Bash(git -C api status:*)",
-      "Bash(git -C movil status:*)",
-      "Bash(git -C panel status:*)",
+      "Bash(git -C frontend status:*)",
+      "Bash(git -C web status:*)",
       "Bash(git -C api diff:*)",
-      "Bash(git -C movil diff:*)",
-      "Bash(git -C panel diff:*)",
+      "Bash(git -C frontend diff:*)",
+      "Bash(git -C web diff:*)",
       "Bash(git -C api log:*)",
-      "Bash(git -C movil log:*)",
-      "Bash(git -C panel log:*)"
+      "Bash(git -C frontend log:*)",
+      "Bash(git -C web log:*)"
     ]
   },
   "hooks": {
