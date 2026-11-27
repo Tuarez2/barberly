@@ -37,10 +37,10 @@ Demo: cada rol entra a su interfaz desde el teléfono y el propietario al panel.
 | T1.21 | API: migrar a PostgreSQL con la restricción sin cruces | D-19, RN-04 | `feat/migrar-postgresql` | T1.8 | hecha |
 | T1.22 | Documentos del replanteamiento: DERCAS 1.4, decisiones D-19 a D-28 y hoja de ruta por etapas | D-19 a D-28 | `docs/replanteamiento` | T1.21 | hecha |
 | T1.23 | Agentes: espacio de trabajo raíz, orquestador multi-repositorio y especialistas nuevos | D-27 | `chore/agentes-espacio-raiz` | T1.22 | hecha |
-| T1.24 | App: sistema de movimiento y componentes base animados | D-26 | `feat/movil-movimiento` | T1.22 | en-curso |
-| T1.10 | App: sesión (cliente HTTP con token, renovación automática, almacenamiento seguro, TanStack Query) | AUT-04, §11.4 | `feat/movil-sesion` | T1.7 | en-curso |
-| T1.11 | App: pantallas Registro e Inicio de sesión con sus estados de error | HU-AUT-01, HU-AUT-02 | `feat/movil-registro-iniciar-sesion` | T1.10, T1.24 | en-curso |
-| T1.12 | App: entrada según el rol (cliente o barbero), aviso del panel para el propietario, rutas protegidas y cerrar sesión | AUT-03, AUT-08, HU-AUT-02, D-10 | `feat/movil-rol` | T1.8, T1.11 | en-curso |
+| T1.24 | App: sistema de movimiento y componentes base animados | D-26 | `feat/movil-movimiento` | T1.22 | hecha |
+| T1.10 | App: sesión (cliente HTTP con token, renovación automática, almacenamiento seguro, TanStack Query) | AUT-04, §11.4 | `feat/movil-sesion` | T1.7 | hecha |
+| T1.11 | App: pantallas Registro e Inicio de sesión con sus estados de error | HU-AUT-01, HU-AUT-02 | `feat/movil-registro-iniciar-sesion` | T1.10, T1.24 | hecha |
+| T1.12 | App: entrada según el rol (cliente o barbero), aviso del panel para el propietario, rutas protegidas y cerrar sesión | AUT-03, AUT-08, HU-AUT-02, D-10 | `feat/movil-rol` | T1.8, T1.11 | hecha |
 | T1.9 | API: registrar barbería y quedar como propietario | AUT-10, HU-AUT-03 | `feat/autenticacion-registrar-barberia` | T1.8 | pendiente |
 | T1.13 | Perfil: ver y editar datos, cambiar contraseña (API y app) | AUT-05, AUT-06 | `feat/autenticacion-perfil` | T1.12 | pendiente |
 | T1.14 | Elegir la barbería activa (API y app) | AUT-09 | `feat/autenticacion-barberia-activa` | T1.12 | pendiente |
