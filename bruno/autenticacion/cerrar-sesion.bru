@@ -1,0 +1,29 @@
+meta {
+  name: Cerrar sesión
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{urlBase}}/autenticacion/cerrar-sesion
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAcceso}}
+}
+
+body:json {
+  {
+    "tokenRenovacion": "{{tokenRenovacion}}"
+  }
+}
+
+assert {
+  res.status: eq 204
+}
+
+docs {
+  AUT-03. Ejecuta antes Iniciar sesión. Revoca solo esta sesión; responde 204 también si ya estaba cerrada (D-17).
+}

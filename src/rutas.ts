@@ -2,6 +2,7 @@ import { Router } from 'express';
 
 import { configuracion } from './compartido/configuracion';
 import { generarDocumentacion } from './compartido/documentacion';
+import { rutasAutenticacion, rutasUsuarios } from './modulos/autenticacion/rutas';
 
 export const rutas = Router();
 
@@ -20,4 +21,6 @@ rutas.get('/documentacion', (_req, res, next) => {
   res.status(200).json(documentacion);
 });
 
-// Cada modulo se registra aqui: rutas.use('/autenticacion', rutasAutenticacion).
+// Cada modulo se registra aqui.
+rutas.use('/autenticacion', rutasAutenticacion);
+rutas.use('/usuarios', rutasUsuarios);

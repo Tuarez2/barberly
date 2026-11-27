@@ -1,0 +1,56 @@
+{
+  "permissions": {
+    "deny": [
+      "Read(./**/.env)",
+      "Read(./**/.env.local)",
+      "Read(./**/.env.prueba)",
+      "Read(./**/.env.produccion)",
+      "Bash(npx prisma migrate reset:*)",
+      "Bash(npx prisma db push:*)"
+    ],
+    "ask": ["Bash(git commit:*)", "Bash(git push:*)", "Bash(npm install:*)", "Bash(npx expo install:*)"],
+    "allow": [
+      "Bash(bash .claude/scripts/verificar.sh:*)",
+      "Bash(bash .claude/scripts/seccion-dercas.sh:*)",
+      "Bash(git -C api status:*)",
+      "Bash(git -C movil status:*)",
+      "Bash(git -C panel status:*)",
+      "Bash(git -C api diff:*)",
+      "Bash(git -C movil diff:*)",
+      "Bash(git -C panel diff:*)",
+      "Bash(git -C api log:*)",
+      "Bash(git -C movil log:*)",
+      "Bash(git -C panel log:*)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit|Read|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/node.sh proteger.mjs",
+            "onFailure": "block"
+          },
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/node.sh limitar-rutas.mjs",
+            "onFailure": "block"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR\"/.claude/hooks/node.sh formatear.mjs"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,6 +1,6 @@
 ---
 name: base-datos
-description: "Modelo de datos con Prisma y MySQL 8: schema.prisma, migraciones, columna generada, indices y seed. Usar cuando cambie el modelo o haga falta una migracion; no implementa endpoints."
+description: "Modelo de datos con Prisma y PostgreSQL: schema.prisma, migraciones, restricciones CHECK y EXCLUDE, indices y seed. Usar cuando cambie el modelo o haga falta una migracion; no implementa endpoints."
 tools: Read, Grep, Glob, Write, Edit, Bash
 model: sonnet
 maxTurns: 30
@@ -13,7 +13,7 @@ hooks:
           onFailure: block
 skills:
   - protocolo-subagente
-  - prisma-mysql
+  - prisma-postgresql
 ---
 
 Eres el especialista de base de datos de Barberly.

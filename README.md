@@ -1,6 +1,6 @@
 # Barberly — API
 
-API de Barberly (citas para barberías con asesor de estilo por IA), hecha con Express, Prisma y MySQL 8. Aquí también está la documentación del proyecto: `docs/` (DERCAS, decisiones, reglas, errores, especificaciones, pantallas y hoja de ruta).
+API de Barberly (citas para barberías con asesor de estilo por IA), hecha con Express, Prisma y PostgreSQL (D-19). Aquí también está la documentación del proyecto: `docs/` (DERCAS, decisiones, reglas, errores, especificaciones, pantallas y hoja de ruta).
 
 Barberly tiene tres repositorios (D-11) que se clonan en la misma carpeta:
 
@@ -13,7 +13,7 @@ Barberly tiene tres repositorios (D-11) que se clonan en la misma carpeta:
 ## Requisitos
 
 - Node.js 26 (`nvm use` lee `.nvmrc`).
-- MySQL 8 en local.
+- PostgreSQL 16 o superior en local (o Docker con `compose.yaml`).
 
 ## Instalación
 
@@ -22,17 +22,27 @@ nvm use
 npm install
 ```
 
-Crea las bases y el usuario en MySQL (cambia `CLAVE`):
+Crea el usuario y las bases en PostgreSQL. La forma más rápida en Linux Mint instala PostgreSQL si falta, crea todo, migra, siembra e imprime los datos para DBeaver:
 
-```sql
-CREATE DATABASE barberly CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE DATABASE barberly_prueba CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE USER 'barberly'@'localhost' IDENTIFIED BY 'CLAVE';
-GRANT ALL PRIVILEGES ON barberly.* TO 'barberly'@'localhost';
-GRANT ALL PRIVILEGES ON barberly_prueba.* TO 'barberly'@'localhost';
--- prisma migrate dev crea y borra una base temporal.
-GRANT ALL PRIVILEGES ON `prisma\_migrate\_shadow\_db%`.* TO 'barberly'@'localhost';
+```bash
+bash scripts/crear-base-local.sh
 ```
+
+Opción A, con Docker (usa `compose.yaml`):
+
+```bash
+docker compose up -d   # PostgreSQL 17 con las bases barberly y barberly_prueba
+```
+
+Opción B, PostgreSQL instalado en Linux Mint (`sudo apt install postgresql`), cambia `CLAVE`:
+
+```bash
+sudo -u postgres psql -c "CREATE USER barberly WITH PASSWORD 'CLAVE' CREATEDB;"
+sudo -u postgres createdb -O barberly barberly
+sudo -u postgres createdb -O barberly barberly_prueba
+```
+
+`CREATEDB` lo necesita `prisma migrate dev`, que crea y borra una base temporal. La extensión `btree_gist` (restricción sin cruces de citas, D-19) viene incluida en PostgreSQL y la activa la primera migración. En DBeaver crea una conexión de tipo PostgreSQL con los mismos datos.
 
 Copia las variables de entorno y complétalas:
 

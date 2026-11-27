@@ -1,6 +1,6 @@
 ---
 name: reservas-concurrencia
-description: "Patron obligatorio para crear citas sin doble reserva (transaccion, FOR UPDATE, indice unico). Usar al implementar o modificar la creacion de citas. No usar para cancelar ni cambiar estados de una cita."
+description: "Patron obligatorio para crear citas sin doble reserva (transaccion, FOR UPDATE, restriccion EXCLUDE). Usar al implementar o modificar la creacion de citas. No usar para cancelar ni cambiar estados de una cita."
 user-invocable: false
 ---
 
@@ -14,7 +14,7 @@ await prisma.$transaction(async (tx) => {
   // 1. Bloquear al barbero: PRIMERA instruccion; toda lectura de validacion va despues
   await tx.$queryRaw`SELECT id FROM perfiles_barbero WHERE id = ${barberoId} FOR UPDATE`;
 
-  // 2. Cancelar sus PENDIENTE vencidas: inicioActivo sigue ocupado hasta cambiar el estado
+  // 2. Cancelar sus PENDIENTE vencidas: siguen ocupando ex_citas_barbero_sin_cruce hasta cambiar el estado
   const vencidas = { perfilBarberoId: barberoId, estado: 'PENDIENTE', anticipoVenceEn: { lt: ahora } };
   const citasVencidas = await tx.cita.findMany({ where: vencidas, select: { id: true, archivoFotoReferencia: true } });
   await tx.cita.updateMany({
@@ -52,15 +52,15 @@ await prisma.$transaction(async (tx) => {
 ```
 
 ## Reintentos
-Si falla con `P2028` (tiempo de transaccion) o `P2034` (conflicto o interbloqueo), reintentar la transaccion completa hasta 2 veces: al reintentar vera la cita ya creada y respondera `HORARIO_OCUPADO` de forma normal.
+Si falla con `P2028` (tiempo de transaccion), `P2034` (conflicto o interbloqueo) o el codigo PostgreSQL `40P01` (interbloqueo), reintentar la transaccion completa hasta 2 veces: al reintentar vera la cita ya creada y respondera `HORARIO_OCUPADO` de forma normal.
 
 ## Cualquiera disponible (CU-07 A3)
 Calcular los candidatos antes de abrir la transaccion. Dentro: bloquear a todos ordenados por `id` ascendente, cancelar sus vencidas (`perfilBarberoId: { in: candidatos }`), bloquear al cliente y elegir al de menos citas ese dia (empate: menor `id`).
 
 Cita manual (`POST /barberias/:id/citas`): mismo patron y orden de validacion; sin `clienteId` se omiten el bloqueo del cliente y RN-08/RN-09; un barbero solo la crea en su propia agenda (`perfilBarberoId` = su perfil).
 
-## Respaldo en base de datos
-- Unico `(perfilBarberoId, inicioActivo)`: si falla con `P2002`, traducir a `HORARIO_OCUPADO` (409).
+## Respaldo en base de datos (D-19)
+- Restriccion `ex_citas_barbero_sin_cruce` (EXCLUDE con rangos): si falla, `esCruceDeCitas(error)` es verdadero → traducir a `HORARIO_OCUPADO` (409). Cubre solapes parciales, no solo la misma hora.
 - Unico `(clienteId, claveIdempotencia)`: un reintento con la misma clave devuelve la cita ya creada, no una nueva.
 - Una cita `PENDIENTE` vencida (`anticipoVenceEn` < ahora) no bloquea el horario.
 

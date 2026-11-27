@@ -1,0 +1,32 @@
+meta {
+  name: Registro
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{urlBase}}/autenticacion/registro
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "nombre": "Ana Pérez",
+    "correo": "ana.{{$timestamp}}@correo.ec",
+    "telefono": "0991234567",
+    "clave": "Barberly2026",
+    "dispositivo": "Bruno"
+  }
+}
+
+assert {
+  res.status: eq 201
+  res.body.datos.usuario.telefono: eq +593991234567
+  res.body.datos.tokenAcceso: isString
+  res.body.datos.tokenRenovacion: isString
+}
+
+docs {
+  AUT-01, HU-AUT-01. Crea la cuenta y abre la sesión (D-14). Límite: 5 solicitudes por IP por hora (D-03).
+}

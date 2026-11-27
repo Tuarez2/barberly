@@ -1,0 +1,34 @@
+meta {
+  name: Iniciar sesión
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{urlBase}}/autenticacion/iniciar-sesion
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "correo": "cliente.dos@barberly.test",
+    "clave": "Barberly2026",
+    "dispositivo": "Bruno"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.datos.tokenAcceso: isString
+  res.body.datos.tokenRenovacion: isString
+}
+
+vars:post-response {
+  tokenAcceso: res.body.datos.tokenAcceso
+  tokenRenovacion: res.body.datos.tokenRenovacion
+}
+
+docs {
+  AUT-02, HU-AUT-02. Usuario de las semillas (`npm run seed`). Abre una sesión nueva por dispositivo (D-04). Guarda `tokenAcceso` y `tokenRenovacion` para Renovar y Cerrar sesión.
+}

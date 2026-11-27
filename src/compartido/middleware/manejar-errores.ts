@@ -25,6 +25,14 @@ export function manejarErrores(
     });
     return;
   }
+  // Express no puede decodificar un parametro de la ruta (%E0%A4%A): no nombra ningun recurso.
+  // Es un error del cliente, asi que no va al log.
+  if (error instanceof URIError) {
+    res.status(404).json({
+      error: { codigo: 'NO_ENCONTRADO', mensaje: 'No encontramos ese recurso' },
+    });
+    return;
+  }
   if (esJsonMalFormado(error)) {
     res.status(422).json({
       error: { codigo: 'DATOS_INVALIDOS', mensaje: 'El cuerpo no es JSON válido' },

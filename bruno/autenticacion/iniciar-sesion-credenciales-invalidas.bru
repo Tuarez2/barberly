@@ -1,0 +1,27 @@
+meta {
+  name: Iniciar sesión con credenciales inválidas
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{urlBase}}/autenticacion/iniciar-sesion
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "correo": "cliente.dos@barberly.test",
+    "clave": "OtraClave99"
+  }
+}
+
+assert {
+  res.status: eq 401
+  res.body.error.codigo: eq CREDENCIALES_INVALIDAS
+}
+
+docs {
+  §11.4, D-05. El mismo error si el correo no existe o la cuenta está inactiva. Cuenta como fallo: al quinto en 15 minutos responde 429 DEMASIADAS_SOLICITUDES (D-16).
+}

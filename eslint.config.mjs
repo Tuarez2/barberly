@@ -4,7 +4,14 @@ import prettier from 'eslint-config-prettier';
 import tseslint from 'typescript-eslint';
 
 const ignorados = {
-  ignores: ['**/node_modules/', '**/dist/', '.claude/', 'src/generado/', '**/coverage/'],
+  ignores: [
+    '**/node_modules/',
+    '**/dist/',
+    '.claude/',
+    'espacio-trabajo/.claude/',
+    'src/generado/',
+    '**/coverage/',
+  ],
 };
 
 const reglasComunes = {

@@ -1,0 +1,26 @@
+meta {
+  name: Renovar con token inválido
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{urlBase}}/autenticacion/renovar
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "tokenRenovacion": "token-que-no-existe"
+  }
+}
+
+assert {
+  res.status: eq 401
+  res.body.error.codigo: eq AUTENTICACION_REQUERIDA
+}
+
+docs {
+  D-02. Vencido, revocado, inexistente o de un usuario inactivo responden igual.
+}

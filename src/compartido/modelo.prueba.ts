@@ -9,6 +9,7 @@ import {
   limpiarBase,
 } from '../pruebas/fabricas';
 import { baseDatos } from './base-datos';
+import { esCruceDeCitas } from './errores-base-datos';
 
 const INICIO = new Date('2026-12-01T15:00:00.000Z');
 
@@ -38,15 +39,39 @@ describe('Modelo de datos (T1.2)', () => {
     await baseDatos.$disconnect();
   });
 
-  describe('§8.5: doble reserva con inicioActivo', () => {
+  describe('§8.5 y D-19: citas sin cruce (ex_citas_barbero_sin_cruce)', () => {
     it('RN-04: rechaza dos citas activas del mismo barbero a la misma hora', async () => {
       await baseDatos.cita.create({ data: datosCita() });
 
-      await expect(
-        baseDatos.cita.create({ data: datosCita({ estado: 'PENDIENTE' }) }),
-      ).rejects.toMatchObject({
-        code: 'P2002',
+      const repetida = baseDatos.cita.create({ data: datosCita({ estado: 'PENDIENTE' }) });
+
+      await expect(repetida).rejects.toSatisfy(esCruceDeCitas);
+    });
+
+    it('RN-04: rechaza una cita que se solapa en parte con otra activa', async () => {
+      await baseDatos.cita.create({ data: datosCita() });
+
+      const solapada = baseDatos.cita.create({
+        data: datosCita({
+          iniciaEn: new Date('2026-12-01T15:15:00.000Z'),
+          terminaEn: new Date('2026-12-01T15:45:00.000Z'),
+        }),
       });
+
+      await expect(solapada).rejects.toSatisfy(esCruceDeCitas);
+    });
+
+    it('RN-04: acepta una cita que empieza justo cuando termina la anterior', async () => {
+      await baseDatos.cita.create({ data: datosCita() });
+
+      const contigua = baseDatos.cita.create({
+        data: datosCita({
+          iniciaEn: new Date('2026-12-01T15:30:00.000Z'),
+          terminaEn: new Date('2026-12-01T16:00:00.000Z'),
+        }),
+      });
+
+      await expect(contigua).resolves.toMatchObject({ estado: 'CONFIRMADA' });
     });
 
     it('RN-04: permite reservar el horario de una cita cancelada', async () => {
@@ -58,15 +83,17 @@ describe('Modelo de datos (T1.2)', () => {
       });
     });
 
-    it('inicioActivo solo tiene valor en citas PENDIENTE o CONFIRMADA', async () => {
-      const cita = await baseDatos.cita.create({ data: datosCita() });
-      expect(cita.inicioActivo).toEqual(INICIO);
-
-      const completada = await baseDatos.cita.update({
-        where: { id: cita.id },
-        data: { estado: 'COMPLETADA' },
+    it('RN-04: dos barberos distintos pueden atender a la misma hora', async () => {
+      await baseDatos.cita.create({ data: datosCita() });
+      const otraCita = datosCita({
+        barberiaId: IDS_PRUEBA.otraBarberia,
+        perfilBarberoId: IDS_PRUEBA.perfilBarberoOtra,
+        servicioId: IDS_PRUEBA.servicioOtra,
       });
-      expect(completada.inicioActivo).toBeNull();
+
+      await expect(baseDatos.cita.create({ data: otraCita })).resolves.toMatchObject({
+        estado: 'CONFIRMADA',
+      });
     });
   });
 

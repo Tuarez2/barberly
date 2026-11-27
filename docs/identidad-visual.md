@@ -97,6 +97,25 @@ El texto está convertido a trazos, así que no depende de tener Fraunces instal
 
 Si se repite en más lugares pierde el efecto.
 
+## 6.1 Movimiento (D-26)
+
+El movimiento es parte de la marca: rápido, preciso y con peso, como una navaja. Los valores viven en `src/tema/movimiento.ts` de la app.
+
+| Token | Valor | Uso |
+| --- | --- | --- |
+| `duracionRapida` | 150 ms | Presionar, cambiar de estado un chip |
+| `duracionBase` | 250 ms | Aparecer y desaparecer elementos, cambiar de paso |
+| `duracionLenta` | 400 ms | Entrada de pantalla, el corte del logo |
+| `resorteSuave` | amortiguación 18, rigidez 180 | Hojas inferiores y tarjetas |
+| `resorteFirme` | amortiguación 20, rigidez 320 | Botones y chips al presionar |
+| `escalonado` | 40 ms entre elementos | Listas que entran en cascada |
+
+- **El corte animado:** la diagonal de 9° se dibuja de izquierda a derecha en el splash, en la confirmación de cita y en la carga. Son los mismos tres usos de la sección 6, ahora en movimiento.
+- **Presionar:** los botones bajan a escala 0,97 con `resorteFirme` y dan respuesta háptica ligera; confirmar una cita da respuesta háptica de éxito.
+- **Entradas:** desvanecer y subir 8 px; nunca rebotes exagerados ni giros.
+- **Carga:** esqueletos con un brillo suave en lugar de spinners.
+- **Accesibilidad:** si el sistema pide reducir el movimiento, todo pasa a desvanecido simple de `duracionRapida`.
+
 ## 7. Voz y textos
 
 Tuteo, frases cortas, tono cercano y sin exceso de confianza.

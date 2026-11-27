@@ -36,6 +36,7 @@ Sesiones (§11.4):
 - Inicio fallido: mensaje genérico; tras 5 intentos fallidos desde la misma cuenta o IP, espera de 15 minutos con DEMASIADAS_SOLICITUDES (D-03).
 - Registro: máximo 5 por IP por hora, con DEMASIADAS_SOLICITUDES (D-03).
 - Las duraciones y límites van en la configuración validada con Zod (D-03).
+- Los límites por IP usan la IP del cliente según PROXIES_CONFIABLES (D-15).
 - Usuario con `activo` falso: CREDENCIALES_INVALIDAS al iniciar sesión y AUTENTICACION_REQUERIDA al renovar o al usar su token de acceso, sin revelar que la cuenta existe (D-05).
 - Cambiar la contraseña (AUT-06) con la actual incorrecta: CREDENCIALES_INVALIDAS (401); la app no cierra la sesión por este código (D-05).
 
@@ -46,6 +47,29 @@ Validaciones de registro (§11.4):
 | Correo | Obligatorio, formato válido, único, guardado en minúsculas |
 | Teléfono | Obligatorio, 7 a 15 dígitos, formato ecuatoriano aceptado (09XXXXXXXX o +5939XXXXXXXX), normalizado al guardar |
 | Contraseña | Mínimo 8 caracteres, al menos una letra y un número, máximo 72 |
+
+Cuerpos (D-14):
+- Registro: `{ nombre, correo, telefono, clave, dispositivo? }`; un campo extra responde DATOS_INVALIDOS.
+- Registro e inicio de sesión responden `{ datos: { usuario: { id, nombre, correo, telefono }, tokenAcceso, tokenRenovacion } }`.
+- Teléfono: se quitan espacios, guiones, puntos y paréntesis; 09XXXXXXXX se guarda como +5939XXXXXXXX, y cualquier otro número de 7 a 15 dígitos (con + opcional) se guarda tal cual.
+- Contraseña: los 72 caracteres tampoco pueden pasar de 72 bytes en UTF-8, el límite de bcrypt.
+- El límite de registro cuenta todas las solicitudes de la IP, también las rechazadas.
+
+Inicio de sesión (D-16):
+- Cuerpo `{ correo, clave, dispositivo? }`; la clave solo se exige no vacía y de máximo 72 caracteres. Responde 200 con la forma del registro.
+- Solo cuenta como fallo CREDENCIALES_INVALIDAS. Hay un contador por IP y otro por correo, con ventana de 15 minutos desde el primer fallo; al quinto fallo, todo intento responde DEMASIADAS_SOLICITUDES hasta que se cierra, aunque la clave sea correcta. Un inicio correcto no reinicia el contador.
+- Si el correo no existe, la clave se compara igual contra un hash de relleno.
+
+Renovar y cerrar sesión (D-17):
+- Renovar: `{ tokenRenovacion }` responde 200 `{ datos: { tokenAcceso, tokenRenovacion } }`. Revoca la fila anterior solo si sigue vigente y crea otra con el mismo `dispositivo` y 30 días desde la renovación; de dos renovaciones simultáneas solo una gana.
+- Cerrar sesión: con el token de acceso y `{ tokenRenovacion }`, revoca esa fila si es del usuario y responde 204; también 204, sin cambios, si ya estaba revocada, no existe o es de otro usuario.
+- No hay detección de reutilización de un token revocado en el MVP.
+- Cliente (T1.10 y el panel): una sola renovación a la vez; las solicitudes que reciben TOKEN_VENCIDO mientras tanto esperan esa renovación. Solo AUTENTICACION_REQUERIDA borra la sesión local; un error de red o un 500 no la borra.
+
+Perfil y membresías (D-18):
+- GET /usuarios/yo: `{ datos: { id, nombre, correo, telefono, consentimientoIaEn, membresias: [{ id, rol, barberoId, barberia: { id, nombre } }] } }`. Solo membresías ACTIVO de barberías activas, por nombre de barbería; `barberoId` es el PerfilBarbero o null.
+- `contextoBarberia`: barbería del parámetro `:id`, con membresía ACTIVO en una barbería activa; si no, NO_ENCONTRADO 404 (también con un id que no es UUID).
+- `autenticar`: un usuario inexistente o inactivo responde AUTENTICACION_REQUERIDA 401 aunque su token sea válido (D-05).
 
 ## API
 Prefijo /api/v1. Pública = sin sesión; Pub = cualquier usuario autenticado.

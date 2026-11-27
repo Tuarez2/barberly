@@ -1,0 +1,32 @@
+meta {
+  name: Renovar sesión
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{urlBase}}/autenticacion/renovar
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "tokenRenovacion": "{{tokenRenovacion}}"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.datos.tokenAcceso: isString
+  res.body.datos.tokenRenovacion: isString
+}
+
+vars:post-response {
+  tokenAcceso: res.body.datos.tokenAcceso
+  tokenRenovacion: res.body.datos.tokenRenovacion
+}
+
+docs {
+  AUT-04, HU-AUT-02. Ejecuta antes Iniciar sesión. El token enviado queda revocado: repetir esta petición con el mismo token responde 401 AUTENTICACION_REQUERIDA (D-02, D-17).
+}
