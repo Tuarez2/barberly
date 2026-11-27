@@ -1,6 +1,6 @@
 # Espacio de trabajo de agentes (D-27)
 
-Copia versionada del espacio de trabajo `Barberly/`, la carpeta que contiene `api/`, `movil/` y `panel/`. Esa carpeta no es un repositorio, así que su configuración vive aquí.
+Copia versionada del espacio de trabajo `Barberly/`, la carpeta que contiene `api/`, `frontend/` y `web/`. Esa carpeta no es un repositorio, así que su configuración vive aquí.
 
 ```bash
 cd api

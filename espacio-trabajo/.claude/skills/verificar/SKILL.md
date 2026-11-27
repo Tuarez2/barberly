@@ -1,7 +1,7 @@
 ---
 name: verificar
 description: "Corre lint, typecheck y test en api, movil y panel (o en el indicado) y resume"
-argument-hint: "[api|movil|panel]"
+argument-hint: "[api|frontend|web]"
 disable-model-invocation: true
 ---
 

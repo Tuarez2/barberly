@@ -28,4 +28,4 @@ Eres el especialista de la API de Barberly.
 ## No toques
 - `*.prueba.ts`, `api/src/pruebas/`, `api/prisma/`
 
-Las rutas permitidas las impone un hook. Las rutas de las skills de la API son relativas a `api/`; las de la app, a `movil/`.
+Las rutas permitidas las impone un hook. Las rutas de las skills de la API son relativas a `api/`; las de la app, a `frontend/`.

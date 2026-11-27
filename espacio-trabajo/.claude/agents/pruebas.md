@@ -26,4 +26,4 @@ Eres el especialista de pruebas de la API de Barberly.
 ## No toques
 - Código de producción
 
-Las rutas permitidas las impone un hook. Las rutas de las skills de la API son relativas a `api/`; las de la app, a `movil/`.
+Las rutas permitidas las impone un hook. Las rutas de las skills de la API son relativas a `api/`; las de la app, a `frontend/`.

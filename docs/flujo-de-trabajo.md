@@ -1,13 +1,13 @@
 # Flujo de trabajo
 
-Cómo avanza Barberly: una rama por tarea y un PR por funcionalidad (AGENTS.md), en rebanadas verticales de API, app y panel (D-20, D-27). Cada tarea la revisa el usuario antes de unirla a su funcionalidad, y cada funcionalidad entra a `main` por PR. Lo siguen el usuario y los agentes. Tareas y funcionalidades están en `docs/hoja-de-ruta.md`; lo que pasa dentro de una tarea, en `.claude/agents/orquestador.md`.
+Cómo avanza Barberly: una rama por tarea y un PR por funcionalidad (AGENTS.md), en rebanadas verticales de API, app y panel (D-20, D-27). Claude crea las ramas, hace los commits, une cada tarea a su funcionalidad, publica la rama y abre el PR (D-29); el usuario aprueba el plan, prueba, revisa el PR y lo fusiona en GitHub. Lo siguen el usuario y los agentes. Tareas y funcionalidades están en `docs/hoja-de-ruta.md`; lo que pasa dentro de una tarea, en `.claude/agents/orquestador.md`.
 
 ## Roles
 
 | Quién | Hace | No hace |
 | --- | --- | --- |
-| Usuario (líder y revisor) | Elige la tarea, crea las ramas, aprueba el plan, revisa, prueba en el teléfono, hace commit, merge local, PR y merge en GitHub | Push |
-| Orquestador (`/tarea`) | Lee la tarea, propone el plan, delega, verifica, cierra con informe y mensaje de commit, y hace push cuando el usuario lo indica | Empezar sin OK, cambiar de tarea, commit, merge, push a `main` o con `--force` |
+| Usuario (líder y revisor) | Elige la funcionalidad, aprueba el plan, prueba en el teléfono, revisa el PR y lo fusiona en GitHub | Commits o ramas a mano (salvo que quiera) |
+| Orquestador (`/funcionalidad`, `/tarea`) | Lee la tarea, propone el plan, delega, verifica, crea las ramas, hace el commit de cada tarea, la une a su funcionalidad, publica la rama y abre el PR | Empezar sin OK, commit o merge en `main`, push a `main` o con `--force`, fusionar el PR |
 | Especialistas | Su parte, según `protocolo-subagente` | Delegar, crear ramas, commits, push |
 | CI (GitHub Actions) | Formato, `lint`, `typecheck` y `test` en cada PR | — |
 
@@ -20,7 +20,7 @@ Cómo avanza Barberly: una rama por tarea y un PR por funcionalidad (AGENTS.md),
 
 - `main` siempre en verde. Solo entra código por PR con CI verde; nunca commits directos.
 - Un solo PR abierto a la vez.
-- Claude hace push solo de la rama actual y cuando el usuario lo indica; nunca a `main` ni con `--force`.
+- Claude hace commit solo con `verificar.sh` en verde y `revisor-seguridad` sin Bloqueantes; nunca commit, merge ni push en `main`, ni push con `--force`, ni `gh pr merge` (lo bloquea el hook `proteger`, D-29).
 - Si la tarea no está en la hoja de ruta, primero se agrega.
 
 ## Ramas
@@ -40,55 +40,38 @@ Cómo avanza Barberly: una rama por tarea y un PR por funcionalidad (AGENTS.md),
 - Título del PR: `feat(modulo): funcionalidad (CODIGOS)`. Ejemplo: `feat(autenticacion): registro e inicio de sesión (HU-AUT-01, HU-AUT-02)`.
 - El PR se fusiona con "Create a merge commit": en `main` quedan los commits de cada tarea.
 
-## Ciclo de una funcionalidad
+## Ciclo de una funcionalidad (automático, D-29)
 
-### 1. Abrir la funcionalidad (usuario)
+### 1. Pedirla (usuario)
 
-```bash
-git switch main && git pull
-git switch -c funcionalidad/registro-sesion
-```
+En Claude Code abierto en `Barberly/`: `/funcionalidad E2.B` (o `/tarea T2.8` para una sola tarea). Si la especificación del módulo tiene Dudas que cambian reglas de negocio, antes `/decidir <modulo>`.
 
-Claude publica la rama con `git push -u origin funcionalidad/registro-sesion`.
+### 2. Aprobar el plan (usuario)
 
-### 2. Cada tarea, en el orden de la hoja de ruta
+Claude muestra un plan de 5 a 8 líneas para toda la funcionalidad. Respondes OK o lo corriges. Nada se escribe antes del OK.
 
-1. **Crear la rama** (usuario):
-   ```bash
-   git switch funcionalidad/registro-sesion
-   git switch -c feat/autenticacion-registro
-   ```
-2. **Resolver dudas** (usuario + Claude): si la especificación del módulo tiene Dudas que afectan a la tarea, `/decidir <modulo>`.
-3. **Pedir** (usuario): `/funcionalidad E1.B` en Claude Code abierto en la carpeta `Barberly/` (todas las tareas de la funcionalidad, en sus repositorios) o `/tarea T1.10` para una sola.
-4. **Plan** (Claude): 5 a 8 líneas por funcionalidad. El usuario responde OK o lo corrige. Nada se escribe antes del OK; después, las tareas siguen sin pedir otro OK salvo que aparezca una duda que cambie reglas de negocio.
-5. **Ejecutar** (Claude): orden del orquestador, `verificar.sh` tras cada especialista y `revisor-seguridad` al final.
-6. **Cerrar** (Claude): informe de 10 líneas o menos y mensaje de commit.
-7. **Revisar** (usuario):
-   - Lee el diff (`git diff` o VS Code) y pide explicación de lo que no entiendas.
-   - `/verificar` en verde.
-   - Si toca la API: prueba con Bruno. Si toca la app: prueba en Expo Go.
-   - Si algo no convence, díselo a Claude en la misma sesión y se vuelve al paso 5.
-8. **Commit y unir a la funcionalidad** (usuario): marca la tarea como `hecha` en `docs/hoja-de-ruta.md` y luego:
-   ```bash
-   git add -A
-   git commit -m "feat(autenticacion): registrar usuario (AUT-01, HU-AUT-01)"
-   git switch funcionalidad/registro-sesion
-   git merge --no-ff feat/autenticacion-registro
-   git branch -d feat/autenticacion-registro
-   ```
-9. **Publicar** (Claude): cuando el usuario lo indica, `git push` de la funcionalidad.
+### 3. Ejecutar (Claude)
 
-### 3. Cerrar la funcionalidad (usuario)
+1. En cada repositorio que toca: `git switch main && git pull --ff-only` y crea la rama de la funcionalidad.
+2. Por cada tarea, en el orden de la hoja de ruta:
+   - Crea la rama de la tarea desde la funcionalidad.
+   - Delega a los especialistas, corre `verificar.sh` tras cada uno y `revisor-seguridad` al final.
+   - Con todo en verde: marca la tarea `hecha` en `docs/hoja-de-ruta.md`, hace el commit (`tipo(modulo): descripcion (CODIGOS, Tn.n)`), la une a la funcionalidad con `git merge --no-ff` y borra la rama de la tarea.
+   - Si algo queda en rojo o hay una duda que cambia reglas de negocio, para y te pregunta.
+3. Al terminar todas las tareas: `git push -u origin <funcionalidad>` y `gh pr create` con la plantilla llena (qué entrega, tareas, cómo probarlo, dudas menores decididas y resultado de la revisión).
+4. Te entrega los enlaces de los PR.
 
-Cuando todas sus tareas están `hecha`:
+### 4. Probar, revisar y fusionar (usuario)
 
-1. Prueba la funcionalidad completa en el teléfono contra sus criterios de aceptación.
-2. Abre el PR: `gh pr create --base main --fill` (o desde GitHub; la plantilla se carga sola). Pide a Claude el cuerpo del PR con la plantilla y pega el resultado de `revisor-seguridad` de cada tarea (`/revisar` solo mira cambios sin commit, por eso se corre en cada tarea).
-3. En GitHub: "Files changed" con ojos de revisor, CI verde y checklist completo → "Create a merge commit" → borrar la rama.
-4. ```bash
-   git switch main && git pull
-   git branch -d funcionalidad/registro-sesion
-   ```
+1. Prueba la funcionalidad en el teléfono contra sus criterios de aceptación.
+2. En GitHub: "Files changed" con ojos de revisor, CI verde y checklist completo → "Create a merge commit" → borrar la rama.
+3. Si algo no convence, dilo en Claude Code: hace una rama `fix/...` desde la funcionalidad, la corrige con el mismo ciclo y vuelve a publicar.
+4. Después de fusionar: `git switch main && git pull` (o pídeselo a Claude en la siguiente funcionalidad, que empieza haciéndolo).
+
+### Configuración única
+
+- `gh auth login` en el computador donde corre Claude Code, para que pueda abrir los PR.
+- Claude Code pide permiso para `git commit` y `git push` según `.claude/settings.json`; puedes aprobarlos una vez por sesión con "Yes, and don't ask again" o cambiar ese archivo tú mismo.
 
 ## Cómo revisar
 
@@ -106,17 +89,17 @@ Por tarea (paso 7) y otra vez en el PR:
 
 | Situación | Qué hacer |
 | --- | --- |
-| CI en rojo en el PR | No se fusiona. Rama `fix/...` desde la funcionalidad, con el mismo ciclo de tarea |
+| CI en rojo en el PR | No se fusiona. Claude hace una rama `fix/...` desde la funcionalidad, con el mismo ciclo de tarea, y publica de nuevo |
 | Especialista BLOQUEADO o CON DUDAS | `/decidir <modulo>` y se retoma la tarea |
 | La tarea crece más de ~5 archivos | El orquestador la divide; se actualiza la hoja de ruta |
 | Error encontrado en `main` | Funcionalidad de una sola tarea `fix/...` desde `main` |
 | Cambia un requisito | Primero la especificación (`/especificar`) y luego el código |
-| `main` avanzó durante la funcionalidad | En la rama de la funcionalidad: `git merge main` (usuario) y `git push` (Claude) |
+| `main` avanzó durante la funcionalidad | Claude, en la rama de la funcionalidad: `git merge origin/main` y `git push` |
 
 ## Fin de fase
 
 - Todas las funcionalidades de la fase fusionadas y la "Entrega" de `docs/hoja-de-ruta.md` comprobada en el teléfono.
-- Etiqueta en `main` (usuario), y Claude la publica con `git push origin fase-1`:
+- Etiqueta en `main` (usuario, desde GitHub o su terminal):
   ```bash
   git tag -a fase-1 -m "Fase 1: base y autenticación"
   ```

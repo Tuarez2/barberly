@@ -1,8 +1,8 @@
 # Hoja de ruta
 
-Seis etapas de dos semanas (D-20). Cada etapa es una rebanada vertical (API, app y panel) que termina con una demo en el teléfono. Una rama por tarea y un PR por funcionalidad (ver `docs/flujo-de-trabajo.md`); con el orquestador del espacio de trabajo se pide con `/funcionalidad <ID>` o `/tarea <ID>`.
+Seis etapas de dos semanas (D-20). Cada etapa es una rebanada vertical (API, app y web) que termina con una demo en el teléfono. Una rama por tarea y un PR por funcionalidad (ver `docs/flujo-de-trabajo.md`); con el orquestador del espacio de trabajo se pide con `/funcionalidad <ID>` o `/tarea <ID>`.
 Estado: `pendiente`, `en-curso` o `hecha`. El usuario lo cambia a `hecha` antes del commit final de la tarea.
-Repositorio de cada tarea: API (`api/`), app (`movil/`) o panel (`panel/`) (D-11).
+Repositorio de cada tarea: API (`api/`), app (`frontend/`) o panel (`web/`) (D-11).
 
 ## Hecho antes del replanteamiento
 
@@ -19,7 +19,7 @@ Repositorio de cada tarea: API (`api/`), app (`movil/`) o panel (`panel/`) (D-11
 | T1.7 | API: renovar y cerrar sesión | AUT-03, AUT-04, HU-AUT-02 | `feat/autenticacion-sesion` | T1.6 | hecha |
 | T1.8 | API: `GET /usuarios/yo` con membresías y `contextoBarberia` real; `autenticar` rechaza usuarios inactivos | AUT-08, SEG-03, SEG-04, D-05 | `feat/autenticacion-membresias` | T1.7 | hecha |
 | T1.16 | Decisiones del panel web y de los tres repositorios, y documentos afectados | D-10 a D-13 | `docs/panel-web` | T1.4 | hecha |
-| T1.17 | Separar en tres repositorios (API, app y panel), cada uno con su CI y su copia del contrato | D-11, §8.9 | `chore/separar-repositorios` | T1.16 | hecha |
+| T1.17 | Separar en tres repositorios (API, app y web), cada uno con su CI y su copia del contrato | D-11, §8.9 | `chore/separar-repositorios` | T1.16 | hecha |
 
 ## Etapa 1 (semanas 1 y 2). Sesión completa en app y panel
 
@@ -37,6 +37,7 @@ Demo: cada rol entra a su interfaz desde el teléfono y el propietario al panel.
 | T1.21 | API: migrar a PostgreSQL con la restricción sin cruces | D-19, RN-04 | `feat/migrar-postgresql` | T1.8 | hecha |
 | T1.22 | Documentos del replanteamiento: DERCAS 1.4, decisiones D-19 a D-28 y hoja de ruta por etapas | D-19 a D-28 | `docs/replanteamiento` | T1.21 | hecha |
 | T1.23 | Agentes: espacio de trabajo raíz, orquestador multi-repositorio y especialistas nuevos | D-27 | `chore/agentes-espacio-raiz` | T1.22 | hecha |
+| T1.25 | Flujo Git automático (ramas, commits, push y PR por Claude) y carpetas `frontend/` y `web/` | D-29 | `chore/commits-automaticos` | T1.23 | hecha |
 | T1.24 | App: sistema de movimiento y componentes base animados | D-26 | `feat/movil-movimiento` | T1.22 | hecha |
 | T1.10 | App: sesión (cliente HTTP con token, renovación automática, almacenamiento seguro, TanStack Query) | AUT-04, §11.4 | `feat/movil-sesion` | T1.7 | hecha |
 | T1.11 | App: pantallas Registro e Inicio de sesión con sus estados de error | HU-AUT-01, HU-AUT-02 | `feat/movil-registro-iniciar-sesion` | T1.10, T1.24 | hecha |
