@@ -6,7 +6,7 @@ describe('Fase 0: base de datos', () => {
   afterAll(() => baseDatos.$disconnect());
 
   it('conecta a barberly_prueba con el adaptador', async () => {
-    const filas = await baseDatos.$queryRaw<{ base: string }[]>`SELECT DATABASE() AS base`;
+    const filas = await baseDatos.$queryRaw<{ base: string }[]>`SELECT current_database() AS base`;
 
     expect(filas).toEqual([{ base: 'barberly_prueba' }]);
   });

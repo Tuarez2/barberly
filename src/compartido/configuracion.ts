@@ -3,7 +3,8 @@ import { z } from 'zod';
 const esquemaConfiguracion = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   PUERTO: z.coerce.number().int().min(1).max(65535).default(3000),
-  DATABASE_URL: z.string().startsWith('mysql://'),
+  // D-19: PostgreSQL. Se aceptan los dos esquemas que usan los proveedores.
+  DATABASE_URL: z.string().regex(/^postgres(ql)?:\/\//),
   JWT_SECRETO: z.string().min(32),
   ORIGENES_CORS: z
     .string()
