@@ -2,8 +2,14 @@
 import type { RegistrarDocumentacion } from '../../compartido/documentacion';
 import { respuestaError, SEGURIDAD_BEARER } from '../../compartido/documentacion';
 import {
+  esquemaCambioClave,
+  esquemaEdicionPerfil,
   esquemaInicioSesion,
+  esquemaRecuperarClave,
   esquemaRegistro,
+  esquemaRespuestaEdicionPerfil,
+  esquemaRespuestaRecuperarClave,
+  esquemaRestablecerClave,
   esquemaRespuestaPerfil,
   esquemaRespuestaRenovacion,
   esquemaRespuestaSesion,
@@ -128,6 +134,115 @@ export const registrarAutenticacion: RegistrarDocumentacion = (registro) => {
       401: respuestaError(
         'AUTENTICACION_REQUERIDA o TOKEN_VENCIDO: sin token, token inválido o cuenta inactiva (D-05)',
       ),
+    },
+  });
+
+  registro.registerPath({
+    method: 'patch',
+    path: '/usuarios/yo',
+    tags: ['autenticacion'],
+    summary: 'Editar mi nombre o mi teléfono (AUT-05)',
+    description:
+      'Al menos uno de los dos, con las reglas y la normalización del registro (D-14). El correo no cambia en el MVP: enviarlo responde DATOS_INVALIDOS.',
+    security: SEGURIDAD_BEARER,
+    request: {
+      body: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: esquemaEdicionPerfil.meta({ id: 'EntradaEdicionPerfil' }),
+          },
+        },
+      },
+    },
+    responses: {
+      200: {
+        description: 'Perfil editado',
+        content: { 'application/json': { schema: esquemaRespuestaEdicionPerfil } },
+      },
+      401: respuestaError(
+        'AUTENTICACION_REQUERIDA o TOKEN_VENCIDO: sin token, token inválido o cuenta inactiva (D-05)',
+      ),
+      422: respuestaError('DATOS_INVALIDOS: los detalles dicen qué campo falla'),
+    },
+  });
+
+  registro.registerPath({
+    method: 'patch',
+    path: '/usuarios/yo/clave',
+    tags: ['autenticacion'],
+    summary: 'Cambiar mi contraseña con la actual (AUT-06)',
+    description:
+      'La nueva cumple las reglas del registro. No revoca las demás sesiones. Tras INICIO_INTENTOS_MAXIMOS (5) fallos de la actual por usuario, espera de INICIO_ESPERA_MINUTOS (15) desde el primer fallo (D-05, D-16).',
+    security: SEGURIDAD_BEARER,
+    request: {
+      body: {
+        required: true,
+        content: {
+          'application/json': { schema: esquemaCambioClave.meta({ id: 'EntradaCambioClave' }) },
+        },
+      },
+    },
+    responses: {
+      204: { description: 'Contraseña cambiada' },
+      401: respuestaError(
+        'CREDENCIALES_INVALIDAS: la actual no coincide (la app no cierra la sesión); AUTENTICACION_REQUERIDA o TOKEN_VENCIDO: falta el token de acceso o no sirve',
+      ),
+      422: respuestaError('DATOS_INVALIDOS: los detalles dicen qué campo falla'),
+      429: respuestaError('DEMASIADAS_SOLICITUDES: demasiados fallos de la contraseña actual'),
+    },
+  });
+
+  registro.registerPath({
+    method: 'post',
+    path: '/autenticacion/recuperar-clave',
+    tags: ['autenticacion'],
+    summary: 'Pedir un código para restablecer la contraseña (AUT-07)',
+    description:
+      'Responde siempre 202 con el mismo mensaje, exista o no el correo. Con una cuenta activa invalida los códigos anteriores y envía uno de 6 dígitos que vence en 15 minutos (D-01). Límite por hora: RECUPERACION_LIMITE_POR_CORREO (3) por correo y RECUPERACION_LIMITE_POR_IP (5) por IP, contando todos los pedidos.',
+    request: {
+      body: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: esquemaRecuperarClave.meta({ id: 'EntradaRecuperarClave' }),
+          },
+        },
+      },
+    },
+    responses: {
+      202: {
+        description: 'Pedido recibido',
+        content: { 'application/json': { schema: esquemaRespuestaRecuperarClave } },
+      },
+      422: respuestaError('DATOS_INVALIDOS: los detalles dicen qué campo falla'),
+      429: respuestaError('DEMASIADAS_SOLICITUDES: límite de pedidos por correo o por IP'),
+    },
+  });
+
+  registro.registerPath({
+    method: 'post',
+    path: '/autenticacion/restablecer-clave',
+    tags: ['autenticacion'],
+    summary: 'Restablecer la contraseña con el código recibido (AUT-07)',
+    description:
+      'Con el código correcto cambia la contraseña, gasta el código y revoca todas las sesiones del usuario; no abre sesión (D-01). Un código erróneo suma un intento; con 5 queda inutilizable. Límite por IP por hora: RESTABLECIMIENTO_LIMITE_POR_IP (10), contando también las rechazadas.',
+    request: {
+      body: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: esquemaRestablecerClave.meta({ id: 'EntradaRestablecerClave' }),
+          },
+        },
+      },
+    },
+    responses: {
+      204: { description: 'Contraseña restablecida' },
+      422: respuestaError(
+        'CODIGO_INVALIDO: el código no coincide, venció, ya se usó o agotó los intentos; DATOS_INVALIDOS: los detalles dicen qué campo falla',
+      ),
+      429: respuestaError('DEMASIADAS_SOLICITUDES: límite de solicitudes por IP'),
     },
   });
 };

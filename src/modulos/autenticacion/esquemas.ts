@@ -2,32 +2,60 @@
 import { z } from 'zod';
 
 import {
+  esquemaCambioClave,
+  esquemaEdicionPerfil,
   esquemaInicioSesion,
+  esquemaRecuperarClave,
   esquemaRegistro,
+  esquemaRestablecerClave,
   esquemaTokenSesion,
   ROLES_MEMBRESIA,
 } from '../../compartido/contrato';
 
-export { esquemaInicioSesion, esquemaRegistro, esquemaTokenSesion };
+export {
+  esquemaCambioClave,
+  esquemaEdicionPerfil,
+  esquemaInicioSesion,
+  esquemaRecuperarClave,
+  esquemaRegistro,
+  esquemaRestablecerClave,
+  esquemaTokenSesion,
+};
 export type {
+  DatosRecuperarClave,
   DatosRenovacion,
   DatosSesion,
+  EntradaCambioClave,
+  EntradaEdicionPerfil,
   EntradaInicioSesion,
+  EntradaRecuperarClave,
   EntradaRegistro,
+  EntradaRestablecerClave,
   EntradaTokenSesion,
   PerfilUsuario,
+  UsuarioSesion,
 } from '../../compartido/contrato';
 
 // Solo para la documentacion OpenAPI.
+export const esquemaRespuestaRecuperarClave = z
+  .object({
+    datos: z.object({
+      mensaje: z.string().meta({ description: 'El mismo texto exista o no el correo (AUT-07)' }),
+    }),
+  })
+  .meta({ id: 'RespuestaRecuperarClave' });
+
+const esquemaUsuarioSesion = z.object({
+  id: z.uuid(),
+  nombre: z.string(),
+  correo: z.email(),
+  telefono: z.string().meta({ example: '+593991234567' }),
+});
+
 export const esquemaRespuestaSesion = z
   .object({
     datos: z.object({
-      usuario: z.object({
-        id: z.uuid(),
-        nombre: z.string(),
-        correo: z.email(),
-        telefono: z.string().meta({ example: '+593991234567' }),
-      }),
+      usuario: esquemaUsuarioSesion,
       tokenAcceso: z
         .string()
         .meta({ description: 'JWT; dura TOKEN_ACCESO_MINUTOS, 15 por defecto (D-03)' }),
@@ -76,3 +104,7 @@ export const esquemaRespuestaPerfil = z
     }),
   })
   .meta({ id: 'RespuestaPerfil' });
+
+export const esquemaRespuestaEdicionPerfil = z
+  .object({ datos: esquemaUsuarioSesion })
+  .meta({ id: 'RespuestaEdicionPerfil' });

@@ -3,14 +3,34 @@ import type { Request, Response } from 'express';
 import type { RespuestaExito } from '../../compartido/contrato';
 import { ErrorNegocio } from '../../compartido/errores';
 import type {
+  DatosRecuperarClave,
   DatosRenovacion,
   DatosSesion,
+  EntradaCambioClave,
+  EntradaEdicionPerfil,
   EntradaInicioSesion,
+  EntradaRecuperarClave,
   EntradaRegistro,
+  EntradaRestablecerClave,
   EntradaTokenSesion,
   PerfilUsuario,
+  UsuarioSesion,
 } from './esquemas';
 import * as servicio from './servicio';
+
+// AUT-07: 202 con el mismo mensaje exista o no el correo.
+export async function recuperarClave(
+  req: Request,
+  res: Response<RespuestaExito<DatosRecuperarClave>>,
+): Promise<void> {
+  const datos = await servicio.recuperarClave(req.validado as EntradaRecuperarClave);
+  res.status(202).json({ datos });
+}
+
+export async function restablecerClave(req: Request, res: Response): Promise<void> {
+  await servicio.restablecerClave(req.validado as EntradaRestablecerClave);
+  res.status(204).end();
+}
 
 export async function registrar(
   req: Request,
@@ -50,4 +70,19 @@ export async function consultarPerfil(
   if (!req.usuario) throw new ErrorNegocio('AUTENTICACION_REQUERIDA', 401, 'Debes iniciar sesión');
   const datos = await servicio.consultarPerfil(req.usuario.id);
   res.status(200).json({ datos });
+}
+
+export async function editarPerfil(
+  req: Request,
+  res: Response<RespuestaExito<UsuarioSesion>>,
+): Promise<void> {
+  if (!req.usuario) throw new ErrorNegocio('AUTENTICACION_REQUERIDA', 401, 'Debes iniciar sesión');
+  const datos = await servicio.editarPerfil(req.usuario.id, req.validado as EntradaEdicionPerfil);
+  res.status(200).json({ datos });
+}
+
+export async function cambiarClave(req: Request, res: Response): Promise<void> {
+  if (!req.usuario) throw new ErrorNegocio('AUTENTICACION_REQUERIDA', 401, 'Debes iniciar sesión');
+  await servicio.cambiarClave(req.usuario.id, req.validado as EntradaCambioClave);
+  res.status(204).end();
 }

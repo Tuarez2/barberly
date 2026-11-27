@@ -1,0 +1,26 @@
+meta {
+  name: Recuperar contraseña
+  type: http
+  seq: 9
+}
+
+post {
+  url: {{urlBase}}/autenticacion/recuperar-clave
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "correo": "ana@correo.ec"
+  }
+}
+
+assert {
+  res.status: eq 202
+  res.body.datos.mensaje: isString
+}
+
+docs {
+  AUT-07, D-01. Responde 202 con el mismo mensaje exista o no el correo. En desarrollo el código de 6 dígitos aparece en el log de la API (EnvioCorreo sin implementación real). Límite por hora: 3 por correo y 5 por IP.
+}

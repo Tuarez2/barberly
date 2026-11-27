@@ -1,0 +1,28 @@
+meta {
+  name: Restablecer contraseña con código inválido
+  type: http
+  seq: 11
+}
+
+post {
+  url: {{urlBase}}/autenticacion/restablecer-clave
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "correo": "nadie@correo.ec",
+    "codigo": "123456",
+    "claveNueva": "Navaja2027"
+  }
+}
+
+assert {
+  res.status: eq 422
+  res.body.error.codigo: eq CODIGO_INVALIDO
+}
+
+docs {
+  D-01. El mismo CODIGO_INVALIDO si el correo no existe, no hay código, venció, ya se usó, agotó los 5 intentos o no coincide.
+}

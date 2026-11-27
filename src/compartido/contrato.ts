@@ -17,6 +17,9 @@ export type Paginacion = z.infer<typeof esquemaPaginacion>;
 export const ROLES_MEMBRESIA = ['PROPIETARIO', 'BARBERO'] as const;
 export type RolMembresia = (typeof ROLES_MEMBRESIA)[number];
 
+export const ESTADOS_MEMBRESIA = ['INVITADO', 'ACTIVO', 'INACTIVO'] as const;
+export type EstadoMembresia = (typeof ESTADOS_MEMBRESIA)[number];
+
 // Autenticacion: registro (§11.4, D-14). Mensajes en español: la app los muestra junto al campo.
 const BYTES_MAXIMOS_CLAVE = 72; // limite de bcrypt
 
@@ -100,6 +103,82 @@ export const esquemaInicioSesion = z.strictObject(
 
 export type EntradaInicioSesion = z.infer<typeof esquemaInicioSesion>;
 
+// AUT-07 y D-01: recuperar la contraseña con un codigo de 6 digitos enviado por correo.
+export const esquemaRecuperarClave = z.strictObject(
+  { correo: esquemaCorreo },
+  {
+    error: (problema) =>
+      problema.code === 'unrecognized_keys'
+        ? `Campos no permitidos: ${problema.keys.join(', ')}`
+        : 'Envía tu correo',
+  },
+);
+
+export type EntradaRecuperarClave = z.infer<typeof esquemaRecuperarClave>;
+
+export const esquemaRestablecerClave = z.strictObject(
+  {
+    correo: esquemaCorreo,
+    codigo: z
+      .string({ error: 'El código es obligatorio' })
+      .regex(/^\d{6}$/, 'El código tiene 6 dígitos'),
+    claveNueva: esquemaClave,
+  },
+  {
+    error: (problema) =>
+      problema.code === 'unrecognized_keys'
+        ? `Campos no permitidos: ${problema.keys.join(', ')}`
+        : 'Envía tu correo, el código y la contraseña nueva',
+  },
+);
+
+export type EntradaRestablecerClave = z.infer<typeof esquemaRestablecerClave>;
+
+// Lo devuelve recuperar-clave: el mismo texto exista o no el correo.
+export interface DatosRecuperarClave {
+  mensaje: string;
+}
+
+// AUT-05: nombre y telefono con las reglas del registro; el correo no cambia en el MVP.
+export const esquemaEdicionPerfil = z
+  .strictObject(
+    {
+      nombre: esquemaNombre.optional(),
+      telefono: esquemaTelefono.optional(),
+    },
+    {
+      error: (problema) =>
+        problema.code === 'unrecognized_keys'
+          ? `Campos no permitidos: ${problema.keys.join(', ')}`
+          : 'Envía el nombre o el teléfono',
+    },
+  )
+  .refine(
+    (perfil) => perfil.nombre !== undefined || perfil.telefono !== undefined,
+    'Envía el nombre o el teléfono',
+  );
+
+export type EntradaEdicionPerfil = z.infer<typeof esquemaEdicionPerfil>;
+
+// AUT-06 y D-16: la actual solo no vacia y de maximo 72; la nueva con las reglas del registro.
+export const esquemaCambioClave = z.strictObject(
+  {
+    claveActual: z
+      .string({ error: 'La contraseña actual es obligatoria' })
+      .min(1, 'Escribe tu contraseña actual')
+      .max(72, 'La contraseña actual debe tener como máximo 72 caracteres'),
+    claveNueva: esquemaClave,
+  },
+  {
+    error: (problema) =>
+      problema.code === 'unrecognized_keys'
+        ? `Campos no permitidos: ${problema.keys.join(', ')}`
+        : 'Envía tu contraseña actual y la nueva',
+  },
+);
+
+export type EntradaCambioClave = z.infer<typeof esquemaCambioClave>;
+
 // D-17: renovar y cerrar sesion reciben solo el token de renovacion (43 caracteres en base64url).
 export const esquemaTokenSesion = z.strictObject(
   {
@@ -149,6 +228,55 @@ export interface PerfilUsuario extends UsuarioSesion {
 export interface DatosRenovacion {
   tokenAcceso: string;
   tokenRenovacion: string;
+}
+
+// Registrar barberia, POST /barberias (AUT-10, D-13). Reglas y zona horaria quedan por defecto.
+// Misma regla que el nombre de Usuario: sin caracteres de control ni de formato (U+202E, U+200B...).
+const SIN_CONTROL = /^[^\p{Cc}\p{Cf}]*$/u;
+
+export const esquemaRegistroBarberia = z.strictObject(
+  {
+    nombre: z
+      .string({ error: 'El nombre es obligatorio' })
+      .trim()
+      .min(3, 'El nombre debe tener al menos 3 caracteres')
+      .max(80, 'El nombre debe tener como máximo 80 caracteres')
+      .regex(SIN_CONTROL, 'El nombre no puede tener caracteres de control'),
+    direccion: z
+      .string({ error: 'La dirección es obligatoria' })
+      .trim()
+      .min(3, 'La dirección debe tener al menos 3 caracteres')
+      .max(200, 'La dirección debe tener como máximo 200 caracteres')
+      .regex(SIN_CONTROL, 'La dirección no puede tener caracteres de control'),
+    telefono: esquemaTelefono,
+    descripcion: z
+      .string({ error: 'La descripción debe ser texto' })
+      .trim()
+      .max(500, 'La descripción debe tener como máximo 500 caracteres')
+      .regex(SIN_CONTROL, 'La descripción no puede tener caracteres de control')
+      .transform((descripcion) => (descripcion === '' ? null : descripcion))
+      .optional(),
+  },
+  {
+    error: (problema) =>
+      problema.code === 'unrecognized_keys'
+        ? `Campos no permitidos: ${problema.keys.join(', ')}`
+        : 'Envía los datos de la barbería',
+  },
+);
+
+export type EntradaRegistroBarberia = z.infer<typeof esquemaRegistroBarberia>;
+
+// Lo devuelve POST /barberias: la barberia nace sin publicar (D-07) con su membresia PROPIETARIO.
+export interface BarberiaRegistrada {
+  id: string;
+  nombre: string;
+  descripcion: string | null;
+  direccion: string;
+  telefono: string;
+  publicada: boolean;
+  activo: boolean;
+  membresia: { id: string; rol: RolMembresia; estado: EstadoMembresia };
 }
 
 export interface MetaPaginacion {

@@ -1,0 +1,31 @@
+meta {
+  name: Cambiar contraseña con la actual incorrecta
+  type: http
+  seq: 5
+}
+
+patch {
+  url: {{urlBase}}/usuarios/yo/clave
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAcceso}}
+}
+
+body:json {
+  {
+    "claveActual": "OtraClave99",
+    "claveNueva": "Navaja2027"
+  }
+}
+
+assert {
+  res.status: eq 401
+  res.body.error.codigo: eq CREDENCIALES_INVALIDAS
+}
+
+docs {
+  AUT-06, D-05. La sesión sigue vigente. Al 5.º fallo del usuario en 15 minutos desde el primero, todo intento responde 429 DEMASIADAS_SOLICITUDES hasta cerrarse la ventana (D-16).
+}
