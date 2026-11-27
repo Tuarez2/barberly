@@ -5,7 +5,9 @@ import {
   esquemaCambioClave,
   esquemaEdicionPerfil,
   esquemaInicioSesion,
+  esquemaRecuperarClave,
   esquemaRegistro,
+  esquemaRestablecerClave,
   esquemaTokenSesion,
   ROLES_MEMBRESIA,
 } from '../../compartido/contrato';
@@ -14,22 +16,35 @@ export {
   esquemaCambioClave,
   esquemaEdicionPerfil,
   esquemaInicioSesion,
+  esquemaRecuperarClave,
   esquemaRegistro,
+  esquemaRestablecerClave,
   esquemaTokenSesion,
 };
 export type {
+  DatosRecuperarClave,
   DatosRenovacion,
   DatosSesion,
   EntradaCambioClave,
   EntradaEdicionPerfil,
   EntradaInicioSesion,
+  EntradaRecuperarClave,
   EntradaRegistro,
+  EntradaRestablecerClave,
   EntradaTokenSesion,
   PerfilUsuario,
   UsuarioSesion,
 } from '../../compartido/contrato';
 
 // Solo para la documentacion OpenAPI.
+export const esquemaRespuestaRecuperarClave = z
+  .object({
+    datos: z.object({
+      mensaje: z.string().meta({ description: 'El mismo texto exista o no el correo (AUT-07)' }),
+    }),
+  })
+  .meta({ id: 'RespuestaRecuperarClave' });
+
 const esquemaUsuarioSesion = z.object({
   id: z.uuid(),
   nombre: z.string(),

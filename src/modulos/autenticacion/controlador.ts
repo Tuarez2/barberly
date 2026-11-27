@@ -3,17 +3,34 @@ import type { Request, Response } from 'express';
 import type { RespuestaExito } from '../../compartido/contrato';
 import { ErrorNegocio } from '../../compartido/errores';
 import type {
+  DatosRecuperarClave,
   DatosRenovacion,
   DatosSesion,
   EntradaCambioClave,
   EntradaEdicionPerfil,
   EntradaInicioSesion,
+  EntradaRecuperarClave,
   EntradaRegistro,
+  EntradaRestablecerClave,
   EntradaTokenSesion,
   PerfilUsuario,
   UsuarioSesion,
 } from './esquemas';
 import * as servicio from './servicio';
+
+// AUT-07: 202 con el mismo mensaje exista o no el correo.
+export async function recuperarClave(
+  req: Request,
+  res: Response<RespuestaExito<DatosRecuperarClave>>,
+): Promise<void> {
+  const datos = await servicio.recuperarClave(req.validado as EntradaRecuperarClave);
+  res.status(202).json({ datos });
+}
+
+export async function restablecerClave(req: Request, res: Response): Promise<void> {
+  await servicio.restablecerClave(req.validado as EntradaRestablecerClave);
+  res.status(204).end();
+}
 
 export async function registrar(
   req: Request,

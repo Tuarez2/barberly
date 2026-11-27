@@ -5,8 +5,11 @@ import {
   esquemaCambioClave,
   esquemaEdicionPerfil,
   esquemaInicioSesion,
+  esquemaRecuperarClave,
   esquemaRegistro,
   esquemaRespuestaEdicionPerfil,
+  esquemaRespuestaRecuperarClave,
+  esquemaRestablecerClave,
   esquemaRespuestaPerfil,
   esquemaRespuestaRenovacion,
   esquemaRespuestaSesion,
@@ -187,6 +190,59 @@ export const registrarAutenticacion: RegistrarDocumentacion = (registro) => {
       ),
       422: respuestaError('DATOS_INVALIDOS: los detalles dicen qué campo falla'),
       429: respuestaError('DEMASIADAS_SOLICITUDES: demasiados fallos de la contraseña actual'),
+    },
+  });
+
+  registro.registerPath({
+    method: 'post',
+    path: '/autenticacion/recuperar-clave',
+    tags: ['autenticacion'],
+    summary: 'Pedir un código para restablecer la contraseña (AUT-07)',
+    description:
+      'Responde siempre 202 con el mismo mensaje, exista o no el correo. Con una cuenta activa invalida los códigos anteriores y envía uno de 6 dígitos que vence en 15 minutos (D-01). Límite por hora: RECUPERACION_LIMITE_POR_CORREO (3) por correo y RECUPERACION_LIMITE_POR_IP (5) por IP, contando todos los pedidos.',
+    request: {
+      body: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: esquemaRecuperarClave.meta({ id: 'EntradaRecuperarClave' }),
+          },
+        },
+      },
+    },
+    responses: {
+      202: {
+        description: 'Pedido recibido',
+        content: { 'application/json': { schema: esquemaRespuestaRecuperarClave } },
+      },
+      422: respuestaError('DATOS_INVALIDOS: los detalles dicen qué campo falla'),
+      429: respuestaError('DEMASIADAS_SOLICITUDES: límite de pedidos por correo o por IP'),
+    },
+  });
+
+  registro.registerPath({
+    method: 'post',
+    path: '/autenticacion/restablecer-clave',
+    tags: ['autenticacion'],
+    summary: 'Restablecer la contraseña con el código recibido (AUT-07)',
+    description:
+      'Con el código correcto cambia la contraseña, gasta el código y revoca todas las sesiones del usuario; no abre sesión (D-01). Un código erróneo suma un intento; con 5 queda inutilizable. Límite por IP por hora: RESTABLECIMIENTO_LIMITE_POR_IP (10), contando también las rechazadas.',
+    request: {
+      body: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: esquemaRestablecerClave.meta({ id: 'EntradaRestablecerClave' }),
+          },
+        },
+      },
+    },
+    responses: {
+      204: { description: 'Contraseña restablecida' },
+      422: respuestaError(
+        'CODIGO_INVALIDO: el código no coincide, venció, ya se usó o agotó los intentos; DATOS_INVALIDOS: los detalles dicen qué campo falla',
+      ),
+      429: respuestaError('DEMASIADAS_SOLICITUDES: límite de solicitudes por IP'),
     },
   });
 };

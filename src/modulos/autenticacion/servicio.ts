@@ -1,28 +1,37 @@
-// Logica de autenticacion (AUT-01 a AUT-06, AUT-08, SEG-06, §11.4, D-02 a D-05, D-14, D-16 a D-18).
-import { createHash, randomBytes } from 'node:crypto';
+// Logica de autenticacion (AUT-01 a AUT-08, SEG-06, §11.4, D-02 a D-05, D-14, D-16 a D-18).
+import { createHash, randomBytes, randomInt } from 'node:crypto';
 
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
 import { baseDatos } from '../../compartido/base-datos';
 import { configuracion } from '../../compartido/configuracion';
+import { envioCorreo } from '../../compartido/envio-correo';
 import { ErrorNegocio } from '../../compartido/errores';
 import { esDuplicado } from '../../compartido/errores-base-datos';
+import { registro } from '../../compartido/registro';
 import { ahora } from '../../compartido/reloj';
 import { Prisma } from '../../generado/prisma/client';
 import type {
+  DatosRecuperarClave,
   DatosRenovacion,
   DatosSesion,
   EntradaCambioClave,
   EntradaEdicionPerfil,
   EntradaInicioSesion,
+  EntradaRecuperarClave,
   EntradaRegistro,
+  EntradaRestablecerClave,
   EntradaTokenSesion,
   PerfilUsuario,
   UsuarioSesion,
 } from './esquemas';
 
 const DIA_MS = 24 * 60 * 60 * 1000;
+const MINUTO_MS = 60 * 1000;
+// D-01: fijos, no configurables.
+const CODIGO_VIGENCIA_MINUTOS = 15;
+const CODIGO_INTENTOS_MAXIMOS = 5;
 const COSTO_BCRYPT = 12; // SEG-06, §14.3: fijo, no configurable
 
 // RNF-17: nunca claveHash ni tokenHash.
@@ -42,6 +51,13 @@ const sesionInvalida = () =>
 // AUT-06 y D-05: la app muestra el error junto al campo y no cierra la sesion.
 const claveActualIncorrecta = () =>
   new ErrorNegocio('CREDENCIALES_INVALIDAS', 401, 'La contraseña actual no es correcta');
+
+// D-01: el mismo mensaje si no hay cuenta o codigo, vencio, se uso, agoto los intentos o no coincide.
+const codigoInvalido = () =>
+  new ErrorNegocio('CODIGO_INVALIDO', 422, 'El código no es válido o ya venció. Pide uno nuevo.');
+
+const MENSAJE_RECUPERACION =
+  'Si el correo está registrado, te enviamos un código de 6 dígitos para restablecer tu contraseña.';
 
 const esNoEncontrado = (error: unknown) =>
   error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025';
@@ -267,4 +283,118 @@ export async function cambiarClave(usuarioId: string, entrada: EntradaCambioClav
     if (esNoEncontrado(error)) throw sesionInvalida();
     throw error;
   }
+}
+
+// D-01: 6 digitos con un generador criptografico.
+function generarCodigo(): string {
+  return randomInt(0, 1_000_000).toString().padStart(6, '0');
+}
+
+// No se espera al proveedor: su demora no debe revelar si el correo existe. Un fallo solo va al
+// log, sin el codigo ni el correo.
+function enviarCodigoSinEsperar(correo: string, codigo: string): void {
+  const registrarFallo = (error: unknown) => {
+    registro.error(
+      { tipo: error instanceof Error ? error.name : typeof error },
+      'No se pudo enviar el código de recuperación',
+    );
+  };
+  try {
+    envioCorreo().enviarCodigoRecuperacion(correo, codigo).catch(registrarFallo);
+  } catch (error) {
+    registrarFallo(error);
+  }
+}
+
+// AUT-07 y D-01: siempre la misma respuesta. Solo con una cuenta activa invalida los codigos
+// vigentes y crea uno nuevo; si no, calcula igual el hash para que el tiempo no la delate.
+export async function recuperarClave(entrada: EntradaRecuperarClave): Promise<DatosRecuperarClave> {
+  const usuario = await baseDatos.usuario.findUnique({
+    where: { correo: entrada.correo },
+    select: { id: true, activo: true },
+  });
+  const codigo = generarCodigo();
+  const codigoHash = await bcrypt.hash(codigo, COSTO_BCRYPT);
+
+  if (usuario?.activo) {
+    const momento = ahora();
+    await baseDatos.$transaction(async (tx) => {
+      // Dos pedidos simultaneos del mismo usuario se ordenan: solo queda un codigo vigente.
+      await tx.$queryRaw`SELECT id FROM usuarios WHERE id = ${usuario.id}::uuid FOR UPDATE`;
+      await tx.codigoRecuperacion.updateMany({
+        where: { usuarioId: usuario.id, usadoEn: null },
+        data: { usadoEn: momento },
+      });
+      await tx.codigoRecuperacion.create({
+        data: {
+          usuarioId: usuario.id,
+          codigoHash,
+          expiraEn: new Date(momento.getTime() + CODIGO_VIGENCIA_MINUTOS * MINUTO_MS),
+        },
+      });
+    });
+    enviarCodigoSinEsperar(entrada.correo, codigo);
+  }
+
+  return { mensaje: MENSAJE_RECUPERACION };
+}
+
+// AUT-07 y D-01: evalua el ultimo codigo sin usar. Un codigo erroneo suma un intento (atomico, sin
+// pasar de 5). Con el correcto, en una transaccion lo marca usado solo si sigue disponible (de dos
+// restablecimientos simultaneos gana uno), cambia la clave y revoca todas las sesiones. No abre sesion.
+export async function restablecerClave(entrada: EntradaRestablecerClave): Promise<void> {
+  const usuario = await baseDatos.usuario.findUnique({
+    where: { correo: entrada.correo },
+    select: { id: true, activo: true },
+  });
+  const codigo = usuario
+    ? await baseDatos.codigoRecuperacion.findFirst({
+        where: { usuarioId: usuario.id, usadoEn: null },
+        orderBy: [{ creadoEn: 'desc' }, { id: 'desc' }],
+        select: { id: true, codigoHash: true, expiraEn: true, intentos: true },
+      })
+    : null;
+
+  // Sin cuenta o sin codigo se compara contra el hash de relleno: el tiempo no lo delata.
+  const coincide = await bcrypt.compare(entrada.codigo, codigo?.codigoHash ?? HASH_RELLENO);
+  if (!usuario || !codigo) throw codigoInvalido();
+
+  const disponible = {
+    id: codigo.id,
+    usadoEn: null,
+    intentos: { lt: CODIGO_INTENTOS_MAXIMOS },
+  };
+
+  if (!coincide) {
+    await baseDatos.codigoRecuperacion.updateMany({
+      where: disponible,
+      data: { intentos: { increment: 1 } },
+    });
+    throw codigoInvalido();
+  }
+
+  const momento = ahora();
+  if (!usuario.activo || codigo.expiraEn <= momento || codigo.intentos >= CODIGO_INTENTOS_MAXIMOS) {
+    throw codigoInvalido();
+  }
+
+  const claveHash = await bcrypt.hash(entrada.claveNueva, COSTO_BCRYPT);
+  await baseDatos.$transaction(async (tx) => {
+    const usado = await tx.codigoRecuperacion.updateMany({
+      where: { ...disponible, expiraEn: { gt: momento } },
+      data: { usadoEn: momento },
+    });
+    if (usado.count !== 1) throw codigoInvalido();
+
+    const cambiado = await tx.usuario.updateMany({
+      where: { id: usuario.id, activo: true },
+      data: { claveHash },
+    });
+    if (cambiado.count !== 1) throw codigoInvalido();
+
+    await tx.tokenRenovacion.updateMany({
+      where: { usuarioId: usuario.id, revocadoEn: null },
+      data: { revocadoEn: momento },
+    });
+  });
 }

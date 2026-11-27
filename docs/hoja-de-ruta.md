@@ -43,8 +43,8 @@ Demo: cada rol entra a su interfaz desde el teléfono y el propietario al panel.
 | T1.12 | App: entrada según el rol (cliente o barbero), aviso del panel para el propietario, rutas protegidas y cerrar sesión | AUT-03, AUT-08, HU-AUT-02, D-10 | `feat/movil-rol` | T1.8, T1.11 | hecha |
 | T1.9 | API: registrar barbería y quedar como propietario | AUT-10, HU-AUT-03 | `feat/autenticacion-registrar-barberia` | T1.8 | hecha |
 | T1.13 | Perfil: ver y editar datos, cambiar contraseña (API y app) | AUT-05, AUT-06 | `feat/autenticacion-perfil` | T1.12 | hecha |
-| T1.14 | Elegir la barbería activa (API y app) | AUT-09 | `feat/autenticacion-barberia-activa` | T1.12 | pendiente |
-| T1.15 | Recuperar la contraseña con código por correo e interfaz EnvioCorreo (API y app) | AUT-07, D-01 | `feat/autenticacion-recuperar-clave` | T1.7 | pendiente |
+| T1.14 | Elegir la barbería activa (API y app) | AUT-09 | `feat/autenticacion-barberia-activa` | T1.12 | hecha |
+| T1.15 | Recuperar la contraseña con código por correo e interfaz EnvioCorreo (API y app) | AUT-07, D-01 | `feat/autenticacion-recuperar-clave` | T1.7 | hecha |
 | T1.18 | Panel: proyecto base con Vite, React Router, TanStack Query, Tailwind, shadcn/ui, tema, cliente HTTP y CI | D-10, D-11, D-26 | `chore/panel-base` | T1.17 | pendiente |
 | T1.19 | Panel: sesión, registro, inicio de sesión, rutas solo para propietarios y cerrar sesión | AUT-01 a AUT-04, AUT-08, HU-AUT-02, D-12 | `feat/panel-sesion` | T1.8, T1.18 | pendiente |
 | T1.20 | Panel: registrar barbería, elegir la barbería activa y perfil del propietario | AUT-05, AUT-06, AUT-09, AUT-10, HU-AUT-03, D-13 | `feat/panel-barberia` | T1.9, T1.13, T1.14, T1.19 | pendiente |

@@ -1,4 +1,4 @@
-// Limites de tasa de autenticacion (SEG-09, AUT-06, D-03, D-14, D-16).
+// Limites de tasa de autenticacion (SEG-09, AUT-06, AUT-07, D-03, D-14, D-16).
 // Almacen en memoria: la API corre en una instancia. La IP del cliente sale de PROXIES_CONFIABLES (D-15).
 import type { Request } from 'express';
 import { MemoryStore, rateLimit } from 'express-rate-limit';
@@ -28,6 +28,9 @@ class AlmacenDesdePrimerFallo extends MemoryStore {
 const almacenRegistro = new MemoryStore();
 const almacenInicioPorIp = new AlmacenDesdePrimerFallo();
 const almacenInicioPorCuenta = new AlmacenDesdePrimerFallo();
+const almacenRecuperacionPorIp = new MemoryStore();
+const almacenRecuperacionPorCorreo = new MemoryStore();
+const almacenRestablecimientoPorIp = new MemoryStore();
 const almacenCambioClave = new AlmacenDesdePrimerFallo();
 
 const demasiadasSolicitudes = () =>
@@ -93,10 +96,54 @@ export const limitarCambioClave = rateLimit({
   keyGenerator: (req) => `usuario:${req.usuario?.id ?? ''}`,
 });
 
+// AUT-07: cuentan todas las solicitudes, existan o no los correos. Por IP va antes de validar,
+// como el registro; por correo, despues, con el correo ya normalizado.
+export const limitarRecuperacionPorIp = rateLimit({
+  windowMs: UNA_HORA_MS,
+  limit: configuracion.RECUPERACION_LIMITE_POR_IP,
+  store: almacenRecuperacionPorIp,
+  standardHeaders: 'draft-8',
+  legacyHeaders: false,
+  identifier: 'recuperacion-ip',
+  handler: (_req, _res, next) => {
+    next(demasiadasSolicitudes());
+  },
+});
+
+// Sin cabeceras: dirian cuantos pedidos han hecho otros para ese correo.
+export const limitarRecuperacionPorCorreo = rateLimit({
+  windowMs: UNA_HORA_MS,
+  limit: configuracion.RECUPERACION_LIMITE_POR_CORREO,
+  store: almacenRecuperacionPorCorreo,
+  standardHeaders: false,
+  legacyHeaders: false,
+  skip: (req) => correoValidado(req) === undefined,
+  keyGenerator: (req) => `correo:${correoValidado(req) ?? ''}`,
+  handler: (_req, _res, next) => {
+    next(demasiadasSolicitudes());
+  },
+});
+
+// AUT-07: va antes de validar y cuenta todas las solicitudes de la IP, tambien las rechazadas.
+export const limitarRestablecimientoPorIp = rateLimit({
+  windowMs: UNA_HORA_MS,
+  limit: configuracion.RESTABLECIMIENTO_LIMITE_POR_IP,
+  store: almacenRestablecimientoPorIp,
+  standardHeaders: 'draft-8',
+  legacyHeaders: false,
+  identifier: 'restablecimiento-ip',
+  handler: (_req, _res, next) => {
+    next(demasiadasSolicitudes());
+  },
+});
+
 // Solo para pruebas: cada caso empieza sin intentos acumulados.
 export function reiniciarLimites(): void {
   void almacenRegistro.resetAll();
   void almacenInicioPorIp.resetAll();
   void almacenInicioPorCuenta.resetAll();
   void almacenCambioClave.resetAll();
+  void almacenRecuperacionPorIp.resetAll();
+  void almacenRecuperacionPorCorreo.resetAll();
+  void almacenRestablecimientoPorIp.resetAll();
 }
