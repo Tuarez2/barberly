@@ -71,6 +71,30 @@ Perfil y membresías (D-18):
 - `contextoBarberia`: barbería del parámetro `:id`, con membresía ACTIVO en una barbería activa; si no, NO_ENCONTRADO 404 (también con un id que no es UUID).
 - `autenticar`: un usuario inexistente o inactivo responde AUTENTICACION_REQUERIDA 401 aunque su token sea válido (D-05).
 
+Registrar barbería, POST /barberias (AUT-10, D-13, D-07):
+- Cuerpo `{ nombre, direccion, telefono, descripcion? }`; campo extra → DATOS_INVALIDOS. `nombre` 3 a 80; `direccion` 3 a 200; `telefono` con la validación y normalización de Usuario; `descripcion` hasta 500 (vacía se guarda null); ninguno con caracteres de control. Reglas y zona horaria quedan en sus valores por defecto; se editan con PATCH /barberias/:id (ADM).
+- En una sola transacción crea Barberia (`activo` verdadero, `publicada` falso: D-07) y Membresia del usuario autenticado con rol PROPIETARIO y estado ACTIVO. Un usuario puede registrar varias barberías; sin límite ni unicidad de nombre.
+- 201 `{ datos: { id, nombre, descripcion, direccion, telefono, publicada, activo, membresia: { id, rol, estado } } }`. La barbería no aparece en el listado público (GET /barberias) hasta cumplir D-07.
+- Errores: DATOS_INVALIDOS, AUTENTICACION_REQUERIDA. El cliente vuelve a pedir GET /usuarios/yo para ver la membresía nueva.
+
+Editar perfil, PATCH /usuarios/yo (AUT-05):
+- Cuerpo `{ nombre?, telefono? }` con al menos uno; vacío o con un campo extra (también `correo`, que no cambia en el MVP) → DATOS_INVALIDOS. Mismas validaciones y normalización del registro. Responde 200 `{ datos: { id, nombre, correo, telefono } }`.
+
+Cambiar contraseña, PATCH /usuarios/yo/clave (AUT-06, D-05):
+- Cuerpo `{ claveActual, claveNueva }`; `claveActual` no vacía y de máximo 72; `claveNueva` con las reglas de Contraseña del registro. Responde 204.
+- Actual incorrecta: CREDENCIALES_INVALIDAS 401 (la app no cierra la sesión). Al quinto fallo de un usuario en 15 minutos, DEMASIADAS_SOLICITUDES hasta cerrarse la ventana (mismo mecanismo en memoria y configuración de D-16, contador por usuarioId). No revoca las demás sesiones.
+
+Recuperar contraseña (AUT-07, D-01):
+- POST /autenticacion/recuperar-clave: cuerpo `{ correo }` (formato inválido → DATOS_INVALIDOS). Responde siempre 202 `{ datos: { mensaje } }` con el mismo texto exista o no el correo, esté activa o no la cuenta.
+- Si el usuario existe y está activo: en una transacción marca como usados (`usadoEn`) los códigos vigentes y crea uno de 6 dígitos (generador criptográfico) con `codigoHash` (bcryptjs), `expiraEn` a 15 minutos e `intentos` 0; después lo envía con EnvioCorreo. Si no existe o está inactivo, no crea ni envía nada.
+- Límite: 3 solicitudes por correo normalizado y 5 por IP (D-15) por hora, contando todas las solicitudes (existan o no); la siguiente responde DEMASIADAS_SOLICITUDES 429. Valores en la configuración Zod.
+- POST /autenticacion/restablecer-clave: cuerpo `{ correo, codigo, claveNueva }`; `codigo` exactamente 6 dígitos; `claveNueva` con las reglas del registro; campo extra o formato inválido → DATOS_INVALIDOS (no gasta un intento). Responde 204.
+- Se evalúa el último código del usuario sin `usadoEn`. CODIGO_INVALIDO 422, con el mismo mensaje, si el correo no existe o está inactivo, no hay código, venció, ya se usó, tiene 5 intentos o el código no coincide. Un código incorrecto suma un intento (atómico, solo si `intentos` < 5); el quinto fallo lo deja inutilizable. Con usuario inexistente se compara igual contra un hash de relleno.
+- Con el código correcto, en una transacción: `usadoEn` ahora, nueva `claveHash` y revocación de todos los TokenRenovacion del usuario. No abre sesión: la app lleva a iniciar sesión.
+- EnvioCorreo (interfaz propia): `enviarCodigoRecuperacion(correo, codigo)`. En desarrollo y pruebas la implementación solo registra en el log; no hay implementación real en E1.C.
+
+Barbería activa (AUT-09): no hay endpoint nuevo ni estado en la API. GET /usuarios/yo ya entrega las membresías ACTIVO (D-18) y `contextoBarberia` verifica la barbería por el `:id` de cada ruta, por lo que la API no guarda "barbería activa". La app (solo cliente y barbero) y el panel eligen y recuerdan localmente la membresía activa (id de membresía, en expo-secure-store; en el panel, localStorage): con una sola se selecciona sola; con varias se ofrece Cambiar de barbería o rol; si la guardada ya no aparece tras volver a pedir /usuarios/yo, se usa la primera por nombre o el rol cliente. Las rutas con `:id` usan el `barberiaId` de la elegida.
+
 ## API
 Prefijo /api/v1. Pública = sin sesión; Pub = cualquier usuario autenticado.
 | Método | Ruta | Rol | Éxito |
@@ -121,6 +145,16 @@ Editar perfil, Cambiar contraseña, Invitaciones y Cambiar de barbería o rol se
 - HU-AUT-02: Dado un usuario sin membresía PROPIETARIO activa, cuando inicia sesión en el panel web, entonces ve Sin acceso y no llega a ninguna pantalla de administración (D-10).
 - HU-AUT-03: Dado un usuario autenticado con nombre, dirección y teléfono, cuando registra la barbería, entonces queda como propietario.
 - HU-AUT-03: Dada una barbería recién registrada, sin servicios, horarios ni barberos, cuando se consulta el listado público, entonces no aparece (D-07).
+- HU-AUT-03: Dado un usuario autenticado y `{ nombre: "Corte Fino", direccion: "Av. Amazonas 123", telefono: "0991234567" }`, cuando hace POST /barberias, entonces 201 con `publicada` falso, telefono `+593991234567` y una Membresia PROPIETARIO ACTIVO; GET /usuarios/yo la incluye.
+- HU-AUT-03: Dado `nombre` de 2 caracteres, `direccion` ausente o un campo extra, cuando hace POST /barberias, entonces DATOS_INVALIDOS y no se crea barbería ni membresía; sin token, AUTENTICACION_REQUERIDA.
+- AUT-05: Dado `{ telefono: "099 123 4567" }`, cuando hace PATCH /usuarios/yo, entonces 200 con el teléfono normalizado y el nombre intacto; con `{ correo: "otro@x.com" }` o `{}`, DATOS_INVALIDOS.
+- AUT-06: Dada la clave actual correcta y una nueva de 8 caracteres con letra y número, cuando cambia, entonces 204 y puede iniciar sesión con la nueva; con la actual incorrecta, CREDENCIALES_INVALIDAS y la clave no cambia; con la nueva de 7 caracteres, DATOS_INVALIDOS.
+- AUT-06: Dados 5 fallos de la clave actual en 15 minutos, cuando intenta de nuevo (aunque sea correcta), entonces DEMASIADAS_SOLICITUDES.
+- AUT-07: Dado un correo registrado o no, cuando pide recuperar-clave, entonces 202 con la misma respuesta; solo si existe se crea un código y se llama a EnvioCorreo; el 4.º pedido de la hora para el mismo correo recibe DEMASIADAS_SOLICITUDES.
+- AUT-07: Dado un código nuevo, cuando se pide otro, entonces el primero responde CODIGO_INVALIDO.
+- AUT-07: Dado un código vigente y correcto, cuando restablece con una clave válida, entonces 204, la clave nueva sirve para iniciar sesión, la vieja no y todos sus tokens de renovación quedan revocados; reusar el código responde CODIGO_INVALIDO.
+- AUT-07: Dado un código vigente, cuando se envían 5 códigos erróneos, entonces cada uno responde CODIGO_INVALIDO y el correcto después también; un código de hace 16 minutos responde CODIGO_INVALIDO.
+- AUT-09: Dado un usuario con membresías ACTIVO en dos barberías, cuando consulta /usuarios/yo, entonces ve ambas por nombre y la app o el panel elige una; con una sola, se elige sola; ante una barbería ajena en la ruta, NO_ENCONTRADO.
 
 ## Pruebas
 - Casos PO: §15.1 no asigna ninguno; se verifica con aceptación, RNF-04 y RNF-06.

@@ -5,6 +5,7 @@ import { OpenAPIRegistry, OpenApiGeneratorV31 } from '@asteasolutions/zod-to-ope
 import { z } from 'zod';
 
 import { registrarAutenticacion } from '../modulos/autenticacion/documentacion';
+import { registrarBarberias } from '../modulos/barberias/documentacion';
 
 export type RegistrarDocumentacion = (registro: OpenAPIRegistry) => void;
 
@@ -68,7 +69,7 @@ function registrarBase(registro: OpenAPIRegistry): void {
 }
 
 // Los modulos se agregan aqui a medida que existen.
-const MODULOS: RegistrarDocumentacion[] = [registrarAutenticacion];
+const MODULOS: RegistrarDocumentacion[] = [registrarAutenticacion, registrarBarberias];
 
 export function generarDocumentacion() {
   const registro = new OpenAPIRegistry();
