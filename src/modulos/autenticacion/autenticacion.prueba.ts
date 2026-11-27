@@ -498,7 +498,7 @@ describe('HU-AUT-02: POST /api/v1/autenticacion/iniciar-sesion', () => {
     expect(primero.body.datos.tokenRenovacion).not.toBe(segundo.body.datos.tokenRenovacion);
     const sesiones = await baseDatos.tokenRenovacion.findMany({
       where: { usuarioId: ana.id },
-      orderBy: { dispositivo: 'desc' },
+      orderBy: { dispositivo: { sort: 'desc', nulls: 'last' } },
     });
     expect(sesiones.map((sesion) => sesion.dispositivo)).toEqual(['Pixel 7', null]);
     for (const sesion of sesiones) {

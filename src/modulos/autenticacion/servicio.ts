@@ -7,6 +7,7 @@ import jwt from 'jsonwebtoken';
 import { baseDatos } from '../../compartido/base-datos';
 import { configuracion } from '../../compartido/configuracion';
 import { ErrorNegocio } from '../../compartido/errores';
+import { esDuplicado } from '../../compartido/errores-base-datos';
 import { ahora } from '../../compartido/reloj';
 import { Prisma } from '../../generado/prisma/client';
 import type {
@@ -73,10 +74,6 @@ async function abrirSesion(
   return tokenRenovacion;
 }
 
-function esCorreoDuplicado(error: unknown): boolean {
-  return error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002';
-}
-
 export async function registrar(entrada: EntradaRegistro): Promise<DatosSesion> {
   const existente = await baseDatos.usuario.findUnique({
     where: { correo: entrada.correo },
@@ -103,7 +100,7 @@ export async function registrar(entrada: EntradaRegistro): Promise<DatosSesion> 
     return { usuario, tokenAcceso: firmarTokenAcceso(usuario.id), tokenRenovacion };
   } catch (error) {
     // Dos registros simultaneos con el mismo correo: el indice unico decide.
-    if (esCorreoDuplicado(error)) throw correoRegistrado();
+    if (esDuplicado(error)) throw correoRegistrado();
     throw error;
   }
 }

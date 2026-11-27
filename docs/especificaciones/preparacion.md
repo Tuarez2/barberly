@@ -15,7 +15,7 @@ Deja el monorepo instalado y en verde, sin lógica de negocio, para poder orques
 - ESLint (flat config) y Prettier compartidos; `.editorconfig`.
 - `README.md`: instalación en un solo comando (RNF-15).
 
-## MySQL local
+## PostgreSQL local (D-19)
 
 - Bases `barberly` y `barberly_prueba`.
 - `.env.example` y `.env.prueba.example` sin valores reales, con todas las variables que valida `configuracion.ts`.

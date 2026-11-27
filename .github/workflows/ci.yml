@@ -17,18 +17,17 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     services:
-      mysql:
-        image: mysql:8.0
+      postgres:
+        image: postgres:17
         # Base efimera del runner: estas claves no protegen nada real.
         env:
-          MYSQL_ROOT_PASSWORD: clave_ci
-          MYSQL_DATABASE: barberly_prueba
-          MYSQL_USER: barberly
-          MYSQL_PASSWORD: clave_ci
+          POSTGRES_USER: barberly
+          POSTGRES_PASSWORD: clave_ci
+          POSTGRES_DB: barberly_prueba
         ports:
-          - 3306:3306
+          - 5432:5432
         options: >-
-          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -pclave_ci"
+          --health-cmd="pg_isready -U barberly -d barberly_prueba"
           --health-interval=5s
           --health-timeout=5s
           --health-retries=20

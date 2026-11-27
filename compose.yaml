@@ -1,0 +1,16 @@
+# PostgreSQL local para desarrollo y pruebas (D-19). Uso: docker compose up -d
+# Las claves son solo locales; cambialas si quieres y copia la URL en .env y .env.prueba.
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: barberly
+      POSTGRES_PASSWORD: clave_local
+      POSTGRES_DB: barberly
+    ports:
+      - '5432:5432'
+    volumes:
+      - datos-postgres:/var/lib/postgresql/data
+      - ./docker/crear-base-prueba.sql:/docker-entrypoint-initdb.d/crear-base-prueba.sql:ro
+volumes:
+  datos-postgres:

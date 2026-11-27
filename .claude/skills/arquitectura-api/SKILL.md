@@ -32,7 +32,7 @@ user-invocable: false
 - Error inesperado: 500 con `INTERNO` y mensaje generico; el detalle va al log sin datos sensibles.
 - El error de `express.json()` (JSON mal formado) se convierte en 422 `DATOS_INVALIDOS` en `manejarErrores`.
 - Rutas bajo `/api/v1`, minusculas con guiones. Nada de `any`; `strict` de TypeScript.
-- La app solo habla con la API; solo la API toca MySQL, la IA y la pasarela.
+- La app solo habla con la API; solo la API toca PostgreSQL, la IA y la pasarela.
 - Proveedor de IA detras de la interfaz `ProveedorAsesorEstilo` (metodo `analizar`).
 - Campos de las respuestas: ver `multi-tenencia-seguridad` (RNF-17).
 - Dinero en JSON como string con 2 decimales (`"8.00"`); fechas ISO 8601 UTC.
