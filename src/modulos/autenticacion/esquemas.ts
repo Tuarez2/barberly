@@ -2,32 +2,45 @@
 import { z } from 'zod';
 
 import {
+  esquemaCambioClave,
+  esquemaEdicionPerfil,
   esquemaInicioSesion,
   esquemaRegistro,
   esquemaTokenSesion,
   ROLES_MEMBRESIA,
 } from '../../compartido/contrato';
 
-export { esquemaInicioSesion, esquemaRegistro, esquemaTokenSesion };
+export {
+  esquemaCambioClave,
+  esquemaEdicionPerfil,
+  esquemaInicioSesion,
+  esquemaRegistro,
+  esquemaTokenSesion,
+};
 export type {
   DatosRenovacion,
   DatosSesion,
+  EntradaCambioClave,
+  EntradaEdicionPerfil,
   EntradaInicioSesion,
   EntradaRegistro,
   EntradaTokenSesion,
   PerfilUsuario,
+  UsuarioSesion,
 } from '../../compartido/contrato';
 
 // Solo para la documentacion OpenAPI.
+const esquemaUsuarioSesion = z.object({
+  id: z.uuid(),
+  nombre: z.string(),
+  correo: z.email(),
+  telefono: z.string().meta({ example: '+593991234567' }),
+});
+
 export const esquemaRespuestaSesion = z
   .object({
     datos: z.object({
-      usuario: z.object({
-        id: z.uuid(),
-        nombre: z.string(),
-        correo: z.email(),
-        telefono: z.string().meta({ example: '+593991234567' }),
-      }),
+      usuario: esquemaUsuarioSesion,
       tokenAcceso: z
         .string()
         .meta({ description: 'JWT; dura TOKEN_ACCESO_MINUTOS, 15 por defecto (D-03)' }),
@@ -76,3 +89,7 @@ export const esquemaRespuestaPerfil = z
     }),
   })
   .meta({ id: 'RespuestaPerfil' });
+
+export const esquemaRespuestaEdicionPerfil = z
+  .object({ datos: esquemaUsuarioSesion })
+  .meta({ id: 'RespuestaEdicionPerfil' });

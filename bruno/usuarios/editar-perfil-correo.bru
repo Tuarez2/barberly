@@ -1,0 +1,30 @@
+meta {
+  name: Editar perfil con correo
+  type: http
+  seq: 3
+}
+
+patch {
+  url: {{urlBase}}/usuarios/yo
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAcceso}}
+}
+
+body:json {
+  {
+    "correo": "otro@x.com"
+  }
+}
+
+assert {
+  res.status: eq 422
+  res.body.error.codigo: eq DATOS_INVALIDOS
+}
+
+docs {
+  AUT-05. El correo no cambia en el MVP: es un campo no permitido.
+}

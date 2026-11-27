@@ -5,10 +5,13 @@ import { ErrorNegocio } from '../../compartido/errores';
 import type {
   DatosRenovacion,
   DatosSesion,
+  EntradaCambioClave,
+  EntradaEdicionPerfil,
   EntradaInicioSesion,
   EntradaRegistro,
   EntradaTokenSesion,
   PerfilUsuario,
+  UsuarioSesion,
 } from './esquemas';
 import * as servicio from './servicio';
 
@@ -50,4 +53,19 @@ export async function consultarPerfil(
   if (!req.usuario) throw new ErrorNegocio('AUTENTICACION_REQUERIDA', 401, 'Debes iniciar sesión');
   const datos = await servicio.consultarPerfil(req.usuario.id);
   res.status(200).json({ datos });
+}
+
+export async function editarPerfil(
+  req: Request,
+  res: Response<RespuestaExito<UsuarioSesion>>,
+): Promise<void> {
+  if (!req.usuario) throw new ErrorNegocio('AUTENTICACION_REQUERIDA', 401, 'Debes iniciar sesión');
+  const datos = await servicio.editarPerfil(req.usuario.id, req.validado as EntradaEdicionPerfil);
+  res.status(200).json({ datos });
+}
+
+export async function cambiarClave(req: Request, res: Response): Promise<void> {
+  if (!req.usuario) throw new ErrorNegocio('AUTENTICACION_REQUERIDA', 401, 'Debes iniciar sesión');
+  await servicio.cambiarClave(req.usuario.id, req.validado as EntradaCambioClave);
+  res.status(204).end();
 }

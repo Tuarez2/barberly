@@ -1,5 +1,5 @@
-// Limites de tasa de autenticacion (SEG-09, D-03, D-14, D-16). Almacen en memoria: la API corre en una instancia.
-// La IP del cliente sale de PROXIES_CONFIABLES (D-15).
+// Limites de tasa de autenticacion (SEG-09, AUT-06, D-03, D-14, D-16).
+// Almacen en memoria: la API corre en una instancia. La IP del cliente sale de PROXIES_CONFIABLES (D-15).
 import type { Request } from 'express';
 import { MemoryStore, rateLimit } from 'express-rate-limit';
 
@@ -28,6 +28,7 @@ class AlmacenDesdePrimerFallo extends MemoryStore {
 const almacenRegistro = new MemoryStore();
 const almacenInicioPorIp = new AlmacenDesdePrimerFallo();
 const almacenInicioPorCuenta = new AlmacenDesdePrimerFallo();
+const almacenCambioClave = new AlmacenDesdePrimerFallo();
 
 const demasiadasSolicitudes = () =>
   new ErrorNegocio('DEMASIADAS_SOLICITUDES', 429, 'Demasiados intentos. Espera un momento.');
@@ -82,9 +83,20 @@ export const limitarInicioPorCuenta = rateLimit({
   keyGenerator: (req) => `correo:${correoValidado(req) ?? ''}`,
 });
 
+// AUT-06: mismo mecanismo y configuracion de D-16, con un contador por usuario autenticado (no por
+// token ni IP). Corre despues de autenticar y validar: un 401 de sesion o un 422 no crean entradas.
+export const limitarCambioClave = rateLimit({
+  ...opcionesInicio,
+  store: almacenCambioClave,
+  standardHeaders: false,
+  skip: (req) => req.usuario === undefined,
+  keyGenerator: (req) => `usuario:${req.usuario?.id ?? ''}`,
+});
+
 // Solo para pruebas: cada caso empieza sin intentos acumulados.
 export function reiniciarLimites(): void {
   void almacenRegistro.resetAll();
   void almacenInicioPorIp.resetAll();
   void almacenInicioPorCuenta.resetAll();
+  void almacenCambioClave.resetAll();
 }

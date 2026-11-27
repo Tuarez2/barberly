@@ -1,13 +1,20 @@
 import { Router } from 'express';
 
 import {
+  limitarCambioClave,
   limitarInicioPorCuenta,
   limitarInicioPorIp,
   limitarRegistro,
 } from '../../compartido/limites';
 import { autenticar, validar } from '../../compartido/middleware';
 import * as controlador from './controlador';
-import { esquemaInicioSesion, esquemaRegistro, esquemaTokenSesion } from './esquemas';
+import {
+  esquemaCambioClave,
+  esquemaEdicionPerfil,
+  esquemaInicioSesion,
+  esquemaRegistro,
+  esquemaTokenSesion,
+} from './esquemas';
 
 export const rutasAutenticacion = Router();
 
@@ -43,3 +50,15 @@ rutasAutenticacion.post(
 export const rutasUsuarios = Router();
 
 rutasUsuarios.get('/yo', autenticar, controlador.consultarPerfil);
+
+// AUT-05: autenticar (401) → validar (422) → servicio.
+rutasUsuarios.patch('/yo', autenticar, validar(esquemaEdicionPerfil), controlador.editarPerfil);
+
+// AUT-06 y D-16: autenticar (401) → validar (422) → limite por usuario (429) → servicio.
+rutasUsuarios.patch(
+  '/yo/clave',
+  autenticar,
+  validar(esquemaCambioClave),
+  limitarCambioClave,
+  controlador.cambiarClave,
+);

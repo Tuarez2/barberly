@@ -1,4 +1,4 @@
-// Logica de autenticacion (AUT-01 a AUT-04, AUT-08, SEG-06, §11.4, D-02 a D-05, D-14, D-16 a D-18).
+// Logica de autenticacion (AUT-01 a AUT-06, AUT-08, SEG-06, §11.4, D-02 a D-05, D-14, D-16 a D-18).
 import { createHash, randomBytes } from 'node:crypto';
 
 import bcrypt from 'bcryptjs';
@@ -13,10 +13,13 @@ import { Prisma } from '../../generado/prisma/client';
 import type {
   DatosRenovacion,
   DatosSesion,
+  EntradaCambioClave,
+  EntradaEdicionPerfil,
   EntradaInicioSesion,
   EntradaRegistro,
   EntradaTokenSesion,
   PerfilUsuario,
+  UsuarioSesion,
 } from './esquemas';
 
 const DIA_MS = 24 * 60 * 60 * 1000;
@@ -35,6 +38,13 @@ const credencialesInvalidas = () =>
 // D-02 y D-05: el mismo error si el token vencio, se revoco, no existe o el usuario esta inactivo.
 const sesionInvalida = () =>
   new ErrorNegocio('AUTENTICACION_REQUERIDA', 401, 'Debes iniciar sesión');
+
+// AUT-06 y D-05: la app muestra el error junto al campo y no cierra la sesion.
+const claveActualIncorrecta = () =>
+  new ErrorNegocio('CREDENCIALES_INVALIDAS', 401, 'La contraseña actual no es correcta');
+
+const esNoEncontrado = (error: unknown) =>
+  error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025';
 
 // D-16: con un correo inexistente se compara igual, para que el tiempo no revele que correos existen.
 // Hash fijo de costo 12 de un texto aleatorio que se descarto: nada lo hace coincidir y no hay que
@@ -214,4 +224,47 @@ export async function consultarPerfil(usuarioId: string): Promise<PerfilUsuario>
       barberia: { id: membresia.barberia.id, nombre: membresia.barberia.nombre },
     })),
   };
+}
+
+// AUT-05: solo nombre y telefono del usuario autenticado; el correo no cambia en el MVP.
+// autenticar ya verifico la cuenta; si se borro o desactivo justo despues, responde como sesion invalida.
+export async function editarPerfil(
+  usuarioId: string,
+  entrada: EntradaEdicionPerfil,
+): Promise<UsuarioSesion> {
+  try {
+    return await baseDatos.usuario.update({
+      where: { id: usuarioId, activo: true },
+      data: { nombre: entrada.nombre, telefono: entrada.telefono },
+      select: seleccionUsuario,
+    });
+  } catch (error) {
+    if (esNoEncontrado(error)) throw sesionInvalida();
+    throw error;
+  }
+}
+
+// AUT-06, D-05: exige la actual; no revoca las demas sesiones. Los fallos (401) los cuenta
+// limitarCambioClave por usuario (D-16).
+export async function cambiarClave(usuarioId: string, entrada: EntradaCambioClave): Promise<void> {
+  const usuario = await baseDatos.usuario.findUnique({
+    where: { id: usuarioId },
+    select: { claveHash: true, activo: true },
+  });
+  if (!usuario || !usuario.activo) throw sesionInvalida();
+  if (!(await bcrypt.compare(entrada.claveActual, usuario.claveHash))) {
+    throw claveActualIncorrecta();
+  }
+
+  const claveHash = await bcrypt.hash(entrada.claveNueva, COSTO_BCRYPT);
+  try {
+    await baseDatos.usuario.update({
+      where: { id: usuarioId, activo: true },
+      data: { claveHash },
+      select: { id: true },
+    });
+  } catch (error) {
+    if (esNoEncontrado(error)) throw sesionInvalida();
+    throw error;
+  }
 }

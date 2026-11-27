@@ -4,13 +4,15 @@ Registro, sesiones, perfil e invitaciones. Especificación: `docs/especificacion
 
 ## Endpoints
 
-| Método | Ruta                                 | Rol     | Éxito | Errores                                                                     | Tarea |
-| ------ | ------------------------------------ | ------- | ----- | --------------------------------------------------------------------------- | ----- |
-| POST   | /api/v1/autenticacion/registro       | Pública | 201   | DATOS_INVALIDOS 422, CORREO_REGISTRADO 409, DEMASIADAS_SOLICITUDES 429      | T1.5  |
-| POST   | /api/v1/autenticacion/iniciar-sesion | Pública | 200   | DATOS_INVALIDOS 422, CREDENCIALES_INVALIDAS 401, DEMASIADAS_SOLICITUDES 429 | T1.6  |
-| POST   | /api/v1/autenticacion/renovar        | Pública | 200   | DATOS_INVALIDOS 422, AUTENTICACION_REQUERIDA 401                            | T1.7  |
-| POST   | /api/v1/autenticacion/cerrar-sesion  | Pub     | 204   | DATOS_INVALIDOS 422, AUTENTICACION_REQUERIDA 401, TOKEN_VENCIDO 401         | T1.7  |
-| GET    | /api/v1/usuarios/yo                  | Pub     | 200   | AUTENTICACION_REQUERIDA 401, TOKEN_VENCIDO 401                              | T1.8  |
+| Método | Ruta                                 | Rol     | Éxito | Errores                                                                                                                     | Tarea |
+| ------ | ------------------------------------ | ------- | ----- | --------------------------------------------------------------------------------------------------------------------------- | ----- |
+| POST   | /api/v1/autenticacion/registro       | Pública | 201   | DATOS_INVALIDOS 422, CORREO_REGISTRADO 409, DEMASIADAS_SOLICITUDES 429                                                      | T1.5  |
+| POST   | /api/v1/autenticacion/iniciar-sesion | Pública | 200   | DATOS_INVALIDOS 422, CREDENCIALES_INVALIDAS 401, DEMASIADAS_SOLICITUDES 429                                                 | T1.6  |
+| POST   | /api/v1/autenticacion/renovar        | Pública | 200   | DATOS_INVALIDOS 422, AUTENTICACION_REQUERIDA 401                                                                            | T1.7  |
+| POST   | /api/v1/autenticacion/cerrar-sesion  | Pub     | 204   | DATOS_INVALIDOS 422, AUTENTICACION_REQUERIDA 401, TOKEN_VENCIDO 401                                                         | T1.7  |
+| GET    | /api/v1/usuarios/yo                  | Pub     | 200   | AUTENTICACION_REQUERIDA 401, TOKEN_VENCIDO 401                                                                              | T1.8  |
+| PATCH  | /api/v1/usuarios/yo                  | Pub     | 200   | DATOS_INVALIDOS 422, AUTENTICACION_REQUERIDA 401, TOKEN_VENCIDO 401                                                         | T1.13 |
+| PATCH  | /api/v1/usuarios/yo/clave            | Pub     | 204   | DATOS_INVALIDOS 422, CREDENCIALES_INVALIDAS 401, AUTENTICACION_REQUERIDA 401, TOKEN_VENCIDO 401, DEMASIADAS_SOLICITUDES 429 | T1.13 |
 
 ### POST /autenticacion/registro (AUT-01, HU-AUT-01)
 
@@ -105,6 +107,22 @@ Exige el token de acceso. Responde:
 - `barberoId` es el PerfilBarbero (§10.1), solo con rol BARBERO; si no, `null`. `consentimientoIaEn` es la fecha del consentimiento del asesor (RN-28) o `null`.
 - La app elige la interfaz del rol con esta lista y el panel muestra Sin acceso si no hay ninguna PROPIETARIO (D-10).
 
+### PATCH /usuarios/yo (AUT-05)
+
+Exige el token de acceso. Cuerpo `{ "nombre"?, "telefono"? }` con al menos uno; responde 200 con `{ "datos": { "id", "nombre", "correo", "telefono" } }`, la misma forma que `usuario` en la sesión.
+
+- Validación en `esquemaEdicionPerfil` de `src/compartido/contrato.ts`, con `esquemaNombre` y `esquemaTelefono` del registro: misma normalización (D-14).
+- `{}`, sin cuerpo o con un campo extra responde DATOS_INVALIDOS y no aplica nada. El correo no cambia en el MVP: enviarlo es un campo extra.
+- Solo edita al usuario del token.
+
+### PATCH /usuarios/yo/clave (AUT-06, D-05)
+
+Exige el token de acceso. Cuerpo `{ "claveActual": "…", "claveNueva": "…" }`; responde 204.
+
+- `claveActual` solo se exige no vacía y de máximo 72 (como en iniciar sesión); `claveNueva`, con las reglas de Contraseña del registro (`esquemaCambioClave` del contrato). Un 422 no gasta intentos.
+- Actual incorrecta: `CREDENCIALES_INVALIDAS` 401; la app no cierra la sesión. La nueva se guarda con bcrypt de costo 12 y no se revocan las demás sesiones.
+- Límite (D-16): `limitarCambioClave` en `src/compartido/limites.ts`, en memoria y con la configuración del inicio de sesión. Un contador por usuario (no por token ni IP), donde solo cuentan los 401. Al llegar a `INICIO_INTENTOS_MAXIMOS` (5) fallos dentro de `INICIO_ESPERA_MINUTOS` (15) desde el primero, todo intento responde 429 hasta que se cierra la ventana, aunque la actual sea correcta. Un cambio correcto no reinicia el contador.
+
 ## Middlewares compartidos (D-18)
 
 - `autenticar`: además del JWT, consulta el usuario; si no existe o está inactivo responde `AUTENTICACION_REQUERIDA` 401 (D-05). Desactivar una cuenta corta el acceso de inmediato.
@@ -113,4 +131,4 @@ Exige el token de acceso. Responde:
 
 ## Pruebas
 
-`autenticacion.prueba.ts`: criterios de HU-AUT-01 y HU-AUT-02 (lo que toca a la API), cada validación de §11.4 con sus límites, el registro simultáneo con el mismo correo, el límite por IP, la IP detrás de un proxy (D-15), el límite de inicios fallidos por cuenta, por IP y en el tiempo (D-16), la rotación, la carrera entre renovaciones y el cierre de sesión (D-17), y el perfil con sus membresías (D-18). Los middlewares se prueban en `src/compartido/middleware/middleware.prueba.ts`, también con la otra barbería. Bruno: `bruno/autenticacion/` y `bruno/usuarios/`.
+`autenticacion.prueba.ts`: criterios de HU-AUT-01 y HU-AUT-02 (lo que toca a la API), cada validación de §11.4 con sus límites, el registro simultáneo con el mismo correo, el límite por IP, la IP detrás de un proxy (D-15), el límite de inicios fallidos por cuenta, por IP y en el tiempo (D-16), la rotación, la carrera entre renovaciones y el cierre de sesión (D-17), y el perfil con sus membresías (D-18). `perfil.prueba.ts`: editar el perfil (AUT-05) y cambiar la contraseña con su límite por usuario (AUT-06, D-16). Los middlewares se prueban en `src/compartido/middleware/middleware.prueba.ts`, también con la otra barbería. Bruno: `bruno/autenticacion/` y `bruno/usuarios/`.
