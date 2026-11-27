@@ -1,6 +1,6 @@
 # Flujo de trabajo
 
-Cómo avanza Barberly: una rama por tarea y un PR por funcionalidad (AGENTS.md). Cada tarea la revisa el usuario antes de unirla a su funcionalidad, y cada funcionalidad entra a `main` por PR. Lo siguen el usuario y los agentes. Tareas y funcionalidades están en `docs/hoja-de-ruta.md`; lo que pasa dentro de una tarea, en `.claude/agents/orquestador.md`.
+Cómo avanza Barberly: una rama por tarea y un PR por funcionalidad (AGENTS.md), en rebanadas verticales de API, app y panel (D-20, D-27). Cada tarea la revisa el usuario antes de unirla a su funcionalidad, y cada funcionalidad entra a `main` por PR. Lo siguen el usuario y los agentes. Tareas y funcionalidades están en `docs/hoja-de-ruta.md`; lo que pasa dentro de una tarea, en `.claude/agents/orquestador.md`.
 
 ## Roles
 
@@ -59,8 +59,8 @@ Claude publica la rama con `git push -u origin funcionalidad/registro-sesion`.
    git switch -c feat/autenticacion-registro
    ```
 2. **Resolver dudas** (usuario + Claude): si la especificación del módulo tiene Dudas que afectan a la tarea, `/decidir <modulo>`.
-3. **Pedir** (usuario): `/tarea T1.5` en Claude Code, en la raíz del repo.
-4. **Plan** (Claude): 5 a 8 líneas. El usuario responde OK o lo corrige. Nada se escribe antes del OK.
+3. **Pedir** (usuario): `/funcionalidad E1.B` en Claude Code abierto en la carpeta `Barberly/` (todas las tareas de la funcionalidad, en sus repositorios) o `/tarea T1.10` para una sola.
+4. **Plan** (Claude): 5 a 8 líneas por funcionalidad. El usuario responde OK o lo corrige. Nada se escribe antes del OK; después, las tareas siguen sin pedir otro OK salvo que aparezca una duda que cambie reglas de negocio.
 5. **Ejecutar** (Claude): orden del orquestador, `verificar.sh` tras cada especialista y `revisor-seguridad` al final.
 6. **Cerrar** (Claude): informe de 10 líneas o menos y mensaje de commit.
 7. **Revisar** (usuario):
