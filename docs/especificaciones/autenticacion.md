@@ -88,7 +88,8 @@ Recuperar contraseña (AUT-07, D-01):
 - POST /autenticacion/recuperar-clave: cuerpo `{ correo }` (formato inválido → DATOS_INVALIDOS). Responde siempre 202 `{ datos: { mensaje } }` con el mismo texto exista o no el correo, esté activa o no la cuenta.
 - Si el usuario existe y está activo: en una transacción marca como usados (`usadoEn`) los códigos vigentes y crea uno de 6 dígitos (generador criptográfico) con `codigoHash` (bcryptjs), `expiraEn` a 15 minutos e `intentos` 0; después lo envía con EnvioCorreo. Si no existe o está inactivo, no crea ni envía nada.
 - Límite: 3 solicitudes por correo normalizado y 5 por IP (D-15) por hora, contando todas las solicitudes (existan o no); la siguiente responde DEMASIADAS_SOLICITUDES 429. Valores en la configuración Zod.
-- POST /autenticacion/restablecer-clave: cuerpo `{ correo, codigo, claveNueva }`; `codigo` exactamente 6 dígitos; `claveNueva` con las reglas del registro; campo extra o formato inválido → DATOS_INVALIDOS (no gasta un intento). Responde 204.
+- POST /autenticacion/restablecer-clave: cuerpo `{ correo, codigo, claveNueva }`; `codigo` exactamente 6 dígitos; `claveNueva` con las reglas del registro; campo extra o formato inválido → DATOS_INVALIDOS (no gasta un intento). Responde 204. Errores: DATOS_INVALIDOS, CODIGO_INVALIDO, DEMASIADAS_SOLICITUDES.
+- Límite propio: 10 solicitudes por IP por hora (IP según PROXIES_CONFIABLES, D-15), contando todas, también las rechazadas; la siguiente responde DEMASIADAS_SOLICITUDES 429. Valor en la configuración Zod.
 - Se evalúa el último código del usuario sin `usadoEn`. CODIGO_INVALIDO 422, con el mismo mensaje, si el correo no existe o está inactivo, no hay código, venció, ya se usó, tiene 5 intentos o el código no coincide. Un código incorrecto suma un intento (atómico, solo si `intentos` < 5); el quinto fallo lo deja inutilizable. Con usuario inexistente se compara igual contra un hash de relleno.
 - Con el código correcto, en una transacción: `usadoEn` ahora, nueva `claveHash` y revocación de todos los TokenRenovacion del usuario. No abre sesión: la app lleva a iniciar sesión.
 - EnvioCorreo (interfaz propia): `enviarCodigoRecuperacion(correo, codigo)`. En desarrollo y pruebas la implementación solo registra en el log; no hay implementación real en E1.C.
@@ -154,6 +155,7 @@ Editar perfil, Cambiar contraseña, Invitaciones y Cambiar de barbería o rol se
 - AUT-07: Dado un código nuevo, cuando se pide otro, entonces el primero responde CODIGO_INVALIDO.
 - AUT-07: Dado un código vigente y correcto, cuando restablece con una clave válida, entonces 204, la clave nueva sirve para iniciar sesión, la vieja no y todos sus tokens de renovación quedan revocados; reusar el código responde CODIGO_INVALIDO.
 - AUT-07: Dado un código vigente, cuando se envían 5 códigos erróneos, entonces cada uno responde CODIGO_INVALIDO y el correcto después también; un código de hace 16 minutos responde CODIGO_INVALIDO.
+- AUT-07: Dadas 10 solicitudes a restablecer-clave desde una IP en una hora (válidas o no), cuando llega la 11.ª, entonces DEMASIADAS_SOLICITUDES 429.
 - AUT-09: Dado un usuario con membresías ACTIVO en dos barberías, cuando consulta /usuarios/yo, entonces ve ambas por nombre y la app o el panel elige una; con una sola, se elige sola; ante una barbería ajena en la ruta, NO_ENCONTRADO.
 
 ## Pruebas

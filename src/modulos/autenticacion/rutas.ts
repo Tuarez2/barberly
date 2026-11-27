@@ -4,7 +4,10 @@ import {
   limitarCambioClave,
   limitarInicioPorCuenta,
   limitarInicioPorIp,
+  limitarRecuperacionPorCorreo,
+  limitarRecuperacionPorIp,
   limitarRegistro,
+  limitarRestablecimientoPorIp,
 } from '../../compartido/limites';
 import { autenticar, validar } from '../../compartido/middleware';
 import * as controlador from './controlador';
@@ -12,7 +15,9 @@ import {
   esquemaCambioClave,
   esquemaEdicionPerfil,
   esquemaInicioSesion,
+  esquemaRecuperarClave,
   esquemaRegistro,
+  esquemaRestablecerClave,
   esquemaTokenSesion,
 } from './esquemas';
 
@@ -44,6 +49,23 @@ rutasAutenticacion.post(
   autenticar,
   validar(esquemaTokenSesion),
   controlador.cerrarSesion,
+);
+
+// AUT-07: limite por IP → validar (422) → limite por correo normalizado (429) → servicio.
+rutasAutenticacion.post(
+  '/recuperar-clave',
+  limitarRecuperacionPorIp,
+  validar(esquemaRecuperarClave),
+  limitarRecuperacionPorCorreo,
+  controlador.recuperarClave,
+);
+
+// AUT-07: limite por IP (429) → validar (422) → servicio. Ademas, 5 intentos por codigo (D-01).
+rutasAutenticacion.post(
+  '/restablecer-clave',
+  limitarRestablecimientoPorIp,
+  validar(esquemaRestablecerClave),
+  controlador.restablecerClave,
 );
 
 // Montado en /usuarios (D-18).

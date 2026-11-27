@@ -22,6 +22,11 @@ const esquemaConfiguracion = z.object({
   REGISTRO_LIMITE_POR_HORA: z.coerce.number().int().min(1).default(5),
   INICIO_INTENTOS_MAXIMOS: z.coerce.number().int().min(1).default(5),
   INICIO_ESPERA_MINUTOS: z.coerce.number().int().min(1).default(15),
+  // AUT-07: pedidos de recuperar-clave por hora, contando todos (existan o no los correos).
+  RECUPERACION_LIMITE_POR_CORREO: z.coerce.number().int().min(1).default(3),
+  RECUPERACION_LIMITE_POR_IP: z.coerce.number().int().min(1).default(5),
+  // AUT-07: solicitudes de restablecer-clave por IP por hora, tambien las rechazadas.
+  RESTABLECIMIENTO_LIMITE_POR_IP: z.coerce.number().int().min(1).default(10),
   // D-15: proxies propios delante de la API (0 en desarrollo; 1 en Railway, Render o un VPS con Nginx).
   PROXIES_CONFIABLES: z.coerce.number().int().min(0).max(5).default(0),
 });

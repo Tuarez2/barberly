@@ -1,0 +1,28 @@
+meta {
+  name: Restablecer contraseña con demasiadas solicitudes
+  type: http
+  seq: 12
+}
+
+post {
+  url: {{urlBase}}/autenticacion/restablecer-clave
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "correo": "ana@correo.ec",
+    "codigo": "123456",
+    "claveNueva": "Navaja2027"
+  }
+}
+
+assert {
+  res.status: eq 429
+  res.body.error.codigo: eq DEMASIADAS_SOLICITUDES
+}
+
+docs {
+  AUT-07, D-15. Ejecútala 11 veces seguidas desde la misma IP: las 10 primeras responden 422 (CODIGO_INVALIDO) y la 11.ª, 429. Cuentan todas las solicitudes de la hora, también las rechazadas.
+}

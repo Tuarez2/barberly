@@ -103,6 +103,42 @@ export const esquemaInicioSesion = z.strictObject(
 
 export type EntradaInicioSesion = z.infer<typeof esquemaInicioSesion>;
 
+// AUT-07 y D-01: recuperar la contraseña con un codigo de 6 digitos enviado por correo.
+export const esquemaRecuperarClave = z.strictObject(
+  { correo: esquemaCorreo },
+  {
+    error: (problema) =>
+      problema.code === 'unrecognized_keys'
+        ? `Campos no permitidos: ${problema.keys.join(', ')}`
+        : 'Envía tu correo',
+  },
+);
+
+export type EntradaRecuperarClave = z.infer<typeof esquemaRecuperarClave>;
+
+export const esquemaRestablecerClave = z.strictObject(
+  {
+    correo: esquemaCorreo,
+    codigo: z
+      .string({ error: 'El código es obligatorio' })
+      .regex(/^\d{6}$/, 'El código tiene 6 dígitos'),
+    claveNueva: esquemaClave,
+  },
+  {
+    error: (problema) =>
+      problema.code === 'unrecognized_keys'
+        ? `Campos no permitidos: ${problema.keys.join(', ')}`
+        : 'Envía tu correo, el código y la contraseña nueva',
+  },
+);
+
+export type EntradaRestablecerClave = z.infer<typeof esquemaRestablecerClave>;
+
+// Lo devuelve recuperar-clave: el mismo texto exista o no el correo.
+export interface DatosRecuperarClave {
+  mensaje: string;
+}
+
 // AUT-05: nombre y telefono con las reglas del registro; el correo no cambia en el MVP.
 export const esquemaEdicionPerfil = z
   .strictObject(

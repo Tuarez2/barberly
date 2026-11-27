@@ -1,0 +1,27 @@
+meta {
+  name: Restablecer contraseña
+  type: http
+  seq: 10
+}
+
+post {
+  url: {{urlBase}}/autenticacion/restablecer-clave
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "correo": "ana@correo.ec",
+    "codigo": "{{codigoRecuperacion}}",
+    "claveNueva": "Navaja2027"
+  }
+}
+
+assert {
+  res.status: eq 204
+}
+
+docs {
+  AUT-07, D-01. Ejecuta antes Recuperar contraseña y copia el código del log en la variable `codigoRecuperacion`. Cambia la clave, gasta el código y revoca todas las sesiones; no abre sesión.
+}
