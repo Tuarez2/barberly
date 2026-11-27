@@ -18,7 +18,7 @@ Barberly permite a tres tipos de usuarios operar sobre una misma plataforma:
 - **Barbero:** gestiona su agenda diaria y semanal, cambia el estado de las citas, bloquea horarios y registra el pago de cada cita.
 - **Propietario:** configura servicios, precios, horarios y personal, y consulta un panel de estadísticas de su barbería.
 
-**Dentro del alcance:** app móvil multiplataforma (React Native con Expo) probada en Android y publicada en Google Play; API REST con HTTPS; base de datos MySQL; tres roles; reservas con validación estricta; asesor de estilo con IA; registro de pagos; panel de estadísticas; anticipo en línea en modo de prueba (funcionalidad extendida).
+**Dentro del alcance:** app móvil multiplataforma (React Native con Expo) probada en Android y publicada en Google Play; API REST con HTTPS; base de datos PostgreSQL; tres roles; reservas con validación estricta; asesor de estilo con IA; registro de pagos; panel de estadísticas; anticipo en línea en modo de prueba (funcionalidad extendida).
 
 **Fuera del alcance:** publicación en App Store, cobros con dinero real, suscripciones de las barberías, panel web, integración con WhatsApp, facturación electrónica, notificaciones push y prueba virtual del corte sobre la foto.
 
@@ -88,8 +88,8 @@ Prioridad de cada funcionalidad: **Debe** (MVP), **Debería** (MVP si hay tiempo
 | --- | --- |
 | Proyecto | Barberly |
 | Autor | Cristhian Tuarez |
-| Versión | 1.3 (borrador para revisión del docente) |
-| Fecha | 5 de noviembre de 2026 |
+| Versión | 1.4 (replanteamiento: PostgreSQL, IA adelantada, notificaciones y etapas; D-19 a D-28) |
+| Fecha | 26 de noviembre de 2026 |
 | Documentos que alimenta | AGENTS.md, plan de pruebas, prototipos en Figma |
 
 ## 2. Descripción general
@@ -112,7 +112,7 @@ El sistema se compone de cuatro elementos, descritos en la sección 8:
 
 1. **App móvil** (React Native, Expo, TypeScript): presenta pantallas distintas según el rol activo.
 2. **API REST** (Node.js, Express, TypeScript): aplica las reglas de negocio, valida y autoriza.
-3. **Base de datos** MySQL 8 accedida solo mediante Prisma.
+3. **Base de datos** PostgreSQL accedida solo mediante Prisma (D-19).
 4. **Servicios externos:** un modelo de IA con visión (Gemini, Claude u OpenAI, por definir) y una pasarela de pagos ecuatoriana (Kushki o Payphone) en modo de prueba.
 
 ### 2.3 Actores y roles
@@ -170,7 +170,7 @@ Un mismo usuario puede tener roles distintos en barberías distintas, por eso el
 | Dispositivo del usuario | Teléfono Android de 5 a 7 pulgadas, orientación vertical; iOS queda preparado pero no se publica |
 | Desarrollo | Linux Mint Cinnamon, Node.js LTS, Git, Visual Studio Code, Expo Go |
 | Servidor | Node.js en Railway, Render o un VPS, con HTTPS |
-| Base de datos | MySQL 8 gestionado o instalado en el VPS |
+| Base de datos | PostgreSQL 17 o superior gestionado (Railway, Supabase o Neon) |
 | Distribución | EAS Build y prueba cerrada de Google Play; luego producción |
 
 ### 2.7 Restricciones
@@ -180,7 +180,7 @@ Un mismo usuario puede tener roles distintos en barberías distintas, por eso el
 - Un barbero atiende un cliente a la vez.
 - Los cobros con dinero real están excluidos; el anticipo solo funciona en modo de prueba.
 - Los únicos datos personales almacenados son nombre, correo y teléfono; la foto del rostro no se guarda.
-- MySQL no tiene restricción nativa de exclusión de rangos, por lo que los cruces se evitan con transacciones y bloqueos (sección 8.5).
+- Los cruces se evitan con transacciones y bloqueos, y PostgreSQL los impide también con una restricción de exclusión de rangos (sección 8.5, D-19).
 - Expo Go limita los módulos nativos; se evitan en el MVP.
 - Google Play exige una prueba cerrada de al menos 12 testers durante 14 días continuos antes de pedir acceso a producción.
 - La interfaz está solo en español.
@@ -198,7 +198,7 @@ Un mismo usuario puede tener roles distintos en barberías distintas, por eso el
 
 ## 3. Requisitos funcionales
 
-El sistema ofrece 104 funcionalidades repartidas en nueve módulos, de las cuales 66 son prioridad Debe y definen el MVP. Cada requisito se redacta como "El sistema debe…" y se traza a las reglas de negocio (sección 4) y a las historias de usuario (sección 6).
+El sistema ofrece 114 funcionalidades repartidas en diez módulos, de las cuales 69 son prioridad Debe y definen el MVP (la versión 1.4 añade IA-10 a IA-12 y el módulo NOT, D-21 y D-23). Cada requisito se redacta como "El sistema debe…" y se traza a las reglas de negocio (sección 4) y a las historias de usuario (sección 6).
 
 | Módulo | Prefijo | Funcionalidades | Debe | Debería | Podría |
 | --- | --- | --- | --- | --- | --- |
@@ -208,9 +208,10 @@ El sistema ofrece 104 funcionalidades repartidas en nueve módulos, de las cuale
 | Agenda del barbero | AGE | 13 | 7 | 5 | 1 |
 | Administración de barberías | ADM | 15 | 8 | 5 | 2 |
 | Validación y seguridad | SEG | 16 | 11 | 4 | 1 |
-| Asesor de estilo con IA | IA | 9 | 7 | 2 | 0 |
+| Asesor de estilo con IA | IA | 12 | 7 | 5 | 0 |
 | Pagos | PAG | 7 | 2 | 1 | 4 |
 | Estadísticas | EST | 8 | 6 | 2 | 0 |
+| Notificaciones y retención | NOT | 7 | 3 | 3 | 1 |
 
 ### 3.1 Autenticación y usuarios (AUT)
 
@@ -335,6 +336,9 @@ El sistema ofrece 104 funcionalidades repartidas en nueve módulos, de las cuale
 | IA-07 | Mostrar el contador de consultas restantes del día | Debe | RN-29 |
 | IA-08 | Mostrar al cliente su historial de recomendaciones sin la foto | Debería |  |
 | IA-09 | Permitir retirar el consentimiento y borrar el historial de consultas | Debería | RN-28 |
+| IA-10 | "Pruébatelo": generar en memoria una imagen del cliente con el corte recomendado y mostrarla con un deslizador antes/después y el aviso "simulación"; la imagen no se guarda (RN-27) | Debería | D-23 |
+| IA-11 | Marcar las citas con riesgo alto de ausencia según el historial del cliente, la hora y la anticipación, para pedir anticipo solo en esos casos | Debería | D-23 |
+| IA-12 | Mostrar al propietario un resumen semanal del negocio redactado por IA con una recomendación concreta | Debería | D-23 |
 
 ### 3.8 Pagos (PAG)
 
@@ -360,6 +364,18 @@ El sistema ofrece 104 funcionalidades repartidas en nueve módulos, de las cuale
 | EST-06 | Mostrar consultas del asesor, recomendaciones que terminaron en reserva y cortes más recomendados | Debe |  |
 | EST-07 | Mostrar clientes nuevos, recurrentes, frecuentes y sin visitas en 45 días | Debería |  |
 | EST-08 | Exportar el reporte del periodo en PDF o CSV | Debería | HU-EST-03 |
+
+### 3.10 Notificaciones y retención (NOT)
+
+| Código | El sistema debe… | Prioridad | Trazas |
+| --- | --- | --- | --- |
+| NOT-01 | Enviar recordatorios push 24 horas y 1 hora antes de cada cita activa | Debe | D-21, D-22 |
+| NOT-02 | Avisar por push al cliente y al barbero cuando una cita se crea, se cancela o cambia de estado | Debe | D-21 |
+| NOT-03 | Registrar y renovar el token de notificaciones del dispositivo al iniciar sesión, y borrarlo al cerrarla | Debe | D-21 |
+| NOT-04 | Permitir unirse a una lista de espera de un barbero y día; al liberarse un horario, avisar y dárselo al primero que lo acepte | Debería | D-21 |
+| NOT-05 | Avisar "ya toca tu corte" según la frecuencia de visitas del cliente | Debería | D-21 |
+| NOT-06 | Enviar recordatorios por WhatsApp con botón de confirmar o cancelar (plan Pro) | Podría | D-28 |
+| NOT-07 | Permitir al usuario elegir qué notificaciones recibe | Debería | D-21 |
 
 ## 4. Reglas de negocio
 
@@ -761,7 +777,7 @@ Barberly usa una arquitectura cliente-servidor de tres capas (presentación, ló
 
 _Diagrama no incluido en esta versión: arquitectura en tres capas · app, API y datos._
 
-La API aplica las reglas del negocio y es la única que accede a MySQL y a los servicios externos; las claves de la IA y de la pasarela viven solo en el servidor.
+La API aplica las reglas del negocio y es la única que accede a PostgreSQL y a los servicios externos; las claves de la IA y de la pasarela viven solo en el servidor.
 
 ### 8.1 Capa de presentación
 
@@ -783,7 +799,7 @@ API en Node.js, Express y TypeScript. Un solo servidor dividido en módulos que 
 
 ### 8.3 Capa de datos
 
-MySQL 8 con Prisma ORM, que define los modelos, ejecuta consultas parametrizadas (previene inyección SQL) y gestiona migraciones versionadas. El modelo se detalla en la sección 9.
+PostgreSQL con Prisma ORM (adaptador `@prisma/adapter-pg`), que define los modelos, ejecuta consultas parametrizadas (previene inyección SQL) y gestiona migraciones versionadas. El modelo se detalla en la sección 9.
 
 ### 8.4 Decisiones de arquitectura
 
@@ -791,7 +807,7 @@ MySQL 8 con Prisma ORM, que define los modelos, ejecuta consultas parametrizadas
 | --- | --- | --- |
 | Comunicación | API REST con JSON | Simple, conocida y suficiente para el MVP |
 | Estructura del backend | Monolito modular | Evita la complejidad de microservicios con un equipo reducido; los módulos permiten crecer con orden |
-| Base de datos | MySQL | Modelo relacional adecuado para citas, servicios y horarios, con amplia disponibilidad de alojamiento |
+| Base de datos | PostgreSQL (D-19) | Restricción `EXCLUDE` que impide en la propia base cualquier cruce de citas, `jsonb`, búsqueda de texto y `pgvector` para la IA; alojamiento gratuito o barato (Railway, Supabase, Neon) |
 | App móvil | React Native con Expo | Un solo código para Android e iOS y pruebas rápidas con Expo Go |
 | Lenguaje | TypeScript en app y API | Un solo lenguaje, tipos compartidos y menos errores |
 | Acceso a datos | Prisma ORM | Modelos tipados y migraciones versionadas |
@@ -804,14 +820,14 @@ MySQL 8 con Prisma ORM, que define los modelos, ejecuta consultas parametrizadas
 
 El punto más delicado del backend es impedir que dos clientes reserven el mismo hueco a la vez. Consultar y luego insertar no basta, porque ambas solicitudes pueden pasar la consulta antes de que alguna guarde. La creación de la cita se ejecuta entonces dentro de una transacción con dos protecciones:
 
-1. **Bloqueo de la agenda del barbero:** `SELECT … FOR UPDATE` sobre la fila del barbero, con revalidación del cruce justo antes de insertar. Es la garantía principal, porque MySQL no ofrece restricciones de exclusión de rangos.
-2. **Respaldo en la base de datos:** una restricción única que impide dos citas activas con el mismo barbero y la misma hora de inicio, para que un error de lógica no deje pasar un duplicado.
+1. **Bloqueo de la agenda del barbero:** `SELECT … FOR UPDATE` sobre la fila del barbero, con revalidación del cruce justo antes de insertar. Es la garantía principal: además de evitar el cruce, ordena las reservas simultáneas y permite validar las reglas del cliente.
+2. **Respaldo en la base de datos (D-19):** la restricción `ex_citas_barbero_sin_cruce` (`EXCLUDE USING gist` sobre el barbero y el rango `[iniciaEn, terminaEn)`, solo para citas PENDIENTE o CONFIRMADA) impide que dos citas activas del mismo barbero se solapen, aunque sea en parte, para que un error de lógica no deje pasar un cruce.
 
 Decisiones de diseño que este DERCAS añade para que las dos protecciones funcionen:
 
 - **Lecturas actuales dentro de la transacción:** la transacción usa aislamiento READ COMMITTED y `SELECT … FOR UPDATE` es su primera instrucción; las comprobaciones de cruce van después, para ver las citas confirmadas por transacciones concurrentes.
-- **Restricción única solo sobre citas activas:** MySQL no admite índices únicos parciales, y una restricción simple sobre (perfilBarberoId, iniciaEn) impediría reservar un horario cancelado. Se resuelve con una columna generada `inicioActivo`, que vale iniciaEn solo si el estado es PENDIENTE o CONFIRMADA (y NULL en otro caso), y un índice único sobre (perfilBarberoId, inicioActivo). Prisma no declara columnas generadas en su esquema, así que se añade con una migración SQL manual.
-- **Citas pendientes vencidas:** `inicioActivo` conserva su valor hasta que cambia el estado, así que una cita PENDIENTE vencida seguiría ocupando el índice único. Por eso, justo después de bloquear al barbero, la transacción cancela sus citas PENDIENTE con anticipoVenceEn pasado (motivo "Anticipo vencido", canceladaPorId nulo = Sistema, auditado como anticipo vencido), y el horario que la disponibilidad muestra libre (§4.7) se puede reservar.
+- **Restricción de exclusión solo sobre citas activas:** la condición `WHERE estado IN ('PENDIENTE', 'CONFIRMADA')` deja reservar un horario cancelado, completado o con ausencia. Las citas contiguas (una termina a las 15:30 y otra empieza a las 15:30) son válidas porque el rango es semiabierto. Requiere la extensión `btree_gist`, incluida en PostgreSQL; Prisma no modela la restricción, así que va en el SQL de la migración. Si se viola, PostgreSQL responde `23P01` y la API la traduce a HORARIO_OCUPADO.
+- **Citas pendientes vencidas:** una cita PENDIENTE vencida sigue ocupando la restricción hasta que cambia su estado. Por eso, justo después de bloquear al barbero, la transacción cancela sus citas PENDIENTE con anticipoVenceEn pasado (motivo "Anticipo vencido", canceladaPorId nulo = Sistema, auditado como anticipo vencido), y el horario que la disponibilidad muestra libre (§4.7) se puede reservar.
 - **Reglas del cliente (RN-08, RN-09):** también se bloquea la fila del cliente. Para evitar interbloqueos, los bloqueos se toman siempre en el mismo orden: barbero y luego cliente. Con "cualquiera disponible" (CU-07 A3) se bloquean todos los barberos candidatos por id ascendente y después el cliente.
 - **Reintentos:** la restricción única (clienteId, claveIdempotencia) hace que repetir la solicitud devuelva la cita ya creada en lugar de un duplicado.
 
@@ -888,7 +904,7 @@ interface AlmacenArchivos {
 }
 ```
 
-- **Implementaciones:** AlmacenLocal (desarrollo, carpeta apps/api/almacen/, ignorada en git), AlmacenMemoria (pruebas) y AlmacenS3 (producción, con @aws-sdk/client-s3 y @aws-sdk/s3-request-presigner, compatible con Cloudflare R2 o Supabase Storage).
+- **Implementaciones:** AlmacenLocal (desarrollo, carpeta almacen/ de barberly-api, ignorada en git), AlmacenMemoria (pruebas) y AlmacenS3 (producción, con @aws-sdk/client-s3 y @aws-sdk/s3-request-presigner, compatible con Cloudflare R2 o Supabase Storage).
 - **Desarrollo:** AlmacenLocal sirve sus archivos con GET /api/v1/almacen/*, una ruta que solo existe con ALMACEN_TIPO=local y nunca en producción; urlTemporal agrega un vencimiento y una firma que la ruta verifica.
 - **Visibilidad:** las fotos de referencia son privadas y solo se entregan con urlTemporal de 10 minutos. La portada y la foto del barbero son públicas (urlPublica).
 - **Subida:** multer en memoria, máximo 5 MB, solo JPEG o PNG verificados por contenido (no por extensión). El servidor recomprime con sharp a 1024 px en el lado mayor, JPEG calidad 80, sin metadatos (elimina el GPS).
@@ -897,10 +913,16 @@ interface AlmacenArchivos {
 - **Foto del rostro:** la del asesor nunca pasa por AlmacenArchivos (RN-27).
 - **Estado final:** al llegar una cita a estado final, incluida la cancelación por anticipo vencido, archivoFotoReferencia se pone en nulo dentro de la misma transacción y el archivo se elimina después del commit. Si falla la eliminación, se registra en el log y la tarea limpiarArchivos lo reintenta.
 
-**Tareas programadas.** Viven en apps/api/src/tareas/, sin dependencias nuevas: un setInterval cada 60 segundos iniciado solo en servidor.ts, nunca durante las pruebas. Son funciones puras exportadas, para probarlas sin esperar al intervalo. El MVP corre una sola instancia del servidor.
+**Tareas programadas (D-22).** Viven en src/tareas/ y usan una cola persistente en PostgreSQL con `pg-boss`: los trabajos sobreviven a reinicios y despliegues, se reintentan si fallan y no se ejecutan dos veces aunque haya varias instancias. Los trabajos con hora fija (recordatorios de una cita) se programan al crear la cita y se cancelan al cancelarla. Durante las pruebas no se arranca la cola: las funciones de cada trabajo son puras y se prueban directamente.
 
-- **vencerAnticipos (cada 60 segundos):** pasa a CANCELADA las citas PENDIENTE con anticipoVenceEn < ahora, pone archivoFotoReferencia en nulo, libera el horario y audita (RN-34).
-- **limpiarArchivos (una vez por hora, en el mismo intervalo):** reintenta eliminar las fotos de referencia de citas en estado final. Como la clave ya está en nulo, recorre citas/ con listar y elimina los archivos de citas finales o que no coinciden con su archivoFotoReferencia.
+- **vencerAnticipos (cada minuto):** pasa a CANCELADA las citas PENDIENTE con anticipoVenceEn < ahora, pone archivoFotoReferencia en nulo, libera el horario y audita (RN-34).
+- **limpiarArchivos (una vez por hora):** reintenta eliminar las fotos de referencia de citas en estado final. Como la clave ya está en nulo, recorre citas/ con listar y elimina los archivos de citas finales o que no coinciden con su archivoFotoReferencia.
+- **recordarCita (24 horas y 1 hora antes, NOT-01):** envía la notificación push si la cita sigue activa.
+- **ofrecerHorarioLiberado (al cancelar, NOT-04):** avisa a la lista de espera de ese barbero y día.
+
+**Notificaciones push (D-21).** La app registra su token de Expo Push al iniciar sesión (NOT-03) y la API envía los mensajes con el servicio de Expo, detrás de la interfaz `EnvioNotificaciones` (implementaciones Expo y en memoria para pruebas). WhatsApp queda como canal del plan Pro (NOT-06).
+
+**Pasarelas de pago (D-24).** La interfaz `PasarelaPagos` tiene las implementaciones `PasarelaPayphone` (anticipo del cliente), `PasarelaKushki` (suscripción de la barbería y transferencias DeUna) y `PasarelaSimulada` (pruebas). Siempre en modo de prueba durante el proyecto.
 
 ### 8.8 Tecnologías y herramientas
 
@@ -913,7 +935,7 @@ interface AlmacenArchivos {
 | Backend | sharp | Recompresión de imágenes y eliminación de metadatos |
 | Backend | @aws-sdk/client-s3, @aws-sdk/s3-request-presigner | Almacenamiento compatible con S3 y URL temporales |
 | Backend | jsonwebtoken | Tokens de acceso sin sesiones en el servidor |
-| Datos | MySQL 8, Prisma ORM | Almacenamiento, consultas y migraciones |
+| Datos | PostgreSQL 17+, Prisma ORM con `@prisma/adapter-pg` | Almacenamiento, consultas, migraciones y restricción sin cruces (D-19) |
 | IA | Gemini, Claude u OpenAI | Análisis de la foto y recomendación |
 | Pagos | Kushki o Payphone en modo de prueba | Anticipo sin dinero real |
 | Calidad | Vitest, Supertest | Pruebas de lógica y de API |
@@ -921,30 +943,29 @@ interface AlmacenArchivos {
 | Calidad | Bruno | Colección de pruebas de la API versionada con Git |
 | Despliegue | Railway, Render o VPS; EAS Build y Submit; Google Play Console | Servidor con HTTPS y publicación de la app |
 | Gestión | Git y GitHub, Visual Studio Code, Figma, Trello | Versiones, edición, prototipos y tareas |
+| Backend | pg-boss | Cola de trabajos persistente en PostgreSQL (D-22) |
+| Notificaciones | expo-notifications, Expo Push Service | Recordatorios y avisos (D-21) |
+| App | Reanimated 4, react-native-gesture-handler, expo-haptics, @gorhom/bottom-sheet, @shopify/flash-list | Sistema de movimiento y listas rápidas (D-26) |
+| Panel | React + Vite, Tailwind CSS, shadcn/ui, Recharts | Panel del propietario con la misma identidad (D-26) |
+| Calidad | Sentry, PostHog, Maestro | Errores, analítica de producto y pruebas de extremo a extremo (D-25) |
+| Despliegue | EAS Update | Correcciones sin nueva revisión de la tienda (D-25) |
 
-Se fijan las versiones principales (Node.js LTS, SDK de Expo, Prisma y MySQL 8) en los archivos de dependencias, porque Expo cambia de SDK con frecuencia y puede romper la compatibilidad con Expo Go.
+Se fijan las versiones principales (Node.js LTS, SDK de Expo, Prisma y PostgreSQL) en los archivos de dependencias, porque Expo cambia de SDK con frecuencia y puede romper la compatibilidad con Expo Go.
 
 ### 8.9 Organización del repositorio
 
-Un único repositorio Git (monorepo) con la app, la API y la documentación, organizado con npm workspaces (`apps/*`, `paquetes/*`): un solo `npm install` en la raíz, y los scripts se corren con `npm run <script> -w apps/api` o `-w apps/movil`. Si Expo y los workspaces de npm dan problemas, las dos aplicaciones pueden quedar independientes dentro del mismo repositorio y compartir tipos de forma sencilla.
+Tres repositorios Git (D-11) clonados dentro de una carpeta de trabajo común, que es también el espacio de trabajo de los agentes (D-27). `barberly-api` es dueño de `docs/`, la fuente de verdad; la app y el panel guardan una copia del contrato (`contrato.ts`), cuya referencia es el OpenAPI de `GET /api/v1/documentacion`.
 
 ```text
-barberly/
-├── apps/
-│   ├── movil/                  # App móvil con Expo
-│   └── api/                    # Backend con Express
-│       ├── prisma/
-│       │   └── schema.prisma   # Modelo de datos (sección 9)
-│       └── src/modulos/
-│           └── reservas/       # Un módulo: rutas, controlador, servicio y pruebas
-├── paquetes/
-│   └── compartido/             # Tipos y esquemas Zod comunes
-├── assets/marca/               # Logos e ícono
-├── docs/                       # DERCAS y documentación
-├── pruebas/                    # Pruebas de extremo a extremo
-├── AGENTS.md
-├── .gitignore
-└── README.md
+Barberly/                       # Carpeta de trabajo (no es un repositorio)
+├── CLAUDE.md                   # Orquestador multi-repositorio (D-27)
+├── .claude/                    # Agentes y skills del espacio de trabajo
+├── api/                        # barberly-api: Express, Prisma, PostgreSQL y docs/
+│   ├── prisma/schema.prisma    # Modelo de datos (sección 9)
+│   ├── src/modulos/            # Un módulo: rutas, controlador, servicio y pruebas
+│   └── docs/                   # DERCAS, decisiones, reglas, hoja de ruta
+├── movil/                      # barberly-movil: Expo (clientes y barberos)
+└── panel/                      # barberly-panel: React + Vite (propietarios, D-10)
 ```
 
 ### 8.10 Tiempo y zona horaria
@@ -956,7 +977,7 @@ barberly/
 
 ## 9. Modelo de datos
 
-El modelo relacional se define con Prisma sobre MySQL 8 y tiene 13 entidades; la regla central es que la cita guarda su propio precio y duración, y que toda entidad de una barbería lleva su identificador de barbería para sostener el aislamiento entre negocios.
+El modelo relacional se define con Prisma sobre PostgreSQL (D-19) y tiene 13 entidades; la regla central es que la cita guarda su propio precio y duración, y que toda entidad de una barbería lleva su identificador de barbería para sostener el aislamiento entre negocios.
 
 ### 9.1 Convenciones
 
@@ -1125,7 +1146,7 @@ El diagrama muestra las claves foráneas principales; Cita es el centro del mode
 | Listar citas de un cliente | Índice en Cita (clienteId, iniciaEn) |
 | Listar citas de una barbería por fecha | Índice en Cita (barberiaId, iniciaEn) |
 | Evitar correo duplicado | Restricción única en Usuario.correo |
-| Evitar doble reserva exacta | Restricción única sobre (perfilBarberoId, inicioActivo), una columna generada que solo tiene valor en citas activas (sección 8.5) |
+| Evitar cualquier cruce de citas | Restricción `ex_citas_barbero_sin_cruce`: EXCLUDE sobre (perfilBarberoId, rango [iniciaEn, terminaEn)) solo en citas activas (sección 8.5, D-19) |
 | Evitar reintentos duplicados | Restricción única en Cita (clienteId, claveIdempotencia) |
 | Evitar membresía duplicada | Restricción única en Membresia (usuarioId, barberiaId) |
 | Idempotencia de webhooks | Restricción única en Pago.referenciaPasarela |
@@ -1161,13 +1182,13 @@ enum EstadoCita {
 }
 
 model Cita {
-  id                String     @id @default(uuid())
-  barberiaId        String
-  clienteId         String?
-  perfilBarberoId   String
-  servicioId        String
-  iniciaEn          DateTime
-  terminaEn         DateTime
+  id                String     @id @default(uuid()) @db.Uuid
+  barberiaId        String     @db.Uuid
+  clienteId         String?    @db.Uuid
+  perfilBarberoId   String     @db.Uuid
+  servicioId        String     @db.Uuid
+  iniciaEn          DateTime   @db.Timestamptz(3)
+  terminaEn         DateTime   @db.Timestamptz(3)
   precioReserva     Decimal    @db.Decimal(8, 2)
   duracionReserva   Int
   estado            EstadoCita
@@ -1575,12 +1596,15 @@ Para que una barbería use Barberly, la API y la base de datos deben vivir en un
 | Elemento | Especificación |
 | --- | --- |
 | API | Servicio de Node.js en Railway, Render o un VPS, según costo y disponibilidad |
-| Base de datos | MySQL gestionado por el mismo proveedor o instalado en el VPS; migraciones con `prisma migrate deploy` |
+| Base de datos | PostgreSQL gestionado (Railway, Supabase o Neon) con la extensión `btree_gist`; migraciones con `prisma migrate deploy` |
 | HTTPS | Certificado de la plataforma; la app solo se conecta por HTTPS |
 | Variables de entorno | Credenciales de base de datos, secretos de tokens, clave de IA y credenciales de la pasarela en el panel del proveedor, nunca en el repositorio |
 | Copias de seguridad | Respaldo automático y una prueba de restauración antes de empezar con las barberías (RNF-16) |
 | Entornos | Desarrollo local con su propia base de datos y producción con sus propias variables |
-| Distribución de la app | Expo Go en desarrollo; EAS Build para una versión de prueba que se distribuye por la prueba interna de Google Play; development build si Expo Go no basta |
+| Distribución de la app | Expo Go al inicio; development build con EAS Build cuando entren las notificaciones push y la cámara; perfiles `development`, `preview` y `production` |
+| Actualizaciones | EAS Update con un canal por entorno para corregir JavaScript sin nueva revisión (D-25) |
+| Entornos | Desarrollo, staging y producción, cada uno con su base y sus variables (D-25) |
+| Monitoreo | Sentry en la app y la API; PostHog para el embudo de reserva; monitor externo de `GET /salud` (D-25) |
 
 ### 13.2 Publicación en Google Play
 
@@ -1601,15 +1625,15 @@ Linux Mint Cinnamon con Node.js, npm, Git y Visual Studio Code ya instalados; se
 
 ### 13.5 Uso de agentes de IA en el desarrollo
 
-Los agentes de IA apoyan el desarrollo con tareas concretas (un módulo, un endpoint, una pantalla, pruebas) y cada cambio se revisa y aprueba antes de integrarse a la rama principal. El archivo AGENTS.md define arquitectura, convenciones de código, comandos de ejecución y las reglas que los agentes deben seguir; se redacta a partir de las secciones 4, 8 y 11 de este documento.
+Los agentes de IA desarrollan por rebanadas verticales (D-27): una funcionalidad completa (API, app y panel) por sesión, con un orquestador en la carpeta de trabajo que conoce los tres repositorios. El usuario aprueba el plan de la funcionalidad una vez; los especialistas (base de datos, API, app, panel, diseño, asesor de IA, pagos, pruebas y seguridad) trabajan hasta dejar la funcionalidad lista para el PR, y cada cambio pasa por lint, tipos, pruebas y revisión de seguridad antes de integrarse a `main`. Los AGENTS.md de cada repositorio definen arquitectura, convenciones y reglas; los hooks impiden tocar secretos y archivos fuera de su alcance.
 
 ### 13.6 Plan por fases
 
-La duración real depende del tiempo del equipo y del calendario del curso; se fija el orden y lo que entrega cada fase.
+Desde la versión 1.4 el plan se ejecuta en seis etapas de dos semanas, cada una una rebanada vertical con demo (D-20, `docs/hoja-de-ruta.md`); el asesor de IA pasa a la etapa 3. La tabla siguiente conserva las fases originales como referencia del alcance.
 
 | Fase | Alcance | Entrega |
 | --- | --- | --- |
-| 0. Preparación | Repositorio y monorepo, Node, Expo, TypeScript, MySQL, Prisma, AGENTS.md, linter, formato, primera migración vacía | Proyecto que compila y corre en el teléfono |
+| 0. Preparación | Repositorio y monorepo, Node, Expo, TypeScript, base de datos, Prisma, AGENTS.md, linter, formato, primera migración vacía | Proyecto que compila y corre en el teléfono |
 | 1. Base y autenticación | Modelo de datos completo, semillas, registro, inicio de sesión, renovación, roles y membresías | Usuarios que entran según su rol |
 | 2. Catálogo y administración | Registro de barbería, servicios con etiquetas de estilo, horarios, personal, publicación y consulta | Barbería configurable y visible para clientes |
 | 3. Reservas | Disponibilidad, creación y cancelación, validaciones, concurrencia, citas próximas e historial | Flujo de reserva completo y seguro |
@@ -1621,7 +1645,7 @@ La duración real depende del tiempo del equipo y del calendario del curso; se f
 | 9. Publicación | Ficha de la tienda, política de privacidad, acceso a producción | Barberly en Google Play |
 | Extendida. Anticipo en línea | Pasarela en modo de prueba, webhooks, vencimiento y devoluciones | Reservas con anticipo demostrables sin dinero real |
 
-La Fase 0 no se orquesta: sigue docs/especificaciones/preparacion.md en la sesión principal. Si no existe apps/api/src/app.ts, avisa al usuario y no delegues.
+La Fase 0 no se orquesta: sigue docs/especificaciones/preparacion.md en la sesión principal. Si no existe api/src/app.ts, avisa al usuario y no delegues.
 
 ## 14. Riesgos, decisiones abiertas y trabajo futuro
 
@@ -1686,7 +1710,7 @@ Al consolidar el informe base y la especificación detallada aparecieron diferen
 | Agenda del barbero | El informe base usa una ruta por barbero; la especificación, una ruta por barbería | Se adopta GET /barberias/:id/agenda, que respeta el aislamiento entre barberías |
 | Confirmación de la cita | El informe base la describe como transición automática de pendiente a confirmada | Se adopta la especificación: nace CONFIRMADA sin anticipo y PENDIENTE solo con anticipo (RN-12, RN-34) |
 | Plazo de cancelación | "Hasta 2 horas antes" frente a "más de 2 horas" | Se permite si inicio − ahora ≥ 120 minutos (sección 4.7) |
-| Restricción única de respaldo | Una restricción simple sobre (barbero, inicio) impediría reutilizar un horario cancelado | Columna generada que solo cuenta citas activas (sección 8.5) |
+| Restricción de respaldo | Una restricción simple sobre (barbero, inicio) impediría reutilizar un horario cancelado y no detecta solapes parciales | Restricción EXCLUDE de PostgreSQL solo sobre citas activas (sección 8.5, D-19) |
 | Número de entidades | El informe base cuenta 11; el modelo detallado añade TokenRenovacion y RegistroAuditoria | 13 entidades (sección 9) |
 | Idioma de los nombres | Los documentos fuente nombran entidades, campos, rutas y errores en inglés | Todo en español salvo lo que impone la tecnología (sección 1.5) |
 | Foto de usuario | AUT-05 pedía editar la foto, pero Usuario no tiene ese campo | Se quita del MVP y pasa a funcionalidades futuras (sección 14.4) |
@@ -1700,23 +1724,20 @@ Al consolidar el informe base y la especificación detallada aparecieron diferen
 | HTTP 400 | La sección 10.4 definía 400 sin código en el anexo B | Todo error de validación es 422 DATOS_INVALIDOS (secciones 10.4 y 11.2) |
 | Herramienta de pruebas | Las secciones 8.8 y 12.1 dejaban elegir entre Vitest y Jest | Vitest + Supertest |
 | Hash de contraseñas | Las secciones 8.8 y 11.1 dejaban elegir entre bcrypt y argon2 | bcrypt con el paquete bcryptjs, costo 12 |
-| Organización del monorepo | Los workspaces de npm eran solo una posibilidad | npm workspaces (`apps/*`, `paquetes/*`); se conserva la alternativa de aplicaciones independientes (sección 8.9) |
+| Organización del código | Los workspaces de npm eran solo una posibilidad | Tres repositorios en una carpeta de trabajo común (sección 8.9, D-11, D-27) |
 
 ### 14.4 Funcionalidades futuras
 
 - Publicación en App Store (iOS) con el mismo código.
-- Notificaciones push y recordatorios de cita (por ejemplo, 24 horas y 1 hora antes).
-- Suscripciones de pago para barberías (plan gratuito y premium).
+- Suscripciones de pago para barberías (plan Gratis, Pro y comisión, D-28) con Kushki en producción.
 - Cobros con dinero real mediante cuentas comerciales de cada barbería.
-- Prueba virtual del corte sobre la foto del cliente.
-- Lista de espera inteligente con los horarios liberados por cancelaciones.
-- Aviso de "ya toca tu corte" según la frecuencia de visitas.
-- Resumen semanal del negocio redactado por IA.
 - Reseñas y calificaciones; galería de trabajos de cada barbero.
 - Foto de perfil del usuario.
 - Citas recurrentes y citas con varios servicios combinados.
 - Promociones y programas de fidelidad automatizados.
-- Panel web para propietarios y múltiples sucursales por propietario.
+- Múltiples sucursales por propietario.
+- Promociones en horas valle según el mapa de calor de demanda.
+- Facturación electrónica del SRI para los cobros reales.
 
 ## 15. Trazabilidad y anexos
 
