@@ -36,3 +36,6 @@ Tambien puedes usar `claude --agent orquestador` y escribir la tarea.
 
 ## Agregar agentes
 Crea `.claude/agents/<nombre>.md` con `protocolo-subagente` primero en `skills:` agregalo a la lista `Agent(...)` del orquestador y a `limitar-rutas.mjs`. Candidatos: `asesor-ia` (Fase 5), `pagos` (Fase 4), `estadisticas`.
+
+## Espacio de trabajo multi-repositorio (D-27)
+Para trabajar una funcionalidad completa (API, app y panel) en una sola sesión, instala el espacio de trabajo en la carpeta que contiene los tres repositorios: `bash espacio-trabajo/instalar.sh` desde `api/`, y abre Claude Code en esa carpeta. Ahí están el orquestador multi-repositorio, 11 especialistas (incluidos `app-movil`, `panel-web`, `disenador-ui`, `asesor-ia`, `pagos` y `qa-e2e`) y el comando `/funcionalidad <ID>`. Ver `espacio-trabajo/README.md`.
