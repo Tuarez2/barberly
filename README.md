@@ -13,7 +13,7 @@ Barberly tiene tres repositorios (D-11) que se clonan en la misma carpeta:
 ## Requisitos
 
 - Node.js 26 (`nvm use` lee `.nvmrc`).
-- PostgreSQL 17 o superior en local (o Docker con `compose.yaml`).
+- PostgreSQL 16 o superior en local (o Docker con `compose.yaml`).
 
 ## Instalación
 
@@ -22,7 +22,13 @@ nvm use
 npm install
 ```
 
-Crea el usuario y las bases en PostgreSQL. Opción A, con Docker (usa `compose.yaml`):
+Crea el usuario y las bases en PostgreSQL. La forma más rápida en Linux Mint instala PostgreSQL si falta, crea todo, migra, siembra e imprime los datos para DBeaver:
+
+```bash
+bash scripts/crear-base-local.sh
+```
+
+Opción A, con Docker (usa `compose.yaml`):
 
 ```bash
 docker compose up -d   # PostgreSQL 17 con las bases barberly y barberly_prueba
