@@ -1,0 +1,30 @@
+meta {
+  name: Editar perfil
+  type: http
+  seq: 2
+}
+
+patch {
+  url: {{urlBase}}/usuarios/yo
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAcceso}}
+}
+
+body:json {
+  {
+    "telefono": "099 123 4567"
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.datos.telefono: eq +593991234567
+}
+
+docs {
+  AUT-05. Ejecuta antes autenticacion/Iniciar sesión. Nombre o teléfono, al menos uno, con las reglas del registro (D-14). Enviar `correo` o `{}` responde DATOS_INVALIDOS.
+}

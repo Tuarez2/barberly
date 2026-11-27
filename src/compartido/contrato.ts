@@ -103,6 +103,46 @@ export const esquemaInicioSesion = z.strictObject(
 
 export type EntradaInicioSesion = z.infer<typeof esquemaInicioSesion>;
 
+// AUT-05: nombre y telefono con las reglas del registro; el correo no cambia en el MVP.
+export const esquemaEdicionPerfil = z
+  .strictObject(
+    {
+      nombre: esquemaNombre.optional(),
+      telefono: esquemaTelefono.optional(),
+    },
+    {
+      error: (problema) =>
+        problema.code === 'unrecognized_keys'
+          ? `Campos no permitidos: ${problema.keys.join(', ')}`
+          : 'Envía el nombre o el teléfono',
+    },
+  )
+  .refine(
+    (perfil) => perfil.nombre !== undefined || perfil.telefono !== undefined,
+    'Envía el nombre o el teléfono',
+  );
+
+export type EntradaEdicionPerfil = z.infer<typeof esquemaEdicionPerfil>;
+
+// AUT-06 y D-16: la actual solo no vacia y de maximo 72; la nueva con las reglas del registro.
+export const esquemaCambioClave = z.strictObject(
+  {
+    claveActual: z
+      .string({ error: 'La contraseña actual es obligatoria' })
+      .min(1, 'Escribe tu contraseña actual')
+      .max(72, 'La contraseña actual debe tener como máximo 72 caracteres'),
+    claveNueva: esquemaClave,
+  },
+  {
+    error: (problema) =>
+      problema.code === 'unrecognized_keys'
+        ? `Campos no permitidos: ${problema.keys.join(', ')}`
+        : 'Envía tu contraseña actual y la nueva',
+  },
+);
+
+export type EntradaCambioClave = z.infer<typeof esquemaCambioClave>;
+
 // D-17: renovar y cerrar sesion reciben solo el token de renovacion (43 caracteres en base64url).
 export const esquemaTokenSesion = z.strictObject(
   {

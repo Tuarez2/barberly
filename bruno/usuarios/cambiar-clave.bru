@@ -1,0 +1,30 @@
+meta {
+  name: Cambiar contraseña
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{urlBase}}/usuarios/yo/clave
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAcceso}}
+}
+
+body:json {
+  {
+    "claveActual": "Barberly2026",
+    "claveNueva": "Navaja2027"
+  }
+}
+
+assert {
+  res.status: eq 204
+}
+
+docs {
+  AUT-06. Ejecuta antes autenticacion/Iniciar sesión con la clave de `claveActual`. No revoca las demás sesiones. Después, la clave de la cuenta es `claveNueva`.
+}

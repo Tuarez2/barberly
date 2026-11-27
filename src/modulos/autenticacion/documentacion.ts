@@ -2,8 +2,11 @@
 import type { RegistrarDocumentacion } from '../../compartido/documentacion';
 import { respuestaError, SEGURIDAD_BEARER } from '../../compartido/documentacion';
 import {
+  esquemaCambioClave,
+  esquemaEdicionPerfil,
   esquemaInicioSesion,
   esquemaRegistro,
+  esquemaRespuestaEdicionPerfil,
   esquemaRespuestaPerfil,
   esquemaRespuestaRenovacion,
   esquemaRespuestaSesion,
@@ -128,6 +131,62 @@ export const registrarAutenticacion: RegistrarDocumentacion = (registro) => {
       401: respuestaError(
         'AUTENTICACION_REQUERIDA o TOKEN_VENCIDO: sin token, token inválido o cuenta inactiva (D-05)',
       ),
+    },
+  });
+
+  registro.registerPath({
+    method: 'patch',
+    path: '/usuarios/yo',
+    tags: ['autenticacion'],
+    summary: 'Editar mi nombre o mi teléfono (AUT-05)',
+    description:
+      'Al menos uno de los dos, con las reglas y la normalización del registro (D-14). El correo no cambia en el MVP: enviarlo responde DATOS_INVALIDOS.',
+    security: SEGURIDAD_BEARER,
+    request: {
+      body: {
+        required: true,
+        content: {
+          'application/json': {
+            schema: esquemaEdicionPerfil.meta({ id: 'EntradaEdicionPerfil' }),
+          },
+        },
+      },
+    },
+    responses: {
+      200: {
+        description: 'Perfil editado',
+        content: { 'application/json': { schema: esquemaRespuestaEdicionPerfil } },
+      },
+      401: respuestaError(
+        'AUTENTICACION_REQUERIDA o TOKEN_VENCIDO: sin token, token inválido o cuenta inactiva (D-05)',
+      ),
+      422: respuestaError('DATOS_INVALIDOS: los detalles dicen qué campo falla'),
+    },
+  });
+
+  registro.registerPath({
+    method: 'patch',
+    path: '/usuarios/yo/clave',
+    tags: ['autenticacion'],
+    summary: 'Cambiar mi contraseña con la actual (AUT-06)',
+    description:
+      'La nueva cumple las reglas del registro. No revoca las demás sesiones. Tras INICIO_INTENTOS_MAXIMOS (5) fallos de la actual por usuario, espera de INICIO_ESPERA_MINUTOS (15) desde el primer fallo (D-05, D-16).',
+    security: SEGURIDAD_BEARER,
+    request: {
+      body: {
+        required: true,
+        content: {
+          'application/json': { schema: esquemaCambioClave.meta({ id: 'EntradaCambioClave' }) },
+        },
+      },
+    },
+    responses: {
+      204: { description: 'Contraseña cambiada' },
+      401: respuestaError(
+        'CREDENCIALES_INVALIDAS: la actual no coincide (la app no cierra la sesión); AUTENTICACION_REQUERIDA o TOKEN_VENCIDO: falta el token de acceso o no sirve',
+      ),
+      422: respuestaError('DATOS_INVALIDOS: los detalles dicen qué campo falla'),
+      429: respuestaError('DEMASIADAS_SOLICITUDES: demasiados fallos de la contraseña actual'),
     },
   });
 };
