@@ -1,0 +1,33 @@
+meta {
+  name: Registrar barbería con datos inválidos
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{urlBase}}/barberias
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAcceso}}
+}
+
+body:json {
+  {
+    "nombre": "Co",
+    "direccion": "Av. Amazonas 123",
+    "telefono": "0991234567",
+    "publicada": true
+  }
+}
+
+assert {
+  res.status: eq 422
+  res.body.error.codigo: eq DATOS_INVALIDOS
+}
+
+docs {
+  HU-AUT-03. Nombre de 2 caracteres y un campo extra (`publicada`): `detalles` dice qué falla y no se crea barbería ni membresía.
+}
