@@ -1,0 +1,29 @@
+meta {
+  name: Listar barberías con consulta inválida
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{urlBase}}/barberias?limite=51&orden=cercania
+  body: none
+  auth: bearer
+}
+
+params:query {
+  limite: 51
+  orden: cercania
+}
+
+auth:bearer {
+  token: {{tokenAcceso}}
+}
+
+assert {
+  res.status: eq 422
+  res.body.error.codigo: eq DATOS_INVALIDOS
+}
+
+docs {
+  BUS-01. `limite` mayor de 50 y un orden distinto de `nombre`: `detalles` indica `limite` y `orden`. También fallan un parámetro desconocido y `q` vacío.
+}

@@ -297,3 +297,56 @@ export interface RespuestaError {
     detalles?: unknown;
   };
 }
+
+// Listado publico, GET /barberias (BUS-01 a BUS-04, D-07). q y servicio: 1 a 80 caracteres tras
+// recortar; la API los busca sin tildes ni mayusculas y con % y _ literales.
+const esquemaTextoBusqueda = (campo: string) =>
+  z
+    .string({ error: `${campo} debe ser texto` })
+    .trim()
+    .min(1, `${campo} no puede estar vacío`)
+    .max(80, `${campo} debe tener como máximo 80 caracteres`)
+    .regex(SIN_CONTROL, `${campo} no puede tener caracteres de control`);
+
+export const esquemaConsultaBarberias = z.strictObject(
+  {
+    q: esquemaTextoBusqueda('La búsqueda').optional(),
+    servicio: esquemaTextoBusqueda('El servicio').optional(),
+    // true: solo las abiertas ahora; false o ausente: todas.
+    abierta: z
+      .enum(['true', 'false'], { error: 'abierta debe ser true o false' })
+      .transform((valor) => valor === 'true')
+      .optional(),
+    orden: z.enum(['nombre'], { error: 'Solo se puede ordenar por nombre' }).default('nombre'),
+    ...esquemaPaginacion.shape,
+  },
+  {
+    error: (problema) =>
+      problema.code === 'unrecognized_keys'
+        ? `Parámetros no permitidos: ${problema.keys.join(', ')}`
+        : 'Revisa los filtros de la búsqueda',
+  },
+);
+
+export type ConsultaBarberias = z.infer<typeof esquemaConsultaBarberias>;
+
+export const esquemaBarberiaListada = z.object({
+  id: z.uuid(),
+  nombre: z.string(),
+  direccion: z.string(),
+  urlPortada: z.string().nullable(),
+  abierta: z.boolean(),
+});
+
+export type BarberiaListada = z.infer<typeof esquemaBarberiaListada>;
+
+export const esquemaRespuestaListadoBarberias = z.object({
+  datos: z.array(esquemaBarberiaListada),
+  meta: z.object({
+    pagina: z.number().int(),
+    limite: z.number().int(),
+    total: z.number().int(),
+  }),
+});
+
+export type RespuestaListadoBarberias = z.infer<typeof esquemaRespuestaListadoBarberias>;

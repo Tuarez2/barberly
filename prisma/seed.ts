@@ -5,6 +5,7 @@ import { baseDatos } from '../src/compartido/base-datos';
 import { configuracion } from '../src/compartido/configuracion';
 import { registro } from '../src/compartido/registro';
 import {
+  crearBarberiaDePrueba,
   crearBarberoDePrueba,
   crearCitaDePrueba,
   crearClienteDePrueba,
@@ -23,6 +24,8 @@ const IDS = {
   clienteDos: idPrueba(107),
   clienteTres: idPrueba(108),
   perfilBarberoDos: idPrueba(303),
+  barberiaBorrador: idPrueba(203),
+  propietarioBorrador: idPrueba(109),
 } as const;
 
 // Hora local de Guayaquil, dias desde hoy, convertida a UTC.
@@ -75,6 +78,33 @@ async function sembrar(): Promise<void> {
     id: IDS.clienteTres,
     nombre: 'Cliente tres',
     correo: 'cliente.tres@barberly.test',
+  });
+
+  // Horario propio (D-31): sin el, el barbero no trabaja ese dia. Lunes a sabado, 09:00-18:00.
+  for (const perfilBarberoId of [IDS_PRUEBA.perfilBarbero, IDS.perfilBarberoDos]) {
+    const desfase = perfilBarberoId === IDS.perfilBarberoDos ? 10 : 0;
+    await baseDatos.horarioAtencion.createMany({
+      data: [1, 2, 3, 4, 5, 6].map((diaSemana) => ({
+        id: idPrueba(1000 + diaSemana + desfase),
+        barberiaId: IDS_PRUEBA.barberia,
+        perfilBarberoId,
+        diaSemana,
+        horaApertura: '09:00',
+        horaCierre: '18:00',
+      })),
+    });
+  }
+
+  // Barberia no publicada (D-07): no aparece en el listado.
+  await crearUsuarioDePrueba({
+    id: IDS.propietarioBorrador,
+    nombre: 'Propietario borrador',
+    correo: 'propietario.borrador@barberly.test',
+  });
+  await crearBarberiaDePrueba({
+    id: IDS.barberiaBorrador,
+    propietarioId: IDS.propietarioBorrador,
+    nombre: 'Barberia Borrador',
   });
 
   const centro = { barberiaId: IDS_PRUEBA.barberia, servicioId: IDS_PRUEBA.servicioCorte };
