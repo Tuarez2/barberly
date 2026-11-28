@@ -1,0 +1,24 @@
+meta {
+  name: Detalle de barbería no encontrada
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{urlBase}}/barberias/00000000-0000-4000-8000-000000000999
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAcceso}}
+}
+
+assert {
+  res.status: eq 404
+  res.body.error.codigo: eq NO_ENCONTRADO
+}
+
+docs {
+  D-07, D-32. Id inexistente o que no es UUID, o barbería inactiva o no publicada para quien no es su miembro ACTIVO: NO_ENCONTRADO, igual en /servicios y /barberos. Con las semillas, la barbería borrador (…0203) también responde 404 a un cliente.
+}

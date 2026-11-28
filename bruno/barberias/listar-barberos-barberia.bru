@@ -1,0 +1,25 @@
+meta {
+  name: Barberos de una barbería
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{urlBase}}/barberias/{{barberiaId}}/barberos
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAcceso}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.datos: isArray
+  res.body.meta.total: isNumber
+}
+
+docs {
+  BUS-07, RN-21. Ejecuta antes autenticacion/Iniciar sesión. `id` es el PerfilBarbero; solo barberos con membresía ACTIVO y al menos un servicio activo, con los ids de sus servicios activos. Por `nombreVisible`, sin paginar y sin correo ni teléfono. Misma visibilidad que el detalle.
+}

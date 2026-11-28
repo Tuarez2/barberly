@@ -1,0 +1,26 @@
+meta {
+  name: Detalle de barbería
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{urlBase}}/barberias/{{barberiaId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAcceso}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.datos.id: eq {{barberiaId}}
+  res.body.datos.horarios: isArray
+  res.body.datos.cierres: isArray
+}
+
+docs {
+  BUS-05, BUS-08, D-07, D-31, D-32. Ejecuta antes autenticacion/Iniciar sesión. `barberiaId` del entorno es la Barbería Centro de las semillas. Horario general por día (0 = domingo) y cierres futuros de toda la barbería dentro de `diasMaxAnticipacion`, sin motivo. Un miembro ACTIVO recibe además `publicada` y `activo` y la ve aunque no esté publicada.
+}
