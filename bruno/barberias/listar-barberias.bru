@@ -1,0 +1,33 @@
+meta {
+  name: Listar barberías
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{urlBase}}/barberias?q=centro&abierta=true&pagina=1&limite=10
+  body: none
+  auth: bearer
+}
+
+params:query {
+  q: centro
+  abierta: true
+  pagina: 1
+  limite: 10
+}
+
+auth:bearer {
+  token: {{tokenAcceso}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.datos: isArray
+  res.body.meta.pagina: eq 1
+  res.body.meta.limite: eq 10
+}
+
+docs {
+  BUS-01 a BUS-04, HU-BUS-01, HU-BUS-03, D-07, D-31. Ejecuta antes autenticacion/Iniciar sesión. Solo barberías activas y publicadas; `q` y `servicio` sin tildes ni mayúsculas; `abierta=true` según el horario general y los bloqueos en la zona de la barbería. Sin coincidencias: `datos` vacío y `total` 0.
+}

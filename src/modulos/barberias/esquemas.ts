@@ -1,14 +1,27 @@
-// Esquemas de entrada y salida de barberias (AUT-10, D-07, D-13). La validacion vive en el contrato comun.
+// Esquemas de entrada y salida de barberias (AUT-10, BUS-01 a BUS-04, D-07, D-13). La validacion vive en el contrato comun.
 import { z } from 'zod';
 
 import {
   ESTADOS_MEMBRESIA,
+  esquemaConsultaBarberias,
   esquemaRegistroBarberia,
+  esquemaRespuestaListadoBarberias,
   ROLES_MEMBRESIA,
 } from '../../compartido/contrato';
 
-export { esquemaRegistroBarberia };
-export type { BarberiaRegistrada, EntradaRegistroBarberia } from '../../compartido/contrato';
+export { esquemaConsultaBarberias, esquemaRegistroBarberia };
+export type {
+  BarberiaListada,
+  BarberiaRegistrada,
+  ConsultaBarberias,
+  EntradaRegistroBarberia,
+  RespuestaListadoBarberias,
+} from '../../compartido/contrato';
+
+// Solo para la documentacion OpenAPI (BUS-01).
+export const esquemaRespuestaListadoBarberiasDoc = esquemaRespuestaListadoBarberias.meta({
+  id: 'RespuestaListadoBarberias',
+});
 
 // Solo para la documentacion OpenAPI.
 export const esquemaRespuestaBarberiaRegistrada = z
