@@ -350,3 +350,84 @@ export const esquemaRespuestaListadoBarberias = z.object({
 });
 
 export type RespuestaListadoBarberias = z.infer<typeof esquemaRespuestaListadoBarberias>;
+
+// Detalle publico, GET /barberias/:id (BUS-05, BUS-08, D-32). Horas locales "HH:mm" de la barberia;
+// diaSemana 0 = domingo a 6 = sabado; los dias sin fila no atienden. Instantes en ISO 8601 UTC.
+const esquemaHoraLocal = z.string().regex(/^\d{2}:\d{2}$/);
+
+export const esquemaHorarioBarberia = z.object({
+  diaSemana: z.number().int().min(0).max(6),
+  horaApertura: esquemaHoraLocal,
+  horaCierre: esquemaHoraLocal,
+  inicioPausa: esquemaHoraLocal.nullable(),
+  finPausa: esquemaHoraLocal.nullable(),
+});
+
+export type HorarioBarberia = z.infer<typeof esquemaHorarioBarberia>;
+
+// Bloqueo de toda la barberia que aun no termina y empieza dentro de diasMaxAnticipacion; sin motivo.
+export const esquemaCierreBarberia = z.object({
+  iniciaEn: z.iso.datetime(),
+  terminaEn: z.iso.datetime(),
+});
+
+export type CierreBarberia = z.infer<typeof esquemaCierreBarberia>;
+
+export const esquemaDetalleBarberia = z.object({
+  id: z.uuid(),
+  nombre: z.string(),
+  descripcion: z.string().nullable(),
+  direccion: z.string(),
+  telefono: z.string(),
+  urlPortada: z.string().nullable(),
+  abierta: z.boolean(),
+  horarios: z.array(esquemaHorarioBarberia),
+  cierres: z.array(esquemaCierreBarberia),
+  // Solo para miembros ACTIVO de la barberia (D-32); nunca para el resto.
+  publicada: z.boolean().optional(),
+  activo: z.boolean().optional(),
+});
+
+export type DetalleBarberia = z.infer<typeof esquemaDetalleBarberia>;
+
+export const esquemaRespuestaDetalleBarberia = z.object({ datos: esquemaDetalleBarberia });
+
+export type RespuestaDetalleBarberia = z.infer<typeof esquemaRespuestaDetalleBarberia>;
+
+const esquemaMetaTotal = z.object({ total: z.number().int() });
+
+// Servicios activos, GET /barberias/:id/servicios (BUS-06, HU-BUS-02, RN-21). Sin paginar.
+export const esquemaServicioBarberia = z.object({
+  id: z.uuid(),
+  nombre: z.string(),
+  descripcion: z.string().nullable(),
+  precio: z.string().regex(/^\d+\.\d{2}$/), // dinero como texto con 2 decimales ("25.00")
+  duracionMinutos: z.number().int(),
+});
+
+export type ServicioBarberia = z.infer<typeof esquemaServicioBarberia>;
+
+export const esquemaRespuestaServiciosBarberia = z.object({
+  datos: z.array(esquemaServicioBarberia),
+  meta: esquemaMetaTotal,
+});
+
+export type RespuestaServiciosBarberia = z.infer<typeof esquemaRespuestaServiciosBarberia>;
+
+// Barberos, GET /barberias/:id/barberos (BUS-07). id es el PerfilBarbero; servicios son ids de
+// servicios activos. Sin datos de contacto. Sin paginar.
+export const esquemaBarberoBarberia = z.object({
+  id: z.uuid(),
+  nombreVisible: z.string(),
+  urlFoto: z.string().nullable(),
+  servicios: z.array(z.uuid()),
+});
+
+export type BarberoBarberia = z.infer<typeof esquemaBarberoBarberia>;
+
+export const esquemaRespuestaBarberosBarberia = z.object({
+  datos: z.array(esquemaBarberoBarberia),
+  meta: esquemaMetaTotal,
+});
+
+export type RespuestaBarberosBarberia = z.infer<typeof esquemaRespuestaBarberosBarberia>;
