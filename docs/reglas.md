@@ -15,7 +15,7 @@ Fuente: DERCAS §4. El backend las aplica siempre. "propuesta" = valor configura
 | RN-07 | La anticipación máxima de reserva está limitada (propuesta: 30 días). | FECHA_DEMASIADO_LEJANA |
 | RN-08 | Un cliente no tiene dos citas activas solapadas, aunque sean en barberías distintas. | CRUCE_DEL_CLIENTE |
 | RN-09 | Un cliente tiene como máximo `Barberia.maxCitasActivas` citas futuras activas por barbería (1 a 10, por defecto 3) (D-09). | LIMITE_DE_CITAS |
-| RN-10 | Los horarios se ofrecen en bloques de 15 minutos y la duración de un servicio es múltiplo de 15. | — |
+| RN-10 | Los horarios se ofrecen en bloques de 15 minutos y la duración de un servicio es múltiplo de 15. Un inicio fuera del bloque se rechaza. | DATOS_INVALIDOS |
 | RN-11 | Si dos clientes reservan el mismo horario a la vez, solo uno tiene éxito; el otro recibe error. | HORARIO_OCUPADO |
 
 ## Confirmación y cancelación (§4.2)
@@ -46,7 +46,7 @@ Fuente: DERCAS §4. El backend las aplica siempre. "propuesta" = valor configura
 | RN-23 | Un barbero solo ofrece los servicios que el propietario le asignó. | SERVICIO_NO_OFRECIDO |
 | RN-24 | Cambiar el horario de atención no cancela citas; si una queda fuera, el sistema avisa al propietario con la lista. | — |
 | RN-25 | No se quita a un barbero con citas futuras sin reasignarlas o cancelarlas antes. | BARBERO_CON_CITAS |
-| RN-26 | Un día libre o bloqueo impide nuevas reservas pero no elimina las existentes. | BARBERO_NO_DISPONIBLE |
+| RN-26 | Un día libre o bloqueo impide nuevas reservas pero no elimina las existentes. BARBERO_NO_DISPONIBLE cubre también el cierre de toda la barbería. | BARBERO_NO_DISPONIBLE |
 
 ## Asesor de estilo (§4.5)
 
@@ -94,9 +94,18 @@ Estados: PENDIENTE, CONFIRMADA, COMPLETADA, CANCELADA, AUSENTE. Los tres último
 | CONFIRMADA | AUSENTE | Barbero asignado o propietario | Desde la hora de inicio | RN-18, RN-19 |
 | COMPLETADA, CANCELADA o AUSENTE | cualquiera | Nadie | Estado final: TRANSICION_INVALIDA | RN-16 |
 
+## Notificaciones (D-21, D-30)
+
+Sin RN en el DERCAS (§15.1); reglas añadidas por D-30.
+
+| Código | Regla | Error |
+| --- | --- | --- |
+| RN-NOT-A | Los avisos de cita se envían tras confirmar la transacción y su fallo no afecta la cita. | — |
+| RN-NOT-B | Quien cancela una cita no recibe su propio aviso. | — |
+
 ## Dudas
 
-1. RN-10: §8.5 no valida un inicio fuera del bloque de 15 minutos; no hay código definido.
+1. RN-10: §8.5 no valida un inicio fuera del bloque de 15 minutos; se usa DATOS_INVALIDOS (anotado en RN-10; verificado: el DERCAS no asocia código a RN-10, y RN-26 incluye los cierres de toda la barbería por ADM-07).
 2. RN-14: sin código para el personal que cancela desde la hora de inicio.
 3. RN-18: barbero no asignado de la misma barbería: no se define si es 403 o 404.
 4. RN-19: sin código para marcar antes de la hora de inicio.
