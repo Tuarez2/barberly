@@ -23,6 +23,7 @@ RN-01 a RN-13, RN-15, RN-16, RN-17 (cliente), RN-26 (en disponibilidad y creaci�
 Referencia: DERCAS §9.2 (Cita, Barberia, HorarioAtencion, Bloqueo). Todas las tablas incluyen `creadoEn` y `actualizadoEn`.
 - Cita: id, barberiaId, clienteId, perfilBarberoId, servicioId, iniciaEn, terminaEn, precioReserva, duracionReserva, estado, notas, canceladaPorId, canceladaEn, motivoCancelacion, claveIdempotencia (única por cliente), anticipoVenceEn. Restricción `ex_citas_barbero_sin_cruce` (D-19).
 - Estados (§4.8). Aquí: creación → CONFIRMADA (RN-12); creación → PENDIENTE con `anticipoVenceEn` = ahora + 15 min si `anticipoActivo` (la confirmación por pago es de la etapa 5); PENDIENTE o CONFIRMADA → CANCELADA por el cliente si `inicio − ahora ≥ minutosMinCancelacion` (RN-13, exacto en el límite). CANCELADA, COMPLETADA y AUSENTE son finales: TRANSICION_INVALIDA (RN-16).
+- Barberos que cuentan (D-33): solo membresía ACTIVO con Usuario `activo` verdadero (D-05). Uno con la cuenta desactivada no aporta horarios a la disponibilidad ni entra en "Cualquiera disponible", y GET /disponibilidad o POST /citas con su `barberoId` responden NO_ENCONTRADO, como con un barbero ajeno. Sus citas existentes no cambian.
 - Disponibilidad: algoritmo de la skill `disponibilidad-horarios` (§8.6); `ahora` viene de `reloj.ahora()`; fechas locales según `Barberia.zonaHoraria`, respuesta en ISO 8601 UTC.
 
 Contratos (prefijo /api/v1; usuario autenticado con cualquier rol: el cliente no necesita membresía, §2.3). Una barbería inexistente, inactiva o no publicada responde NO_ENCONTRADO para todos, también para sus miembros (la excepción de D-32 es solo para ver el detalle en busqueda). Un `servicioId` o `barberoId` inexistente o de otra barbería responde NO_ENCONTRADO, antes que SERVICIO_NO_OFRECIDO.
@@ -72,6 +73,7 @@ Cada criterio debe poder escribirse como una prueba, con valores concretos.
 - RN-08, RN-09: Dado un cliente con una cita 10:00–10:30 en otra barbería, cuando reserva 10:15, entonces CRUCE_DEL_CLIENTE; con 3 citas futuras activas en la barbería, la cuarta es LIMITE_DE_CITAS; con `maxCitasActivas` 2, la tercera.
 - CU-07 A3: Dados dos barberos libres y uno con más citas ese día, cuando reserva sin `barberoId`, entonces se asigna el de menos citas (empate: menor `id`) y la respuesta trae su `barbero`.
 - SEG-02: Dado un `servicioId` o `barberoId` de otra barbería o inexistente, cuando GET /disponibilidad o POST /citas, entonces NO_ENCONTRADO 404 (no SERVICIO_NO_OFRECIDO); una barbería inactiva o no publicada también da NO_ENCONTRADO, incluso a sus miembros.
+- RES-02, RES-06 (D-33): Dado un barbero con membresía ACTIVO y Usuario inactivo, cuando GET /disponibilidad o POST /citas con su `barberoId`, entonces NO_ENCONTRADO 404; sin `barberoId` (Cualquiera disponible) sus horarios no cuentan ni se le asigna; sus citas existentes siguen igual.
 - RN-23, RN-26: Dado un barbero de la barbería sin ese servicio, entonces SERVICIO_NO_OFRECIDO; con un Bloqueo de toda la barbería, no hay horarios y `dias` marca `disponible` falso.
 - RN-34: Dada una PENDIENTE con `anticipoVenceEn` pasado, cuando se consulta la disponibilidad o se reserva ese horario, entonces está libre y la PENDIENTE queda CANCELADA ("Anticipo vencido", canceladaPorId nulo).
 - RES-07, RES-08: Dado un cliente con citas CONFIRMADA, CANCELADA y COMPLETADA, cuando pide `estado=PENDIENTE,CONFIRMADA`, entonces solo ve las activas por fecha ascendente; nunca citas ajenas.
@@ -101,4 +103,4 @@ Ninguna abierta. Decidido (para el PR):
 - N2 (D-31): un barbero o propietario puede reservar como cliente en su misma barbería, sin restricción adicional.
 
 ## Referencias
-DERCAS §3.3, §4.1, §4.2, §4.7, §4.8, §8.5, §8.6, §9.2, §10.1, §10.2, §12.2, CU-07, CU-09; decisiones D-09, D-19, D-31.
+DERCAS §3.3, §4.1, §4.2, §4.7, §4.8, §8.5, §8.6, §9.2, §10.1, §10.2, §12.2, CU-07, CU-09; decisiones D-09, D-19, D-31, D-33.

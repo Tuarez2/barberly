@@ -96,11 +96,12 @@ Respuesta 200: `{ "datos": [{ "id", "nombre", "descripcion", "precio": "25.00", 
 
 - Solo servicios `activo`, por nombre (y luego `id`), sin paginar. El propietario tampoco ve los inactivos (son de Gestión). `precio` es texto con 2 decimales (`Decimal.toFixed(2)`); `descripcion` `null` si no hay; no expone `etiquetasEstilo`.
 
-### GET /barberias/:id/barberos (BUS-07, RN-21)
+### GET /barberias/:id/barberos (BUS-07, RN-21, D-33)
 
 Respuesta 200: `{ "datos": [{ "id", "nombreVisible", "urlFoto": null, "servicios": ["<servicioId>"] }], "meta": { "total": 1 } }`.
 
 - `id` es el PerfilBarbero (§10.1). Solo membresía `ACTIVO` con al menos un servicio activo asignado; `servicios` trae solo ids de servicios activos, ordenados por nombre del servicio. Por `nombreVisible` (y luego `id`), sin paginar.
+- D-33: un barbero cuyo Usuario está desactivado (`activo` falso, D-05) no sale aunque su membresía sea `ACTIVO`, ni cuenta en `meta.total`.
 - `urlFoto` con `urlPublicaArchivo`, `null` sin foto. Nunca correo, teléfono, usuario ni membresía (RNF-17).
 
 ### POST /barberias (AUT-10, HU-AUT-03, D-13)

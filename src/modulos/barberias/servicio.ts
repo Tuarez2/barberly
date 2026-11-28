@@ -236,7 +236,7 @@ export async function listarServicios(
   return { datos, meta: { total: datos.length } };
 }
 
-// BUS-07, RN-21: barberos con membresia ACTIVO y al menos un servicio activo, por nombreVisible y
+// BUS-07, RN-21, D-33: barberos con membresia ACTIVO, Usuario activo y al menos un servicio activo, por nombreVisible y
 // sin paginar. id es el PerfilBarbero; servicios son los ids activos ordenados por nombre del
 // servicio. Sin correo, telefono, usuario ni membresia (RNF-17).
 export async function listarBarberos(
@@ -248,7 +248,7 @@ export async function listarBarberos(
   const perfiles = await baseDatos.perfilBarbero.findMany({
     where: {
       barberiaId,
-      membresia: { barberiaId, estado: 'ACTIVO' },
+      membresia: { barberiaId, estado: 'ACTIVO', usuario: { activo: true } },
       servicios: { some: servicioActivo },
     },
     orderBy: [{ nombreVisible: 'asc' }, { id: 'asc' }],
