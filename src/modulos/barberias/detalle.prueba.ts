@@ -714,6 +714,29 @@ describe('BUS-07: GET /api/v1/barberias/:id/barberos', () => {
     expect(respuesta.body.meta).toEqual({ total: 1 });
   });
 
+  it.each([
+    ['el cliente', IDS_PRUEBA.cliente],
+    ['el propietario', IDS_PRUEBA.propietario],
+  ])(
+    'D-33: un barbero con membresia ACTIVO y Usuario inactivo no sale ni cuenta en meta.total; el otro ACTIVO si (consulta %s)',
+    async (_quien, usuarioId) => {
+      // Alberto ordenaria antes que Carlos: si se colara, quedaria primero.
+      await crearOtroBarbero({
+        numero: 760,
+        nombreVisible: 'Alberto',
+        servicioIds: [IDS_PRUEBA.servicioCorte],
+      });
+      await baseDatos.usuario.update({ where: { id: idPrueba(760) }, data: { activo: false } });
+
+      const respuesta = await listarBarberos(CENTRO, usuarioId);
+
+      expect(datos(respuesta).map((barbero: { id: string }) => barbero.id)).toEqual([
+        IDS_PRUEBA.perfilBarbero,
+      ]);
+      expect(respuesta.body.meta).toEqual({ total: 1 });
+    },
+  );
+
   it('BUS-07, RN-21: sin servicios o solo con servicios desactivados no sale; servicios solo trae ids activos', async () => {
     await crearOtroBarbero({ numero: 720, nombreVisible: 'Sin servicios', servicioIds: [] });
     await crearOtroBarbero({

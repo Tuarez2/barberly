@@ -39,7 +39,7 @@ Servicios, GET /barberias/:id/servicios (BUS-06):
 - 200 `{ datos: [{ id, nombre, descripcion, precio, duracionMinutos }], meta: { total } }`: solo `activo` verdadero, por nombre, sin paginar. `precio` es texto con dos decimales ("25.00"); `descripcion` null si no hay. No expone `etiquetasEstilo`. Misma visibilidad y NO_ENCONTRADO que el detalle.
 
 Barberos, GET /barberias/:id/barberos (BUS-07):
-- 200 `{ datos: [{ id, nombreVisible, urlFoto, servicios: [servicioId] }], meta: { total } }`: `id` es el PerfilBarbero (§10.1); solo membresía ACTIVO con al menos un servicio activo asignado; `servicios` solo trae ids de servicios activos. Por `nombreVisible`, sin paginar. Nunca expone correo ni teléfono del barbero. Misma visibilidad que el detalle.
+- 200 `{ datos: [{ id, nombreVisible, urlFoto, servicios: [servicioId] }], meta: { total } }`: `id` es el PerfilBarbero (§10.1); solo membresía ACTIVO, con el Usuario `activo` verdadero (D-33: la cuenta desactivada, D-05, se oculta aunque la membresía sea ACTIVO) y con al menos un servicio activo asignado; `servicios` solo trae ids de servicios activos. Por `nombreVisible`, sin paginar. Nunca expone correo ni teléfono del barbero. Misma visibilidad que el detalle.
 
 ## API
 Prefijo /api/v1. Pub = cualquier usuario autenticado.
@@ -77,6 +77,7 @@ Explorar: búsqueda con espera de 300 ms tras la última tecla, esqueletos de ca
 - BUS-05: Dada una no publicada, cuando la pide un cliente, entonces NO_ENCONTRADO; cuando la pide su propietario, 200 con `publicada` false.
 - HU-BUS-02: Dados un servicio activo ("Corte", "25.00", 30) y otro desactivado, cuando GET /barberias/:id/servicios, entonces solo el activo con precio y `duracionMinutos`.
 - BUS-07: Dado un barbero ACTIVO con 2 servicios y otro INACTIVO, cuando GET /barberias/:id/barberos, entonces solo el activo, con sus 2 ids y `urlFoto` null sin foto.
+- BUS-07 (D-33): Dado un barbero con membresía ACTIVO y Usuario inactivo, cuando GET /barberias/:id/barberos, entonces no aparece y `meta.total` no lo cuenta.
 - BUS-10: Dado el detalle abierto, cuando toca Reservar en el servicio "Corte", entonces la app abre la reserva con ese servicio elegido.
 
 ## Pruebas
@@ -98,4 +99,4 @@ Ninguna abierta. Decidido (para el PR):
 7. BUS-08: cierres futuros de toda la barbería dentro de `diasMaxAnticipacion`, sin motivo (D-32).
 
 ## Referencias
-DERCAS §3.2, §6 (HU-BUS-01 a HU-BUS-03), §9.2, §10.1, §10.2, D-07, D-10, D-26, D-32.
+DERCAS §3.2, §6 (HU-BUS-01 a HU-BUS-03), §9.2, §10.1, §10.2, D-07, D-10, D-26, D-32, D-33.
