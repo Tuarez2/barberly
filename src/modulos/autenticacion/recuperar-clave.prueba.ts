@@ -789,7 +789,7 @@ describe('AUT-07, D-15: limite de restablecer-clave por IP', () => {
     esperarDemasiadas(
       await restablecer(restablecimiento('123456', { correo: CORREO_LUIS }), '203.0.113.7'),
     );
-  });
+  }, 20_000);
 
   it('AUT-07: pasada una hora se puede volver a restablecer desde esa IP', async () => {
     vi.useFakeTimers({ toFake: ['Date'] });

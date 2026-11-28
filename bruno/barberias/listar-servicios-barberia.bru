@@ -1,0 +1,25 @@
+meta {
+  name: Servicios de una barbería
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{urlBase}}/barberias/{{barberiaId}}/servicios
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{tokenAcceso}}
+}
+
+assert {
+  res.status: eq 200
+  res.body.datos: isArray
+  res.body.meta.total: isNumber
+}
+
+docs {
+  BUS-06, HU-BUS-02, RN-21. Ejecuta antes autenticacion/Iniciar sesión. Solo servicios activos, por nombre y sin paginar; `precio` como texto con 2 decimales ("8.00"). Misma visibilidad que el detalle.
+}

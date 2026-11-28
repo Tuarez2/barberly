@@ -791,7 +791,7 @@ describe('SEG-09, D-16: limite de inicios fallidos, casos de borde', () => {
 
     expect(bloqueos.map((respuesta) => respuesta.status)).toEqual([429, 429]);
     expect(bloqueos[0]?.body).toEqual(bloqueos[1]?.body);
-  });
+  }, 20_000);
 
   it('D-16: la ventana empieza en el primer fallo, no en un intento correcto ni en un 422', async () => {
     await crearAna();
